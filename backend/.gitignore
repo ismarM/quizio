@@ -1,0 +1,28 @@
+# env
+.env
+.env.local
+.env.*.local
+
+# build artifacts
+/bin/
+/dist/
+/tmp/
+/coverage/
+/build/
+
+# go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# logs
+*.log
+
+# editor/OS
+.vscode/
+.idea/
+.DS_Store
