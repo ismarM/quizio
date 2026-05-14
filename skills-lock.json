@@ -1,6 +1,30 @@
 {
   "version": 1,
   "skills": {
+    "golang-pro": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/golang-pro/SKILL.md",
+      "computedHash": "dc87ea17b2dff33b3833cf42d167876d2bd68170831e7c5062b739868b99ee2c"
+    },
+    "postgresql-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/postgresql-optimization/SKILL.md",
+      "computedHash": "8022448de70ba9a485e3b5bce34c5bbc644f93eb39b68431c9f7dabcf03aeb09"
+    },
+    "rest-api-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "skillPath": "skills/rest-api-design/SKILL.md",
+      "computedHash": "4e84e39b1a3915ee1920f504b2b08b5d1d836f100c8d389dd0b48e9c3cfc9d4c"
+    },
+    "sql-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/sql-optimization/SKILL.md",
+      "computedHash": "47c930907f25d67454ac8c2d155785eae3dce72242960d0c0e9ebf2ced9cd231"
+    },
     "firebase-auth-basics": {
       "source": "firebase/agent-skills",
       "sourceType": "github",
