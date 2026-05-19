@@ -1,0 +1,56 @@
+REST
+uporabniki
+- dodajanje novega uporabnika
+- nastavi display_name
+- pridobivanje informacij (role, tema, jezik)
+- nastavljanje rola
+- nastavi temo, jezik
+- izbris računa
+- pridobi odprte seje (kvizi, ki jih je uporabnik začel, pa jim še ni potekel čas -> oddaje uporabnika z ustreznim "začetek_reševanja")
+- pridobi oddaje (in uspešnost)
+
+kvizi
+- dodaj nov kviz (skuopaj z vprašanji in odgovori)
+- posodobi kviz (dokler ni publishan - publish_date < zdaj)
+- pridobi informacije o kvizu (opis, št vprašanj, ... - za uporabnike - le kvizi, ki so publishani)
+- pridobi kviz (vse o kvizu - za lastnika/kolaboratorje)
+- začni reševanje (ustvari nov attempt, start_time - le če tega kviza še ni rešil)
+- posodobi status reševanje (attempt - doda nov attempt_question ali posodobi obstoječega - če je start_time + quiz.time_limit > zdaj)
+- pridobi status reševanja (attempt - vrne attempt skupaj z attempt_question za restoracijo seje)
+- končaj reševanje (nastavi trajanje_reševanja, vrne rezultate - pravilni, napačni odgovori)
+- pridobi seznam publishanih kvizov (po nazivu, lastniku, kolaboraciji, kategorijah, oddajah, paginacija - archived = false, publish_date < zdaj)
+- pridobi seznam vseh kvizov (po nazivu, lastniku, kolaboraciji, kategorijah, oddajah, paginacija - archived = false)
+- pridobi seznam arhiviranih kvizov (po nazivu, lastniku, kolaboraciji, kategorijah, oddajah, paginacija -archived = true)
+- publish (nastavi publish_date)
+- arhiviraj (nastavi is_archived = true)
+- izbriši
+
+vprašanja
+- ustvari novo vprašanje (za kviz, ki še ni publishan)
+- posodobi vprašanje (dokler kviz ni publishan)
+- izbriši vprašankje (dokler kviz ni publishan)
+
+slike
+- naloži sliko (vrne statično lokacijo slike, ki se shrani v možne odgovore)
+- izbriši sliko
+
+
+DB SCHEMA
+glej diagram / schema.sql
+
+
+POJASNILA
+- ko timer poteče, mora biti avtomatsko oddano to, kar je bilo rešeno, zato ob klicu "začni reševanje" inicializiramo prazno vrstico oddaje, ki se potem ob vsakem novem odgovorjenem vprašanju sproti posodablja
+- posodobi se lahko le, če je začetek reševanja znotraj časovnega okvirja
+- tako frontend+bff in backend sta stateless, SOT je baza -> skalabilnost
+- BFF resolva in verificira client, nato posreduje backendu, ki se firebasa ne rabi dotikat in BFF-ju zaupa
+- kvize lahko urejajo uporabniki z is_admin = 1, tisti z is_admin = 0 lahko kvize le rešujejo
+- vsak uporabnik lahko en kviz reši le enkrat!
+
+NEDOLOČENO
+- brisanje neuporabnih slik (referenčni števec? - dodaš vrstico [id, url, stevec] ki se posodablja ob delete/insert v vprasanjih)
+- varnost med BFF in backendom - priporočam HMAC podpisane requeste
+
+ZA NA BFF
+- ai generira kviz
+- exportaj kviz v excel

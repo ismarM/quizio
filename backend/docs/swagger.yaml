@@ -1,0 +1,1142 @@
+basePath: /
+definitions:
+  httpapi.AnswerDTO:
+    properties:
+      id:
+        type: integer
+      is_correct:
+        type: boolean
+      title:
+        type: string
+    type: object
+  httpapi.AnswerInput:
+    properties:
+      is_correct:
+        type: boolean
+      title:
+        type: string
+    type: object
+  httpapi.ArchiveQuizRequest:
+    properties:
+      is_archived:
+        type: boolean
+    type: object
+  httpapi.AttemptAnswerInput:
+    properties:
+      answer_id:
+        type: integer
+      question_id:
+        type: integer
+    type: object
+  httpapi.AttemptDTO:
+    properties:
+      id:
+        type: integer
+      quiz_id:
+        type: integer
+      start_time:
+        type: string
+      time_taken_seconds:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  httpapi.AttemptQuestionDTO:
+    properties:
+      answer_id:
+        type: integer
+      question_id:
+        type: integer
+    type: object
+  httpapi.AttemptResultResponse:
+    properties:
+      attempt:
+        $ref: '#/definitions/httpapi.AttemptDTO'
+      questions:
+        items:
+          $ref: '#/definitions/httpapi.QuestionDTO'
+        type: array
+      quiz:
+        $ref: '#/definitions/httpapi.QuizDTO'
+      responses:
+        items:
+          $ref: '#/definitions/httpapi.AttemptQuestionDTO'
+        type: array
+    type: object
+  httpapi.AttemptSessionDTO:
+    properties:
+      attempt:
+        $ref: '#/definitions/httpapi.AttemptDTO'
+      time_limit_seconds:
+        type: integer
+    type: object
+  httpapi.CreateQuestionRequest:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/httpapi.AnswerInput'
+        type: array
+      title:
+        type: string
+      value:
+        type: number
+    type: object
+  httpapi.CreateQuizRequest:
+    properties:
+      description:
+        type: string
+      owner_id:
+        type: integer
+      questions:
+        items:
+          $ref: '#/definitions/httpapi.QuestionInput'
+        type: array
+      time_limit_seconds:
+        type: integer
+      title:
+        type: string
+    type: object
+  httpapi.CreateUserRequest:
+    properties:
+      display_name:
+        type: string
+      email:
+        type: string
+      is_admin:
+        type: boolean
+      language:
+        type: integer
+      profile_picture:
+        type: string
+      theme:
+        type: integer
+    type: object
+  httpapi.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  httpapi.ImageResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  httpapi.ImageUploadRequest:
+    properties:
+      filename:
+        type: string
+    type: object
+  httpapi.OpenSessionsResponse:
+    properties:
+      attempts:
+        items:
+          $ref: '#/definitions/httpapi.AttemptSessionDTO'
+        type: array
+    type: object
+  httpapi.PublishQuizRequest:
+    properties:
+      publish_date:
+        type: string
+    type: object
+  httpapi.QuestionDTO:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/httpapi.AnswerDTO'
+        type: array
+      id:
+        type: integer
+      quiz_id:
+        type: integer
+      title:
+        type: string
+      value:
+        type: number
+    type: object
+  httpapi.QuestionInput:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/httpapi.AnswerInput'
+        type: array
+      title:
+        type: string
+      value:
+        type: number
+    type: object
+  httpapi.QuizDTO:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_archived:
+        type: boolean
+      owner_id:
+        type: integer
+      publish_date:
+        type: string
+      question_count:
+        type: integer
+      time_limit_seconds:
+        type: integer
+      title:
+        type: string
+    type: object
+  httpapi.QuizFullResponse:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/httpapi.QuestionDTO'
+        type: array
+      quiz:
+        $ref: '#/definitions/httpapi.QuizDTO'
+    type: object
+  httpapi.QuizListResponse:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      quizzes:
+        items:
+          $ref: '#/definitions/httpapi.QuizDTO'
+        type: array
+    type: object
+  httpapi.QuizResponse:
+    properties:
+      quiz:
+        $ref: '#/definitions/httpapi.QuizDTO'
+    type: object
+  httpapi.SubmissionsResponse:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/httpapi.AttemptResultResponse'
+        type: array
+    type: object
+  httpapi.UpdateAttemptRequest:
+    properties:
+      updates:
+        items:
+          $ref: '#/definitions/httpapi.AttemptAnswerInput'
+        type: array
+    type: object
+  httpapi.UpdateDisplayNameRequest:
+    properties:
+      display_name:
+        type: string
+    type: object
+  httpapi.UpdatePreferencesRequest:
+    properties:
+      language:
+        type: integer
+      theme:
+        type: integer
+    type: object
+  httpapi.UpdateQuestionRequest:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/httpapi.AnswerInput'
+        type: array
+      title:
+        type: string
+      value:
+        type: number
+    type: object
+  httpapi.UpdateQuizRequest:
+    properties:
+      description:
+        type: string
+      time_limit_seconds:
+        type: integer
+      title:
+        type: string
+    type: object
+  httpapi.UpdateRoleRequest:
+    properties:
+      is_admin:
+        type: boolean
+    type: object
+  httpapi.UserDTO:
+    properties:
+      display_name:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_admin:
+        type: boolean
+      language:
+        type: integer
+      profile_picture:
+        type: string
+      theme:
+        type: integer
+    type: object
+  httpapi.UserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/httpapi.UserDTO'
+    type: object
+info:
+  contact: {}
+  description: REST API for Quizio.
+  title: Quizio API
+  version: 0.1.0
+paths:
+  /api/images:
+    delete:
+      description: Stub image deletion.
+      parameters:
+      - description: Image URL
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Delete image
+      tags:
+      - images
+    post:
+      consumes:
+      - application/json
+      description: Stub image upload; returns a placeholder URL.
+      parameters:
+      - description: Image upload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.ImageUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/httpapi.ImageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Upload image
+      tags:
+      - images
+  /api/questions/{questionId}:
+    delete:
+      description: Delete a question (quiz not published).
+      parameters:
+      - description: Question ID
+        in: path
+        name: questionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Delete question
+      tags:
+      - questions
+    put:
+      consumes:
+      - application/json
+      description: Update a question and optionally its answers (quiz not published).
+      parameters:
+      - description: Question ID
+        in: path
+        name: questionId
+        required: true
+        type: integer
+      - description: Update question
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdateQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuestionDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update question
+      tags:
+      - questions
+  /api/quizzes:
+    get:
+      description: List quizzes with filters and pagination.
+      parameters:
+      - default: active
+        description: published|active|archived
+        in: query
+        name: scope
+        type: string
+      - description: Filter by title
+        in: query
+        name: title
+        type: string
+      - description: Filter by owner id
+        in: query
+        name: owner_id
+        type: integer
+      - description: Only quizzes the user submitted
+        in: query
+        name: submitted_only
+        type: boolean
+      - description: User id for submitted_only filter
+        in: query
+        name: submitted_by
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: List quizzes
+      tags:
+      - quizzes
+    post:
+      consumes:
+      - application/json
+      description: Create a quiz with questions and answers.
+      parameters:
+      - description: Create quiz request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.CreateQuizRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/httpapi.QuizFullResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Create quiz
+      tags:
+      - quizzes
+  /api/quizzes/{quizId}:
+    delete:
+      description: Delete a quiz and all related data.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Delete quiz
+      tags:
+      - quizzes
+    get:
+      description: Get the full quiz definition.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizFullResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get full quiz
+      tags:
+      - quizzes
+    put:
+      consumes:
+      - application/json
+      description: Update quiz metadata (only when not published).
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: Update quiz
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdateQuizRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update quiz
+      tags:
+      - quizzes
+  /api/quizzes/{quizId}/archive:
+    patch:
+      consumes:
+      - application/json
+      description: Archive or unarchive a quiz.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: Archive quiz
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.ArchiveQuizRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Archive quiz
+      tags:
+      - quizzes
+  /api/quizzes/{quizId}/info:
+    get:
+      description: Get quiz info for published quizzes.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get quiz info
+      tags:
+      - quizzes
+  /api/quizzes/{quizId}/publish:
+    patch:
+      consumes:
+      - application/json
+      description: Publish a quiz immediately or schedule a publish date.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: Publish quiz
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.PublishQuizRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Publish quiz
+      tags:
+      - quizzes
+  /api/quizzes/{quizId}/questions:
+    post:
+      consumes:
+      - application/json
+      description: Create a question for a quiz that is not published.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: Create question
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.CreateQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/httpapi.QuestionDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Create question
+      tags:
+      - questions
+  /api/users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user.
+      parameters:
+      - description: Create user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/httpapi.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Create user
+      tags:
+      - users
+  /api/users/{userId}:
+    delete:
+      description: Delete a user account.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Delete user account
+      tags:
+      - users
+    get:
+      description: Get role, theme, language, and profile fields for a user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get user info
+      tags:
+      - users
+  /api/users/{userId}/display-name:
+    patch:
+      consumes:
+      - application/json
+      description: Update display name for a user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Update display name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdateDisplayNameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update display name
+      tags:
+      - users
+  /api/users/{userId}/open-sessions:
+    get:
+      description: Return attempts that are in progress and not expired for the user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.OpenSessionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get open sessions
+      tags:
+      - users
+  /api/users/{userId}/preferences:
+    patch:
+      consumes:
+      - application/json
+      description: Update theme and language for a user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Update preferences
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdatePreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update preferences
+      tags:
+      - users
+  /api/users/{userId}/quizzes/{quizId}/attempts:
+    get:
+      description: Get attempt status for session restoration; finalize if expired.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get attempt status
+      tags:
+      - attempts
+    patch:
+      consumes:
+      - application/json
+      description: Update answers during an attempt (only while active).
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: Update attempt
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdateAttemptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update attempt status
+      tags:
+      - attempts
+    post:
+      description: Start a quiz attempt (only once per user).
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/httpapi.AttemptDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Start attempt
+      tags:
+      - attempts
+  /api/users/{userId}/quizzes/{quizId}/attempts/finish:
+    post:
+      description: Finish an attempt and return raw results.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Finish attempt
+      tags:
+      - attempts
+  /api/users/{userId}/role:
+    patch:
+      consumes:
+      - application/json
+      description: Update admin role for a user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Update user role
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update user role
+      tags:
+      - users
+  /api/users/{userId}/submissions:
+    get:
+      description: Return finished attempts and raw data for scoring for the user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.SubmissionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get submissions
+      tags:
+      - users
+swagger: "2.0"

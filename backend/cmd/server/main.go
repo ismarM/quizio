@@ -13,6 +13,10 @@ import (
 	"github.com/ismarM/quizio/internal/httpapi"
 )
 
+// @title Quizio API
+// @version 0.1.0
+// @description REST API for Quizio.
+// @BasePath /
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
