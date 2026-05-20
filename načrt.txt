@@ -50,7 +50,13 @@ POJASNILA
 NEDOLOČENO
 - brisanje neuporabnih slik (referenčni števec? - dodaš vrstico [id, url, stevec] ki se posodablja ob delete/insert v vprasanjih)
 - varnost med BFF in backendom - priporočam HMAC podpisane requeste
+- TODO: dodati HMAC podpis v Next proxy in preverjanje v Go backendu
 
 ZA NA BFF
 - ai generira kviz
 - exportaj kviz v excel
+- shranjevanje slik v bucket 
+
+
+ZA SLIKE 
+- naredimo al SupaBase Storage al pa samo separate node aplikacijo, al pa direkt v bazo - boli nas penis realno

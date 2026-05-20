@@ -1,6 +1,7 @@
 # Backend
 
 Stack:
+
 - chi router
 - pgx driver
 - godotenv
@@ -9,17 +10,25 @@ Stack:
 - swaggo for openapi documentation (http://localhost:8080/swagger/index.html)
 
 Setup:
-1) From the repo root, start Postgres:
-	docker compose up -d postgres
-2) From the backend directory:
-	cd backend
-3) Update .env (defaults match docker-compose.yml).
-4) Run migrations:
-	go run ./cmd/server migrate
-5) Start the API:
-	go run ./cmd/server
+
+1. From the repo root, start Postgres:
+   docker compose up -d postgres
+2. From the backend directory:
+   cd backend
+3. Update .env (defaults match docker-compose.yml).
+4. Run migrations:
+   go run ./cmd/server migrate
+5. Start the API:
+   go run ./cmd/server
+
+## Auth (BFF)
+
+- API routes expect `x-user-email` header provided by the Next BFF proxy.
+- Admin-only routes are enforced via `is_admin` in the database.
+- Direct calls without the BFF header return 401.
 
 ## Decisions log
+
 - Use `/api` prefix for all routes.
 - Remove the actor envelope; request fields are at the root of the JSON body.
 - Use RESTful methods and query parameters for list/search endpoints.
@@ -35,4 +44,5 @@ Setup:
 - Attempt results return raw data (questions, answers, which were correct); frontend computes scores.
 
 ## Open questions
+
 - Long-term image storage and final URL format once a bucket is introduced.

@@ -25,6 +25,8 @@ func NewRouter(db *sql.DB) http.Handler {
 	api := NewAPI(db)
 
 	r.Route("/api", func(r chi.Router) {
+		r.Use(api.requireAuth)
+
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/", api.CreateUser)
 			r.Get("/{userId}", api.GetUserInfo)
@@ -37,20 +39,20 @@ func NewRouter(db *sql.DB) http.Handler {
 		})
 
 		r.Route("/quizzes", func(r chi.Router) {
-			r.Post("/", api.CreateQuiz)
+			r.With(api.requireAdmin).Post("/", api.CreateQuiz)
 			r.Get("/", api.ListQuizzes)
 			r.Get("/{quizId}", api.GetFullQuiz)
 			r.Get("/{quizId}/info", api.GetQuizInfo)
-			r.Put("/{quizId}", api.UpdateQuiz)
-			r.Patch("/{quizId}/publish", api.PublishQuiz)
-			r.Patch("/{quizId}/archive", api.ArchiveQuiz)
-			r.Delete("/{quizId}", api.DeleteQuiz)
-			r.Post("/{quizId}/questions", api.CreateQuestion)
+			r.With(api.requireAdmin).Put("/{quizId}", api.UpdateQuiz)
+			r.With(api.requireAdmin).Patch("/{quizId}/publish", api.PublishQuiz)
+			r.With(api.requireAdmin).Patch("/{quizId}/archive", api.ArchiveQuiz)
+			r.With(api.requireAdmin).Delete("/{quizId}", api.DeleteQuiz)
+			r.With(api.requireAdmin).Post("/{quizId}/questions", api.CreateQuestion)
 		})
 
 		r.Route("/questions", func(r chi.Router) {
-			r.Put("/{questionId}", api.UpdateQuestion)
-			r.Delete("/{questionId}", api.DeleteQuestion)
+			r.With(api.requireAdmin).Put("/{questionId}", api.UpdateQuestion)
+			r.With(api.requireAdmin).Delete("/{questionId}", api.DeleteQuestion)
 		})
 
 		r.Route("/users/{userId}/quizzes/{quizId}", func(r chi.Router) {
@@ -61,8 +63,8 @@ func NewRouter(db *sql.DB) http.Handler {
 		})
 
 		r.Route("/images", func(r chi.Router) {
-			r.Post("/", api.UploadImage)
-			r.Delete("/", api.DeleteImage)
+			r.With(api.requireAdmin).Post("/", api.UploadImage)
+			r.With(api.requireAdmin).Delete("/", api.DeleteImage)
 		})
 	})
 
