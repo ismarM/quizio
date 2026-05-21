@@ -25,46 +25,40 @@ func NewRouter(db *sql.DB) http.Handler {
 	api := NewAPI(db)
 
 	r.Route("/api", func(r chi.Router) {
-		r.Use(api.requireAuth)
+		r.Use(AuthMiddleware)
 
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/", api.CreateUser)
-			r.Get("/{userId}", api.GetUserInfo)
-			r.Patch("/{userId}/display-name", api.UpdateDisplayName)
-			r.Patch("/{userId}/role", api.UpdateRole)
-			r.Patch("/{userId}/preferences", api.UpdatePreferences)
-			r.Delete("/{userId}", api.DeleteUser)
-			r.Get("/{userId}/open-sessions", api.GetOpenSessions)
-			r.Get("/{userId}/submissions", api.GetSubmissions)
+			r.Get("/me", api.GetUserInfo)
+			r.Patch("/me/display-name", api.UpdateDisplayName)
+			r.Patch("/me/role", api.UpdateRole)
+			r.Patch("/me/preferences", api.UpdatePreferences)
+			r.Delete("/me", api.DeleteUser)
+			r.Get("/me/open-sessions", api.GetOpenSessions)
+			r.Get("/me/submissions", api.GetSubmissions)
 		})
 
 		r.Route("/quizzes", func(r chi.Router) {
-			r.With(api.requireAdmin).Post("/", api.CreateQuiz)
+			r.Post("/", api.CreateQuiz)
 			r.Get("/", api.ListQuizzes)
 			r.Get("/{quizId}", api.GetFullQuiz)
 			r.Get("/{quizId}/info", api.GetQuizInfo)
-			r.With(api.requireAdmin).Put("/{quizId}", api.UpdateQuiz)
-			r.With(api.requireAdmin).Patch("/{quizId}/publish", api.PublishQuiz)
-			r.With(api.requireAdmin).Patch("/{quizId}/archive", api.ArchiveQuiz)
-			r.With(api.requireAdmin).Delete("/{quizId}", api.DeleteQuiz)
-			r.With(api.requireAdmin).Post("/{quizId}/questions", api.CreateQuestion)
+			r.Put("/{quizId}", api.UpdateQuiz)
+			r.Patch("/{quizId}/publish", api.PublishQuiz)
+			r.Patch("/{quizId}/archive", api.ArchiveQuiz)
+			r.Delete("/{quizId}", api.DeleteQuiz)
+			r.Post("/{quizId}/questions", api.CreateQuestion)
+
+			// Attempts nested routes under quizzes
+			r.Post("/{quizId}/attempts", api.StartAttempt)
+			r.Patch("/{quizId}/attempts", api.UpdateAttemptStatus)
+			r.Get("/{quizId}/attempts", api.GetAttemptStatus)
+			r.Post("/{quizId}/attempts/finish", api.FinishAttempt)
 		})
 
 		r.Route("/questions", func(r chi.Router) {
-			r.With(api.requireAdmin).Put("/{questionId}", api.UpdateQuestion)
-			r.With(api.requireAdmin).Delete("/{questionId}", api.DeleteQuestion)
-		})
-
-		r.Route("/users/{userId}/quizzes/{quizId}", func(r chi.Router) {
-			r.Post("/attempts", api.StartAttempt)
-			r.Patch("/attempts", api.UpdateAttemptStatus)
-			r.Get("/attempts", api.GetAttemptStatus)
-			r.Post("/attempts/finish", api.FinishAttempt)
-		})
-
-		r.Route("/images", func(r chi.Router) {
-			r.With(api.requireAdmin).Post("/", api.UploadImage)
-			r.With(api.requireAdmin).Delete("/", api.DeleteImage)
+			r.Put("/{questionId}", api.UpdateQuestion)
+			r.Delete("/{questionId}", api.DeleteQuestion)
 		})
 	})
 

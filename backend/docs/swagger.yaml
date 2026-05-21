@@ -118,16 +118,6 @@ definitions:
       message:
         type: string
     type: object
-  httpapi.ImageResponse:
-    properties:
-      url:
-        type: string
-    type: object
-  httpapi.ImageUploadRequest:
-    properties:
-      filename:
-        type: string
-    type: object
   httpapi.OpenSessionsResponse:
     properties:
       attempts:
@@ -295,56 +285,6 @@ info:
   title: Quizio API
   version: 0.1.0
 paths:
-  /api/images:
-    delete:
-      description: Stub image deletion.
-      parameters:
-      - description: Image URL
-        in: query
-        name: url
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-      summary: Delete image
-      tags:
-      - images
-    post:
-      consumes:
-      - application/json
-      description: Stub image upload; returns a placeholder URL.
-      parameters:
-      - description: Image upload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/httpapi.ImageUploadRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/httpapi.ImageResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-      summary: Upload image
-      tags:
-      - images
   /api/questions/{questionId}:
     delete:
       description: Delete a question (quiz not published).
@@ -361,6 +301,18 @@ paths:
           description: No Content
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
@@ -399,6 +351,18 @@ paths:
             $ref: '#/definitions/httpapi.QuestionDTO'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
@@ -456,6 +420,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -483,6 +455,14 @@ paths:
             $ref: '#/definitions/httpapi.QuizFullResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
@@ -514,6 +494,18 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -522,7 +514,7 @@ paths:
       tags:
       - quizzes
     get:
-      description: Get the full quiz definition.
+      description: Get the full quiz definition (only for admin/owner).
       parameters:
       - description: Quiz ID
         in: path
@@ -536,6 +528,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/httpapi.QuizFullResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -572,6 +576,18 @@ paths:
             $ref: '#/definitions/httpapi.QuizResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
@@ -613,6 +629,18 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -620,6 +648,156 @@ paths:
       summary: Archive quiz
       tags:
       - quizzes
+  /api/quizzes/{quizId}/attempts:
+    get:
+      description: Get attempt status for session restoration; finalize if expired.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get attempt status
+      tags:
+      - attempts
+    patch:
+      consumes:
+      - application/json
+      description: Update answers during an attempt (only while active).
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: Update attempt
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.UpdateAttemptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Update attempt status
+      tags:
+      - attempts
+    post:
+      description: Start a quiz attempt (only once per user).
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/httpapi.AttemptDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Start attempt
+      tags:
+      - attempts
+  /api/quizzes/{quizId}/attempts/finish:
+    post:
+      description: Finish an attempt and return raw results.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Finish attempt
+      tags:
+      - attempts
   /api/quizzes/{quizId}/info:
     get:
       description: Get quiz info for published quizzes.
@@ -636,6 +814,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/httpapi.QuizResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -675,6 +857,18 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
           description: Conflict
           schema:
@@ -712,6 +906,18 @@ paths:
             $ref: '#/definitions/httpapi.QuestionDTO'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
@@ -759,22 +965,16 @@ paths:
       summary: Create user
       tags:
       - users
-  /api/users/{userId}:
+  /api/users/me:
     delete:
-      description: Delete a user account.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
+      description: Delete the authenticated user account.
       produces:
       - application/json
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
@@ -785,13 +985,8 @@ paths:
       tags:
       - users
     get:
-      description: Get role, theme, language, and profile fields for a user.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
+      description: Get role, theme, language, and profile fields for the authenticated
+        user.
       produces:
       - application/json
       responses:
@@ -799,8 +994,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/httpapi.UserResponse'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "404":
@@ -814,17 +1009,12 @@ paths:
       summary: Get user info
       tags:
       - users
-  /api/users/{userId}/display-name:
+  /api/users/me/display-name:
     patch:
       consumes:
       - application/json
-      description: Update display name for a user.
+      description: Update display name for the authenticated user.
       parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
       - description: Update display name
         in: body
         name: request
@@ -842,6 +1032,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "409":
           description: Conflict
           schema:
@@ -853,15 +1047,10 @@ paths:
       summary: Update display name
       tags:
       - users
-  /api/users/{userId}/open-sessions:
+  /api/users/me/open-sessions:
     get:
-      description: Return attempts that are in progress and not expired for the user.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
+      description: Return attempts that are in progress and not expired for the authenticated
+        user.
       produces:
       - application/json
       responses:
@@ -869,8 +1058,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/httpapi.OpenSessionsResponse'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
@@ -880,17 +1069,12 @@ paths:
       summary: Get open sessions
       tags:
       - users
-  /api/users/{userId}/preferences:
+  /api/users/me/preferences:
     patch:
       consumes:
       - application/json
-      description: Update theme and language for a user.
+      description: Update theme and language for the authenticated user.
       parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
       - description: Update preferences
         in: body
         name: request
@@ -908,6 +1092,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -915,171 +1103,12 @@ paths:
       summary: Update preferences
       tags:
       - users
-  /api/users/{userId}/quizzes/{quizId}/attempts:
-    get:
-      description: Get attempt status for session restoration; finalize if expired.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Quiz ID
-        in: path
-        name: quizId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/httpapi.AttemptResultResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-      summary: Get attempt status
-      tags:
-      - attempts
+  /api/users/me/role:
     patch:
       consumes:
       - application/json
-      description: Update answers during an attempt (only while active).
+      description: Update admin role for the authenticated user.
       parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Quiz ID
-        in: path
-        name: quizId
-        required: true
-        type: integer
-      - description: Update attempt
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/httpapi.UpdateAttemptRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/httpapi.AttemptResultResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-      summary: Update attempt status
-      tags:
-      - attempts
-    post:
-      description: Start a quiz attempt (only once per user).
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Quiz ID
-        in: path
-        name: quizId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/httpapi.AttemptDTO'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-      summary: Start attempt
-      tags:
-      - attempts
-  /api/users/{userId}/quizzes/{quizId}/attempts/finish:
-    post:
-      description: Finish an attempt and return raw results.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Quiz ID
-        in: path
-        name: quizId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/httpapi.AttemptResultResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpapi.ErrorResponse'
-      summary: Finish attempt
-      tags:
-      - attempts
-  /api/users/{userId}/role:
-    patch:
-      consumes:
-      - application/json
-      description: Update admin role for a user.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
       - description: Update user role
         in: body
         name: request
@@ -1097,6 +1126,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1104,15 +1137,11 @@ paths:
       summary: Update user role
       tags:
       - users
-  /api/users/{userId}/submissions:
+  /api/users/me/submissions:
     get:
-      description: Return finished attempts and raw data for scoring for the user.
+      description: Return finished attempts and raw data for scoring for the authenticated
+        user.
       parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
       - description: Limit
         in: query
         name: limit
@@ -1128,8 +1157,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/httpapi.SubmissionsResponse'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "500":

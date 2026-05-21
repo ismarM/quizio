@@ -15,82 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/images": {
-            "post": {
-                "description": "Stub image upload; returns a placeholder URL.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "images"
-                ],
-                "summary": "Upload image",
-                "parameters": [
-                    {
-                        "description": "Image upload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ImageUploadRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ImageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Stub image deletion.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "images"
-                ],
-                "summary": "Delete image",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Image URL",
-                        "name": "url",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/questions/{questionId}": {
             "put": {
                 "description": "Update a question and optionally its answers (quiz not published).",
@@ -135,6 +59,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -173,6 +115,24 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -260,6 +220,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -304,6 +276,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -321,7 +305,7 @@ const docTemplate = `{
         },
         "/api/quizzes/{quizId}": {
             "get": {
-                "description": "Get the full quiz definition.",
+                "description": "Get the full quiz definition (only for admin/owner).",
                 "produces": [
                     "application/json"
                 ],
@@ -343,6 +327,24 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/httpapi.QuizFullResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
                     "404": {
@@ -402,6 +404,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -440,6 +460,24 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -497,6 +535,250 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/quizzes/{quizId}/attempts": {
+            "get": {
+                "description": "Get attempt status for session restoration; finalize if expired.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "attempts"
+                ],
+                "summary": "Get attempt status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Quiz ID",
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Start a quiz attempt (only once per user).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "attempts"
+                ],
+                "summary": "Start attempt",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Quiz ID",
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.AttemptDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update answers during an attempt (only while active).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "attempts"
+                ],
+                "summary": "Update attempt status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Quiz ID",
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update attempt",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.UpdateAttemptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/quizzes/{quizId}/attempts/finish": {
+            "post": {
+                "description": "Finish an attempt and return raw results.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "attempts"
+                ],
+                "summary": "Finish attempt",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Quiz ID",
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -530,6 +812,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/httpapi.QuizResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
                     "404": {
@@ -591,6 +879,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -646,6 +952,24 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -717,9 +1041,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{userId}": {
+        "/api/users/me": {
             "get": {
-                "description": "Get role, theme, language, and profile fields for a user.",
+                "description": "Get role, theme, language, and profile fields for the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -727,15 +1051,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Get user info",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -743,8 +1058,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.UserResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -764,7 +1079,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a user account.",
+                "description": "Delete the authenticated user account.",
                 "produces": [
                     "application/json"
                 ],
@@ -772,21 +1087,12 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Delete user account",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -800,9 +1106,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{userId}/display-name": {
+        "/api/users/me/display-name": {
             "patch": {
-                "description": "Update display name for a user.",
+                "description": "Update display name for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -814,13 +1120,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update display name",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Update display name",
                         "name": "request",
@@ -844,6 +1143,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -859,9 +1164,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{userId}/open-sessions": {
+        "/api/users/me/open-sessions": {
             "get": {
-                "description": "Return attempts that are in progress and not expired for the user.",
+                "description": "Return attempts that are in progress and not expired for the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -869,15 +1174,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Get open sessions",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -885,8 +1181,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.OpenSessionsResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -900,9 +1196,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{userId}/preferences": {
+        "/api/users/me/preferences": {
             "patch": {
-                "description": "Update theme and language for a user.",
+                "description": "Update theme and language for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -914,13 +1210,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update preferences",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Update preferences",
                         "name": "request",
@@ -944,6 +1233,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -953,239 +1248,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{userId}/quizzes/{quizId}/attempts": {
-            "get": {
-                "description": "Get attempt status for session restoration; finalize if expired.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "attempts"
-                ],
-                "summary": "Get attempt status",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Quiz ID",
-                        "name": "quizId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Start a quiz attempt (only once per user).",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "attempts"
-                ],
-                "summary": "Start attempt",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Quiz ID",
-                        "name": "quizId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.AttemptDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    }
-                }
-            },
+        "/api/users/me/role": {
             "patch": {
-                "description": "Update answers during an attempt (only while active).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "attempts"
-                ],
-                "summary": "Update attempt status",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Quiz ID",
-                        "name": "quizId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update attempt",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.UpdateAttemptRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{userId}/quizzes/{quizId}/attempts/finish": {
-            "post": {
-                "description": "Finish an attempt and return raw results.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "attempts"
-                ],
-                "summary": "Finish attempt",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Quiz ID",
-                        "name": "quizId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpapi.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{userId}/role": {
-            "patch": {
-                "description": "Update admin role for a user.",
+                "description": "Update admin role for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1197,13 +1262,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update user role",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Update user role",
                         "name": "request",
@@ -1227,6 +1285,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1236,9 +1300,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{userId}/submissions": {
+        "/api/users/me/submissions": {
             "get": {
-                "description": "Return finished attempts and raw data for scoring for the user.",
+                "description": "Return finished attempts and raw data for scoring for the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -1247,13 +1311,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get submissions",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Limit",
@@ -1274,8 +1331,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpapi.SubmissionsResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -1470,22 +1527,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "httpapi.ImageResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "httpapi.ImageUploadRequest": {
-            "type": "object",
-            "properties": {
-                "filename": {
                     "type": "string"
                 }
             }

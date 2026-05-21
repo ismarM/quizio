@@ -54,21 +54,21 @@ func (api *API) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // GetUserInfo godoc
 // @Summary Get user info
-// @Description Get role, theme, language, and profile fields for a user.
+// @Description Get role, theme, language, and profile fields for the authenticated user.
 // @Tags users
 // @Produce json
-// @Param userId path int true "User ID"
 // @Success 200 {object} UserResponse
-// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId} [get]
+// @Router /api/users/me [get]
 func (api *API) GetUserInfo(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	user, err := api.queries.GetUserByID(r.Context(), userID)
 	if err != nil {
@@ -85,23 +85,24 @@ func (api *API) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 
 // UpdateDisplayName godoc
 // @Summary Update display name
-// @Description Update display name for a user.
+// @Description Update display name for the authenticated user.
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param userId path int true "User ID"
 // @Param request body UpdateDisplayNameRequest true "Update display name"
 // @Success 200 {object} UserResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId}/display-name [patch]
+// @Router /api/users/me/display-name [patch]
 func (api *API) UpdateDisplayName(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	var req UpdateDisplayNameRequest
 	if err := decodeJSON(r, &req); err != nil {
@@ -132,22 +133,23 @@ func (api *API) UpdateDisplayName(w http.ResponseWriter, r *http.Request) {
 
 // UpdateRole godoc
 // @Summary Update user role
-// @Description Update admin role for a user.
+// @Description Update admin role for the authenticated user.
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param userId path int true "User ID"
 // @Param request body UpdateRoleRequest true "Update user role"
 // @Success 200 {object} UserResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId}/role [patch]
+// @Router /api/users/me/role [patch]
 func (api *API) UpdateRole(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	var req UpdateRoleRequest
 	if err := decodeJSON(r, &req); err != nil {
@@ -169,22 +171,23 @@ func (api *API) UpdateRole(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePreferences godoc
 // @Summary Update preferences
-// @Description Update theme and language for a user.
+// @Description Update theme and language for the authenticated user.
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param userId path int true "User ID"
 // @Param request body UpdatePreferencesRequest true "Update preferences"
 // @Success 200 {object} UserResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId}/preferences [patch]
+// @Router /api/users/me/preferences [patch]
 func (api *API) UpdatePreferences(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	var req UpdatePreferencesRequest
 	if err := decodeJSON(r, &req); err != nil {
@@ -207,20 +210,20 @@ func (api *API) UpdatePreferences(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser godoc
 // @Summary Delete user account
-// @Description Delete a user account.
+// @Description Delete the authenticated user account.
 // @Tags users
 // @Produce json
-// @Param userId path int true "User ID"
 // @Success 204
-// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId} [delete]
+// @Router /api/users/me [delete]
 func (api *API) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	if err := api.queries.DeleteUser(r.Context(), userID); err != nil {
 		writeError(w, http.StatusInternalServerError, "delete_user_failed", "failed to delete user")
@@ -232,20 +235,20 @@ func (api *API) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 // GetOpenSessions godoc
 // @Summary Get open sessions
-// @Description Return attempts that are in progress and not expired for the user.
+// @Description Return attempts that are in progress and not expired for the authenticated user.
 // @Tags users
 // @Produce json
-// @Param userId path int true "User ID"
 // @Success 200 {object} OpenSessionsResponse
-// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId}/open-sessions [get]
+// @Router /api/users/me/open-sessions [get]
 func (api *API) GetOpenSessions(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	if err := api.queries.FinalizeExpiredAttemptsForUser(r.Context(), userID); err != nil {
 		writeError(w, http.StatusInternalServerError, "finalize_attempts_failed", "failed to finalize expired attempts")
@@ -278,22 +281,22 @@ func (api *API) GetOpenSessions(w http.ResponseWriter, r *http.Request) {
 
 // GetSubmissions godoc
 // @Summary Get submissions
-// @Description Return finished attempts and raw data for scoring for the user.
+// @Description Return finished attempts and raw data for scoring for the authenticated user.
 // @Tags users
 // @Produce json
-// @Param userId path int true "User ID"
 // @Param limit query int false "Limit"
 // @Param offset query int false "Offset"
 // @Success 200 {object} SubmissionsResponse
-// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /api/users/{userId}/submissions [get]
+// @Router /api/users/me/submissions [get]
 func (api *API) GetSubmissions(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIDParam(r, "userId")
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
 		return
 	}
+	userID := claims.ID
 
 	limit, err := parseQueryInt32(r, "limit", defaultLimit)
 	if err != nil {

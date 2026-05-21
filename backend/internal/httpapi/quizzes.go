@@ -19,20 +19,28 @@ import (
 // @Param request body CreateQuizRequest true "Create quiz request"
 // @Success 201 {object} QuizFullResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes [post]
 func (api *API) CreateQuiz(w http.ResponseWriter, r *http.Request) {
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can create quizzes")
+		return
+	}
+
 	var req CreateQuizRequest
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_payload", "invalid JSON payload")
 		return
 	}
 
-	if req.OwnerID <= 0 {
-		writeError(w, http.StatusBadRequest, "invalid_payload", "owner_id is required")
-		return
-	}
 	if req.Title == "" {
 		writeError(w, http.StatusBadRequest, "invalid_payload", "title is required")
 		return
@@ -61,7 +69,7 @@ func (api *API) CreateQuiz(w http.ResponseWriter, r *http.Request) {
 		Title:       req.Title,
 		Secs:        float64(req.TimeLimitSeconds),
 		Description: toNullString(req.Description),
-		TkUser:      req.OwnerID,
+		TkUser:      claims.ID,
 	})
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -156,6 +164,9 @@ func (api *API) CreateQuiz(w http.ResponseWriter, r *http.Request) {
 // @Param request body UpdateQuizRequest true "Update quiz"
 // @Success 200 {object} QuizResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes/{quizId} [put]
@@ -163,6 +174,16 @@ func (api *API) UpdateQuiz(w http.ResponseWriter, r *http.Request) {
 	quizID, err := parseIDParam(r, "quizId")
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_quiz_id", "quiz id is required")
+		return
+	}
+
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can update quizzes")
 		return
 	}
 
@@ -188,6 +209,10 @@ func (api *API) UpdateQuiz(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+	if state.TkUser != claims.ID {
+		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can update it")
 		return
 	}
 	if state.IsArchived || state.PublishDate.Valid {
@@ -221,6 +246,7 @@ func (api *API) UpdateQuiz(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param quizId path int true "Quiz ID"
 // @Success 200 {object} QuizResponse
+// @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes/{quizId}/info [get]
@@ -252,11 +278,14 @@ func (api *API) GetQuizInfo(w http.ResponseWriter, r *http.Request) {
 
 // GetFullQuiz godoc
 // @Summary Get full quiz
-// @Description Get the full quiz definition.
+// @Description Get the full quiz definition (only for admin/owner).
 // @Tags quizzes
 // @Produce json
 // @Param quizId path int true "Quiz ID"
 // @Success 200 {object} QuizFullResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes/{quizId} [get]
@@ -267,6 +296,12 @@ func (api *API) GetFullQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+
 	quizRow, err := api.queries.GetQuizByID(r.Context(), quizID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -274,6 +309,11 @@ func (api *API) GetFullQuiz(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+
+	if !claims.IsAdmin || quizRow.TkUser != claims.ID {
+		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can view the full quiz details")
 		return
 	}
 
@@ -297,6 +337,9 @@ func (api *API) GetFullQuiz(w http.ResponseWriter, r *http.Request) {
 // @Param request body PublishQuizRequest true "Publish quiz"
 // @Success 200 {object} QuizResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes/{quizId}/publish [patch]
@@ -304,6 +347,16 @@ func (api *API) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 	quizID, err := parseIDParam(r, "quizId")
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_quiz_id", "quiz id is required")
+		return
+	}
+
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can publish quizzes")
 		return
 	}
 
@@ -320,6 +373,10 @@ func (api *API) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+	if state.TkUser != claims.ID {
+		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can publish it")
 		return
 	}
 	if state.PublishDate.Valid {
@@ -355,6 +412,9 @@ func (api *API) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 // @Param request body ArchiveQuizRequest true "Archive quiz"
 // @Success 200 {object} QuizResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes/{quizId}/archive [patch]
 func (api *API) ArchiveQuiz(w http.ResponseWriter, r *http.Request) {
@@ -364,9 +424,33 @@ func (api *API) ArchiveQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can archive quizzes")
+		return
+	}
+
 	var req ArchiveQuizRequest
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_payload", "invalid JSON payload")
+		return
+	}
+
+	state, err := api.queries.GetQuizState(r.Context(), quizID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+	if state.TkUser != claims.ID {
+		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can archive it")
 		return
 	}
 
@@ -391,12 +475,39 @@ func (api *API) ArchiveQuiz(w http.ResponseWriter, r *http.Request) {
 // @Param quizId path int true "Quiz ID"
 // @Success 204
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes/{quizId} [delete]
 func (api *API) DeleteQuiz(w http.ResponseWriter, r *http.Request) {
 	quizID, err := parseIDParam(r, "quizId")
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_quiz_id", "quiz id is required")
+		return
+	}
+
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can delete quizzes")
+		return
+	}
+
+	state, err := api.queries.GetQuizState(r.Context(), quizID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+	if state.TkUser != claims.ID {
+		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can delete it")
 		return
 	}
 
@@ -423,12 +534,29 @@ func (api *API) DeleteQuiz(w http.ResponseWriter, r *http.Request) {
 // @Param offset query int false "Offset"
 // @Success 200 {object} QuizListResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/quizzes [get]
 func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+
 	scope := r.URL.Query().Get("scope")
 	if scope == "" {
-		scope = "active"
+		if claims.IsAdmin {
+			scope = "active"
+		} else {
+			scope = "published"
+		}
+	}
+
+	if !claims.IsAdmin && scope != "published" {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can list unpublished or archived quizzes")
+		return
 	}
 
 	title := r.URL.Query().Get("title")
@@ -446,18 +574,9 @@ func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid_query", "invalid submitted_only")
 		return
 	}
-	submittedBy, err := parseQueryInt32(r, "submitted_by", 0)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_query", "invalid submitted_by")
-		return
-	}
-	if submittedBy < 0 {
-		writeError(w, http.StatusBadRequest, "invalid_query", "submitted_by must be non-negative")
-		return
-	}
-	if submittedOnly && submittedBy <= 0 {
-		writeError(w, http.StatusBadRequest, "invalid_query", "submitted_by is required when submitted_only is true")
-		return
+	var submittedBy int32
+	if submittedOnly {
+		submittedBy = claims.ID
 	}
 
 	limit, err := parseQueryInt32(r, "limit", defaultLimit)
