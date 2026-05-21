@@ -525,11 +525,10 @@ func (api *API) DeleteQuiz(w http.ResponseWriter, r *http.Request) {
 // @Description List quizzes with filters and pagination.
 // @Tags quizzes
 // @Produce json
-// @Param scope query string false "published|active|archived" default(active)
+// @Param scope query string false "published|not_published|archived" default(published)
 // @Param title query string false "Filter by title"
 // @Param owner_id query int false "Filter by owner id"
 // @Param submitted_only query bool false "Only quizzes the user submitted"
-// @Param submitted_by query int false "User id for submitted_only filter"
 // @Param limit query int false "Limit"
 // @Param offset query int false "Offset"
 // @Success 200 {object} QuizListResponse
@@ -547,11 +546,12 @@ func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 
 	scope := r.URL.Query().Get("scope")
 	if scope == "" {
-		if claims.IsAdmin {
-			scope = "active"
-		} else {
-			scope = "published"
-		}
+		scope = "published"
+	}
+
+	if scope != "published" && scope != "not_published" && scope != "archived" {
+		writeError(w, http.StatusBadRequest, "invalid_query", "scope must be one of: published, not_published, archived")
+		return
 	}
 
 	if !claims.IsAdmin && scope != "published" {
@@ -605,8 +605,8 @@ func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 		rows, loadErr = api.loadPublishedQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
 	case "archived":
 		rows, loadErr = api.loadArchivedQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
-	default:
-		rows, loadErr = api.loadActiveQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
+	case "not_published":
+		rows, loadErr = api.loadNotPublishedQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
 	}
 	if loadErr != nil {
 		writeError(w, http.StatusInternalServerError, "list_quizzes_failed", "failed to list quizzes")
@@ -639,8 +639,8 @@ func (api *API) loadPublishedQuizzes(ctx context.Context, title string, ownerID 
 	return results, nil
 }
 
-func (api *API) loadActiveQuizzes(ctx context.Context, title string, ownerID int32, submittedOnly bool, submittedBy int32, limit, offset int32) ([]QuizDTO, error) {
-	rows, err := api.queries.ListActiveQuizzes(ctx, sqlc.ListActiveQuizzesParams{
+func (api *API) loadNotPublishedQuizzes(ctx context.Context, title string, ownerID int32, submittedOnly bool, submittedBy int32, limit, offset int32) ([]QuizDTO, error) {
+	rows, err := api.queries.ListNotPublishedQuizzes(ctx, sqlc.ListNotPublishedQuizzesParams{
 		Column1: title,
 		Column2: ownerID,
 		Column3: submittedOnly,

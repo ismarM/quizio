@@ -16,18 +16,27 @@ type AdminRule = {
 };
 
 const adminRules: AdminRule[] = [
-  { methods: ["POST"], pattern: /^\/api\/images\/?$/ },
-  { methods: ["DELETE"], pattern: /^\/api\/images\/?$/ },
   { methods: ["PUT", "DELETE"], pattern: /^\/api\/questions\/[^/]+\/?$/ },
   { methods: ["POST"], pattern: /^\/api\/quizzes\/[^/]+\/questions\/?$/ },
   { methods: ["POST"], pattern: /^\/api\/quizzes\/?$/ },
-  { methods: ["PUT", "DELETE"], pattern: /^\/api\/quizzes\/[^/]+\/?$/ },
+  { methods: ["GET", "PUT", "DELETE"], pattern: /^\/api\/quizzes\/[^/]+\/?$/ },
   { methods: ["PATCH"], pattern: /^\/api\/quizzes\/[^/]+\/(archive|publish)\/?$/ },
 ];
 
-function isAdminRoute(method: string, pathname: string) {
-  return adminRules.some((rule) =>
-    rule.methods.includes(method) && rule.pattern.test(pathname)
+function isAdminRoute(
+  method: string,
+  pathname: string,
+  searchParams: URLSearchParams
+) {
+  if (method === "GET" && /^\/api\/quizzes\/?$/.test(pathname)) {
+    const scope = searchParams.get("scope");
+    if (scope === "not_published" || scope === "archived") {
+      return true;
+    }
+  }
+
+  return adminRules.some(
+    (rule) => rule.methods.includes(method) && rule.pattern.test(pathname)
   );
 }
 
@@ -69,10 +78,10 @@ async function handleProxy(request: Request, { params }: RouteContext) {
 
   const { path = [] } = await params;
   const pathname = `/api/${path.join("/")}`;
-  const { search } = new URL(request.url);
+  const { search, searchParams } = new URL(request.url);
   const method = request.method.toUpperCase();
 
-  if (isAdminRoute(method, pathname) && !sessionUser.isAdmin) {
+  if (isAdminRoute(method, pathname, searchParams) && !sessionUser.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

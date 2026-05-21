@@ -165,8 +165,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "default": "active",
-                        "description": "published|active|archived",
+                        "default": "published",
+                        "description": "published|not_published|archived",
                         "name": "scope",
                         "in": "query"
                     },
@@ -186,12 +186,6 @@ const docTemplate = `{
                         "type": "boolean",
                         "description": "Only quizzes the user submitted",
                         "name": "submitted_only",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "User id for submitted_only filter",
-                        "name": "submitted_by",
                         "in": "query"
                     },
                     {
@@ -1028,6 +1022,44 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/lookup": {
+            "get": {
+                "description": "Resolve user ID and role by email (BFF only).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Lookup user by email",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }

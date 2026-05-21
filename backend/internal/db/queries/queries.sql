@@ -166,7 +166,7 @@ GROUP BY q.id_Quiz
 ORDER BY q.publish_date DESC
 LIMIT $5 OFFSET $6;
 
--- name: ListActiveQuizzes :many
+-- name: ListNotPublishedQuizzes :many
 SELECT q.id_Quiz,
 	q.title,
 	q.description,

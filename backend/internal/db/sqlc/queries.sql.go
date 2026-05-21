@@ -595,93 +595,6 @@ func (q *Queries) GetUserByID(ctx context.Context, idUser int32) (QuizioUser, er
 	return i, err
 }
 
-const listActiveQuizzes = `-- name: ListActiveQuizzes :many
-SELECT q.id_Quiz,
-	q.title,
-	q.description,
-	q.created_at,
-	q.publish_date,
-	q.tk_User,
-	q.is_archived,
-	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
-	COUNT(qq.id_Question)::int AS question_count
-FROM quizio."Quiz" q
-LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
-WHERE q.is_archived = FALSE
-	AND ($1 = '' OR q.title ILIKE '%' || $1 || '%')
-	AND ($2 = 0 OR q.tk_User = $2)
-	AND ($3 = FALSE OR EXISTS (
-		SELECT 1
-		FROM quizio."Attempt" a
-		WHERE a.tk_Quiz = q.id_Quiz
-			AND a.tk_User = $4
-	))
-GROUP BY q.id_Quiz
-ORDER BY q.created_at DESC
-LIMIT $5 OFFSET $6
-`
-
-type ListActiveQuizzesParams struct {
-	Column1 interface{} `json:"column_1"`
-	Column2 interface{} `json:"column_2"`
-	Column3 interface{} `json:"column_3"`
-	TkUser  int32       `json:"tk_user"`
-	Limit   int32       `json:"limit"`
-	Offset  int32       `json:"offset"`
-}
-
-type ListActiveQuizzesRow struct {
-	IDQuiz           int32          `json:"id_quiz"`
-	Title            string         `json:"title"`
-	Description      sql.NullString `json:"description"`
-	CreatedAt        time.Time      `json:"created_at"`
-	PublishDate      sql.NullTime   `json:"publish_date"`
-	TkUser           int32          `json:"tk_user"`
-	IsArchived       bool           `json:"is_archived"`
-	TimeLimitSeconds int32          `json:"time_limit_seconds"`
-	QuestionCount    int32          `json:"question_count"`
-}
-
-func (q *Queries) ListActiveQuizzes(ctx context.Context, arg ListActiveQuizzesParams) ([]ListActiveQuizzesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listActiveQuizzes,
-		arg.Column1,
-		arg.Column2,
-		arg.Column3,
-		arg.TkUser,
-		arg.Limit,
-		arg.Offset,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListActiveQuizzesRow
-	for rows.Next() {
-		var i ListActiveQuizzesRow
-		if err := rows.Scan(
-			&i.IDQuiz,
-			&i.Title,
-			&i.Description,
-			&i.CreatedAt,
-			&i.PublishDate,
-			&i.TkUser,
-			&i.IsArchived,
-			&i.TimeLimitSeconds,
-			&i.QuestionCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listAnswersByQuestion = `-- name: ListAnswersByQuestion :many
 SELECT id_Answer, title, tk_Question, is_correct
 FROM quizio."Answer"
@@ -863,6 +776,93 @@ func (q *Queries) ListFinishedAttemptsByUser(ctx context.Context, arg ListFinish
 			&i.TimeTaken,
 			&i.TkQuiz,
 			&i.TkUser,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listNotPublishedQuizzes = `-- name: ListNotPublishedQuizzes :many
+SELECT q.id_Quiz,
+	q.title,
+	q.description,
+	q.created_at,
+	q.publish_date,
+	q.tk_User,
+	q.is_archived,
+	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
+	COUNT(qq.id_Question)::int AS question_count
+FROM quizio."Quiz" q
+LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
+WHERE q.is_archived = FALSE
+	AND ($1 = '' OR q.title ILIKE '%' || $1 || '%')
+	AND ($2 = 0 OR q.tk_User = $2)
+	AND ($3 = FALSE OR EXISTS (
+		SELECT 1
+		FROM quizio."Attempt" a
+		WHERE a.tk_Quiz = q.id_Quiz
+			AND a.tk_User = $4
+	))
+GROUP BY q.id_Quiz
+ORDER BY q.created_at DESC
+LIMIT $5 OFFSET $6
+`
+
+type ListNotPublishedQuizzesParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	TkUser  int32       `json:"tk_user"`
+	Limit   int32       `json:"limit"`
+	Offset  int32       `json:"offset"`
+}
+
+type ListNotPublishedQuizzesRow struct {
+	IDQuiz           int32          `json:"id_quiz"`
+	Title            string         `json:"title"`
+	Description      sql.NullString `json:"description"`
+	CreatedAt        time.Time      `json:"created_at"`
+	PublishDate      sql.NullTime   `json:"publish_date"`
+	TkUser           int32          `json:"tk_user"`
+	IsArchived       bool           `json:"is_archived"`
+	TimeLimitSeconds int32          `json:"time_limit_seconds"`
+	QuestionCount    int32          `json:"question_count"`
+}
+
+func (q *Queries) ListNotPublishedQuizzes(ctx context.Context, arg ListNotPublishedQuizzesParams) ([]ListNotPublishedQuizzesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listNotPublishedQuizzes,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.TkUser,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListNotPublishedQuizzesRow
+	for rows.Next() {
+		var i ListNotPublishedQuizzesRow
+		if err := rows.Scan(
+			&i.IDQuiz,
+			&i.Title,
+			&i.Description,
+			&i.CreatedAt,
+			&i.PublishDate,
+			&i.TkUser,
+			&i.IsArchived,
+			&i.TimeLimitSeconds,
+			&i.QuestionCount,
 		); err != nil {
 			return nil, err
 		}

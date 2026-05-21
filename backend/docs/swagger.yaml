@@ -380,8 +380,8 @@ paths:
     get:
       description: List quizzes with filters and pagination.
       parameters:
-      - default: active
-        description: published|active|archived
+      - default: published
+        description: published|not_published|archived
         in: query
         name: scope
         type: string
@@ -397,10 +397,6 @@ paths:
         in: query
         name: submitted_only
         type: boolean
-      - description: User id for submitted_only filter
-        in: query
-        name: submitted_by
-        type: integer
       - description: Limit
         in: query
         name: limit
@@ -963,6 +959,31 @@ paths:
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
       summary: Create user
+      tags:
+      - users
+  /api/users/lookup:
+    get:
+      description: Resolve user ID and role by email (BFF only).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Lookup user by email
       tags:
       - users
   /api/users/me:
