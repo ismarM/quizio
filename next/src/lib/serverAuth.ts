@@ -11,6 +11,8 @@ export type SessionUser = {
   uid: string;
   email: string | null;
   displayName: string | null;
+  postgresId: number;
+  isAdmin: boolean;
 };
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -24,11 +26,19 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
     const userRecord = await adminAuth.getUser(decoded.uid);
+    const postgresId = Number((decoded as { postgresId?: unknown }).postgresId);
+    const isAdmin = Boolean((decoded as { isAdmin?: unknown }).isAdmin);
+
+    if (!Number.isFinite(postgresId)) {
+      return null;
+    }
 
     return {
       uid: userRecord.uid,
       email: userRecord.email ?? null,
       displayName: userRecord.displayName ?? null,
+      postgresId,
+      isAdmin,
     };
   } catch {
     return null;

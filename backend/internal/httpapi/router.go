@@ -29,6 +29,7 @@ func NewRouter(db *sql.DB) http.Handler {
 
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/", api.CreateUser)
+			r.Get("/lookup", api.GetUserByEmail)
 			r.Get("/me", api.GetUserInfo)
 			r.Patch("/me/display-name", api.UpdateDisplayName)
 			r.Patch("/me/role", api.UpdateRole)

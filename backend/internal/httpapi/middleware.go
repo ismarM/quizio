@@ -19,7 +19,8 @@ type UserClaims struct {
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Bypass authentication only for user registration
-		if r.URL.Path == "/api/users" && r.Method == http.MethodPost {
+		if (r.URL.Path == "/api/users" && r.Method == http.MethodPost) ||
+			(r.URL.Path == "/api/users/lookup" && r.Method == http.MethodGet) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -27,6 +28,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		userIDStr := r.Header.Get("X-User-Id")
 		userEmail := r.Header.Get("X-User-Email")
 		isAdminStr := r.Header.Get("X-User-IsAdmin")
+
+		if userEmail == "" {
+			writeError(w, http.StatusUnauthorized, "unauthorized", "missing X-User-Email header")
+			return
+		}
 
 		if userIDStr == "" {
 			writeError(w, http.StatusUnauthorized, "unauthorized", "missing X-User-Id header")

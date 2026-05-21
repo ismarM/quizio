@@ -4,7 +4,6 @@ import { getSessionUser } from "@/lib/serverAuth";
 
 export const runtime = "nodejs";
 
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? "tets@maaail.csssf").trim().toLowerCase();
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL;
 
 type RouteContext = {
@@ -73,19 +72,17 @@ async function handleProxy(request: Request, { params }: RouteContext) {
   const { search } = new URL(request.url);
   const method = request.method.toUpperCase();
 
-  if (isAdminRoute(method, pathname)) {
-    const normalizedEmail = sessionUser.email?.trim().toLowerCase() ?? "";
-    if (!normalizedEmail || normalizedEmail !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (isAdminRoute(method, pathname) && !sessionUser.isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body =
     method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
 
   const headers = sanitizeRequestHeaders(request.headers);
-  headers.set("x-user-email", sessionUser.email ?? "");
-  headers.set("x-user-uid", sessionUser.uid);
+  headers.set("X-User-Email", sessionUser.email ?? "");
+  headers.set("X-User-Id", sessionUser.postgresId.toString());
+  headers.set("X-User-IsAdmin", sessionUser.isAdmin ? "true" : "false");
 
   const targetUrl = buildTargetUrl(GO_BACKEND_URL, pathname, search);
 
