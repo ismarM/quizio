@@ -6,7 +6,6 @@ import { SESSION_COOKIE_NAME } from "@/lib/serverAuth";
 export const runtime = "nodejs";
 
 const SESSION_EXPIRES_IN_MS = 1000 * 60 * 60 * 24 * 5;
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? "tets@maaail.csssf").trim().toLowerCase();
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL;
 
 type BackendUser = {
@@ -35,7 +34,7 @@ async function fetchUserByEmail(email: string) {
   return payload?.user as BackendUser | null;
 }
 
-async function createUser(email: string, isAdmin: boolean) {
+async function createUser(email: string) {
   if (!GO_BACKEND_URL) {
     throw new Error("Missing GO_BACKEND_URL");
   }
@@ -45,7 +44,7 @@ async function createUser(email: string, isAdmin: boolean) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email,
-      is_admin: isAdmin,
+      is_admin: false,
       language: 0,
       theme: 0,
     }),
@@ -77,11 +76,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing email" }, { status: 400 });
     }
 
-    const isAdmin = normalizedEmail === ADMIN_EMAIL;
-
     let user = await fetchUserByEmail(normalizedEmail);
     if (!user) {
-      const created = await createUser(normalizedEmail, isAdmin);
+      const created = await createUser(normalizedEmail);
       user = created ?? (await fetchUserByEmail(normalizedEmail));
     }
 

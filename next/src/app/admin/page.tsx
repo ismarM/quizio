@@ -4,20 +4,17 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
-import { requireEmail } from "@/lib/serverAuth";
 
 export const dynamic = "force-dynamic";
 
-const adminEmail = (process.env.ADMIN_EMAIL ?? "tets@maaail.csssf ").trim();
 
 export default async function AdminPage() {
-  const user = await requireEmail(adminEmail);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-amber-50 to-emerald-100">
@@ -35,7 +32,7 @@ export default async function AdminPage() {
                 Restricted access confirmed.
               </h1>
               <p className="text-sm text-slate-600">
-                Email: {user.email ?? "(none)"}
+                Email: 
               </p>
             </div>
           </div>
@@ -52,7 +49,7 @@ export default async function AdminPage() {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               This page requires a Firebase Auth email that matches{" "}
-              <span className="font-semibold text-slate-800">{adminEmail}</span>.
+              <span className="font-semibold text-slate-800"></span>.
             </p>
           </CardContent>
         </Card>

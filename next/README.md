@@ -9,7 +9,6 @@ GO backend proxy
 
 - vse Go klice vodi cez /api/proxy/<go-path>
 - nastavi GO_BACKEND_URL (npr. http://localhost:8080)
-- admin-only endpointi se preverjajo z ADMIN_EMAIL (privzeto tets@maaail.csssf)
 
 za design se uporabla tailwind + shadcn
 uporabljaj čim manj "use client" razen kjer je smiselno
