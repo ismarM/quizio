@@ -118,8 +118,16 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch {
-    return NextResponse.json({ error: "Invalid ID token" }, { status: 401 });
+  } catch (error) {
+    console.error("SESSION ERROR:", error);
+
+    return NextResponse.json(
+      {
+        error: "Invalid ID token",
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 401 }
+    );
   }
 }
 

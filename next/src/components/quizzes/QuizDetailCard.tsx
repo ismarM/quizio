@@ -1,0 +1,193 @@
+import Link from "next/link";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Clock3,
+  ListChecks,
+  Play,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from "lucide-react";
+
+import type { QuizListItem } from "@/lib/mock-data";
+import { routes } from "@/lib/routes";
+
+type QuizDetailCardProps = {
+  quiz: QuizListItem;
+  isLoggedIn: boolean;
+};
+
+export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
+  return (
+    <section className="border-2 border-[#211F20] bg-[#FFFAF2]">
+      {/* COVER IMAGE / HERO VISUAL */}
+      <div className="relative border-b-2 border-[#211F20] bg-[#EBE4D8] p-5 md:p-7">
+        <div className="absolute right-6 top-6 h-3 w-3 rotate-45 bg-[#FF3C38]" />
+        <div className="absolute bottom-7 left-7 h-3 w-3 rotate-45 bg-[#006E5A]" />
+
+        <Link
+          href={routes.quizzes}
+          className="mb-5 inline-flex items-center gap-2 q-body text-[#211F20] hover:text-[#FF3C38]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to quizzes
+        </Link>
+
+        <div className="flex min-h-[260px] items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] md:min-h-[340px]">
+          <div className="text-center">
+            <div className="mx-auto flex h-28 w-28 items-center justify-center bg-[#DDECE8] md:h-36 md:w-36">
+              <ListChecks
+                className="h-16 w-16 text-[#006E5A] md:h-20 md:w-20"
+                strokeWidth={1.8}
+              />
+            </div>
+
+            <p className="mt-6 font-display text-[42px] leading-none text-[#211F20] md:text-[64px]">
+              {quiz.category}
+            </p>
+
+            <p className="mx-auto mt-3 max-w-md q-body text-[#211F20]">
+              Ready to test your knowledge? Start the quiz and beat the clock.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="grid gap-6 p-5 md:grid-cols-[1.15fr_0.85fr] md:p-7">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex bg-[#DDECE8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
+              {quiz.category}
+            </span>
+
+            <span className="q-badge-green">Published</span>
+          </div>
+
+          <h1 className="mt-4 font-display text-[58px] leading-[0.9] text-[#211F20] md:text-[92px]">
+            {quiz.title}
+          </h1>
+
+          <p className="mt-5 max-w-2xl text-[18px] leading-7 text-[#211F20]">
+            {quiz.description}
+          </p>
+
+          <div className="my-6 h-[2px] bg-[#211F20]" />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InfoBox
+              icon={<ListChecks className="h-5 w-5" />}
+              label="Questions"
+              value={`${quiz.questionCount}`}
+              suffix="questions"
+            />
+            <InfoBox
+              icon={<Clock3 className="h-5 w-5" />}
+              label="Time limit"
+              value={`${quiz.timeLimitMinutes}`}
+              suffix="minutes"
+            />
+            <InfoBox
+              icon={<Users className="h-5 w-5" />}
+              label="Players"
+              value={quiz.plays}
+              suffix="plays"
+            />
+            <InfoBox
+              icon={<CalendarDays className="h-5 w-5" />}
+              label="Opens"
+              value={quiz.opensAt}
+              suffix=""
+            />
+          </div>
+        </div>
+
+        {/* SIDE PANEL */}
+        <aside className="grid content-start gap-4">
+          <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-1 h-5 w-5 text-[#006E5A]" />
+              <div>
+                <p className="font-display text-2xl text-[#211F20]">
+                  Login required
+                </p>
+                <p className="q-body text-[#211F20]">
+                  You need to be signed in to start this quiz and save your
+                  result.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
+            <p className="font-display text-2xl text-[#211F20]">Quiz rules</p>
+
+            <div className="mt-3 grid gap-3 q-body text-[#211F20]">
+              <RuleItem text="Timer keeps running after the quiz starts." />
+              <RuleItem text="Answers are saved during the attempt." />
+              <RuleItem text="Results can appear on the leaderboard." />
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            <Link
+                href={isLoggedIn ? routes.attempt(quiz.id) : `${routes.login}?next=${routes.attempt(quiz.id)}`}
+                className="q-button q-button-primary w-full border-[#FF3C38] bg-[#FF3C38]"
+            >
+              <Play className="h-4 w-4" />
+              Start quiz
+            </Link>
+
+            <Link
+              href={routes.dashboard}
+              className="q-button q-button-secondary w-full"
+            >
+              <UserRound className="h-4 w-4" />
+              Dashboard
+            </Link>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function InfoBox({
+  icon,
+  label,
+  value,
+  suffix,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  suffix: string;
+}) {
+  return (
+    <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
+      <div className="mb-3 flex items-center gap-2 text-[#006E5A]">
+        {icon}
+        <span className="q-mini text-[#8F8F8F]">{label}</span>
+      </div>
+
+      <div className="flex items-end gap-2">
+        <p className="font-display text-[42px] leading-none text-[#211F20]">
+          {value}
+        </p>
+        {suffix ? (
+          <p className="pb-1 q-mini text-[#8F8F8F]">{suffix}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function RuleItem({ text }: { text: string }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="mt-2 h-2 w-2 rotate-45 bg-[#006E5A]" />
+      <span>{text}</span>
+    </div>
+  );
+}

@@ -2,6 +2,30 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: "Staatliches";
+  src: url("/fonts/Staatliches-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-VariableItalic.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -49,42 +73,53 @@
 }
 
 body {
-  font-family: var(--font-sans), sans-serif;
+  font-family: "Switzer", Arial, sans-serif;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #fffaf2;
+  --foreground: #211f20;
+
+  --card: #fffaf2;
+  --card-foreground: #211f20;
+
+  --popover: #fffaf2;
+  --popover-foreground: #211f20;
+
+  --primary: #211f20;
+  --primary-foreground: #fffaf2;
+
+  --secondary: #ebe4d8;
+  --secondary-foreground: #211f20;
+
+  --muted: #ebe4d8;
+  --muted-foreground: #8f8f8f;
+
+  --accent: #ff3c38;
+  --accent-foreground: #fffaf2;
+
+  --destructive: #ff3c38;
+
+  --border: #211f20;
+  --input: #8f8f8f;
+  --ring: #211f20;
+
+  --chart-1: #ff3c38;
+  --chart-2: #006e5a;
+  --chart-3: #ebe4d8;
+  --chart-4: #8f8f8f;
+  --chart-5: #211f20;
+
+  --radius: 0rem;
+
+  --sidebar: #ebe4d8;
+  --sidebar-foreground: #211f20;
+  --sidebar-primary: #211f20;
+  --sidebar-primary-foreground: #fffaf2;
+  --sidebar-accent: #ff3c38;
+  --sidebar-accent-foreground: #fffaf2;
+  --sidebar-border: #211f20;
+  --sidebar-ring: #211f20;
 }
 
 .dark {
@@ -130,5 +165,200 @@ body {
   }
   html {
     @apply font-sans;
+  }
+}
+
+.font-display,
+h1,
+h2,
+h3,
+h4,
+button {
+  font-family: "Staatliches", sans-serif;
+  letter-spacing: 0;
+}
+
+body {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: #ff3c38;
+  color: #fffaf2;
+}
+
+@layer components {
+  .q-page {
+    background: #fffaf2;
+    color: #211f20;
+  }
+
+  .q-container {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  @media (min-width: 768px) {
+    .q-container {
+      padding-inline: 40px;
+    }
+  }
+
+  .q-heading-xl {
+    font-family: "Staatliches", sans-serif;
+    font-size: 40px;
+    line-height: 100%;
+    letter-spacing: 0;
+  }
+
+  @media (min-width: 768px) {
+    .q-heading-xl {
+      font-size: 72px;
+    }
+  }
+
+  .q-heading-lg {
+    font-family: "Staatliches", sans-serif;
+    font-size: 40px;
+    line-height: 100%;
+    letter-spacing: 0;
+  }
+
+  .q-subheading {
+    font-family: "Staatliches", sans-serif;
+    font-size: 20px;
+    line-height: 120%;
+    letter-spacing: 0;
+  }
+
+  .q-body {
+    font-family: "Switzer", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0;
+  }
+
+  .q-mini {
+    font-family: "Switzer", Arial, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0;
+  }
+
+  .q-button {
+    display: inline-flex;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border-radius: 0;
+    font-family: "Staatliches", sans-serif;
+    font-size: 16px;
+    line-height: 120%;
+    letter-spacing: 0;
+    border: 2px solid #211f20;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+
+  .q-button-primary {
+    background: #211f20;
+    color: #fffaf2;
+  }
+
+  .q-button-primary:hover {
+    background: #ff3c38;
+    border-color: #ff3c38;
+    color: #fffaf2;
+  }
+
+  .q-button-secondary {
+    background: transparent;
+    color: #211f20;
+  }
+
+  .q-button-secondary:hover {
+    background: #211f20;
+    color: #fffaf2;
+  }
+
+  .q-button-disabled {
+    background: #8f8f8f;
+    border-color: #8f8f8f;
+    color: #fffaf2;
+    pointer-events: none;
+  }
+
+  .q-card {
+    border: 2px solid #211f20;
+    background: #fffaf2;
+    border-radius: 0;
+  }
+
+  .q-card-beige {
+    border: 2px solid #211f20;
+    background: #ebe4d8;
+    border-radius: 0;
+  }
+
+  .q-input {
+    height: 36px;
+    width: 100%;
+    border: 2px solid #211f20;
+    background: #fffaf2;
+    padding: 8px 12px;
+    border-radius: 0;
+    font-family: "Switzer", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    outline: none;
+  }
+
+  .q-input:focus {
+    border-color: #ff3c38;
+  }
+
+  .q-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #8f8f8f;
+    border-radius: 0;
+    accent-color: #211f20;
+  }
+
+  .q-divider {
+    height: 2px;
+    width: 100%;
+    background: #211f20;
+  }
+
+  .q-badge-red {
+    background: #ff3c38;
+    color: #fffaf2;
+    font-family: "Staatliches", sans-serif;
+    font-size: 16px;
+    line-height: 120%;
+    padding: 4px 8px;
+  }
+
+  .q-badge-green {
+    background: #006e5a;
+    color: #fffaf2;
+    font-family: "Staatliches", sans-serif;
+    font-size: 16px;
+    line-height: 120%;
+    padding: 4px 8px;
+  }
+
+  .q-badge-beige {
+    background: #ebe4d8;
+    color: #211f20;
+    font-family: "Staatliches", sans-serif;
+    font-size: 16px;
+    line-height: 120%;
+    padding: 4px 8px;
   }
 }
