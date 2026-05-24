@@ -23,7 +23,6 @@ jobs:
       FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      GO_BACKEND_URL: ${{ secrets.GO_BACKEND_URL }}
 
     defaults:
       run:
@@ -43,7 +42,7 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: npm run lintnpm run lint
 
       - name: Type-check
         run: npm run type-check

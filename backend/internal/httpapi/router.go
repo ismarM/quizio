@@ -11,12 +11,13 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func NewRouter(db *sql.DB) http.Handler {
+func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(15 * time.Second))
+	r.Use(IntegrityMiddleware(hmacSecret))
 
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),

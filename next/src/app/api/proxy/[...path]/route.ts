@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { applyHmacHeaders } from "@/lib/requestIntegrity";
 import { getSessionUser } from "@/lib/serverAuth";
 
 export const runtime = "nodejs";
 
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL;
+const HMAC_SECRET = process.env.HMAC_SECRET;
 
 type RouteContext = {
   params: Promise<{ path?: string[] }>;
@@ -71,6 +73,10 @@ async function handleProxy(request: Request, { params }: RouteContext) {
     );
   }
 
+  if (!HMAC_SECRET) {
+    return NextResponse.json({ error: "Missing HMAC_SECRET" }, { status: 500 });
+  }
+
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -94,12 +100,14 @@ async function handleProxy(request: Request, { params }: RouteContext) {
   headers.set("X-User-IsAdmin", sessionUser.isAdmin ? "true" : "false");
 
   const targetUrl = buildTargetUrl(GO_BACKEND_URL, pathname, search);
+  const requestPath = `${targetUrl.pathname}${targetUrl.search}`;
+  applyHmacHeaders(headers, requestPath, body, HMAC_SECRET);
 
   try {
     const upstream = await fetch(targetUrl, {
       method,
       headers,
-      body: body ? Buffer.from(body) : undefined,
+      body: body ?? undefined,
       cache: "no-store",
     });
 

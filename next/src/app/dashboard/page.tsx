@@ -45,7 +45,7 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle>Admin area</CardTitle>
               <CardDescription>
-                Requires email "tets@maaail.csssf".
+                Requires email &quot;tets@maaail.csssf&quot;.
               </CardDescription>
             </CardHeader>
             <CardContent>

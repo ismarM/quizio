@@ -1,9 +1,7 @@
 package httpapi
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -119,12 +117,4 @@ func isUniqueViolation(err error) bool {
 		return pgErr.Code == "23505"
 	}
 	return false
-}
-
-func generatePlaceholderURL() (string, error) {
-	buffer := make([]byte, 16)
-	if _, err := rand.Read(buffer); err != nil {
-		return "", err
-	}
-	return "/static/images/" + hex.EncodeToString(buffer) + ".png", nil
 }

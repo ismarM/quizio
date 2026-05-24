@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { adminAuth } from "@/lib/firebaseAdmin";
+import { applyHmacHeaders } from "@/lib/requestIntegrity";
 import { SESSION_COOKIE_NAME } from "@/lib/serverAuth";
 
 export const runtime = "nodejs";
 
 const SESSION_EXPIRES_IN_MS = 1000 * 60 * 60 * 24 * 5;
 const GO_BACKEND_URL = process.env.GO_BACKEND_URL;
+const HMAC_SECRET = process.env.HMAC_SECRET;
 
 type BackendUser = {
   id: number;
@@ -14,13 +16,16 @@ type BackendUser = {
   is_admin: boolean;
 };
 
-async function fetchUserByEmail(email: string) {
+async function fetchUserByEmail(email: string, hmacSecret: string) {
   if (!GO_BACKEND_URL) {
     throw new Error("Missing GO_BACKEND_URL");
   }
   const lookupUrl = new URL("/api/users/lookup", GO_BACKEND_URL);
+  const headers = new Headers({ "X-User-Email": email });
+  const requestPath = `${lookupUrl.pathname}${lookupUrl.search}`;
+  applyHmacHeaders(headers, requestPath, undefined, hmacSecret);
   const response = await fetch(lookupUrl, {
-    headers: { "X-User-Email": email },
+    headers,
     cache: "no-store",
   });
 
@@ -34,20 +39,24 @@ async function fetchUserByEmail(email: string) {
   return payload?.user as BackendUser | null;
 }
 
-async function createUser(email: string) {
+async function createUser(email: string, hmacSecret: string) {
   if (!GO_BACKEND_URL) {
     throw new Error("Missing GO_BACKEND_URL");
   }
   const createUrl = new URL("/api/users", GO_BACKEND_URL);
+  const body = JSON.stringify({
+    email,
+    is_admin: false,
+    language: 0,
+    theme: 0,
+  });
+  const headers = new Headers({ "Content-Type": "application/json" });
+  const requestPath = `${createUrl.pathname}${createUrl.search}`;
+  applyHmacHeaders(headers, requestPath, body, hmacSecret);
   const response = await fetch(createUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email,
-      is_admin: false,
-      language: 0,
-      theme: 0,
-    }),
+    headers,
+    body,
     cache: "no-store",
   });
 
@@ -69,6 +78,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing idToken" }, { status: 400 });
   }
 
+  if (!HMAC_SECRET) {
+    return NextResponse.json({ error: "Missing HMAC_SECRET" }, { status: 500 });
+  }
+
   try {
     const decoded = await adminAuth.verifyIdToken(idToken);
     const normalizedEmail = decoded.email?.trim().toLowerCase();
@@ -76,10 +89,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing email" }, { status: 400 });
     }
 
-    let user = await fetchUserByEmail(normalizedEmail);
+    let user = await fetchUserByEmail(normalizedEmail, HMAC_SECRET);
     if (!user) {
-      const created = await createUser(normalizedEmail);
-      user = created ?? (await fetchUserByEmail(normalizedEmail));
+      const created = await createUser(normalizedEmail, HMAC_SECRET);
+      user = created ?? (await fetchUserByEmail(normalizedEmail, HMAC_SECRET));
     }
 
     if (!user?.id) {

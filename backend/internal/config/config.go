@@ -18,6 +18,7 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBSSLMode  string
+	HMACSecret string
 }
 
 func Load() (Config, error) {
@@ -63,6 +64,11 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	hmacSecret, err := requiredEnv("HMAC_SECRET")
+	if err != nil {
+		return Config{}, err
+	}
+
 	return Config{
 		ServerPort: serverPort,
 		DBHost:     dbHost,
@@ -71,6 +77,7 @@ func Load() (Config, error) {
 		DBUser:     dbUser,
 		DBPassword: dbPassword,
 		DBSSLMode:  dbSSLMode,
+		HMACSecret: hmacSecret,
 	}, nil
 }
 

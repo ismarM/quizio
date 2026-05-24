@@ -140,7 +140,7 @@ export default function LoginForm({ reason }: LoginFormProps) {
           </h1>
           <p className="text-lg text-slate-600">
             Use email and password or Google to continue. Admin access requires
-            the email "tets@maaail.csssf".
+            the email &quot;tets@maaail.csssf&quot;.
           </p>
           <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur">
             <CardHeader className="pb-3">
@@ -170,7 +170,7 @@ export default function LoginForm({ reason }: LoginFormProps) {
               </CardTitle>
               <CardDescription>
                 {isRegisterMode
-                  ? "Sign up with email and password to start." 
+                  ? "Sign up with email and password to start."
                   : "Use the same credentials you created in Firebase Auth."}
               </CardDescription>
             </div>
