@@ -294,12 +294,11 @@ func (api *API) GetOpenSessions(w http.ResponseWriter, r *http.Request) {
 
 	response := OpenSessionsResponse{Attempts: make([]AttemptSessionDTO, 0, len(rows))}
 	for _, row := range rows {
-		attempt := AttemptDTO{
-			ID:               row.IDAttempt,
-			StartTime:        row.StartTime,
-			TimeTakenSeconds: nullTimeToSeconds(row.TimeTaken),
-			QuizID:           row.TkQuiz,
-			UserID:           row.TkUser,
+		attempt := OpenAttemptDTO{
+			ID:        row.IDAttempt,
+			StartTime: row.StartTime,
+			QuizID:    row.TkQuiz,
+			UserID:    row.TkUser,
 		}
 		response.Attempts = append(response.Attempts, AttemptSessionDTO{
 			Attempt:          attempt,
@@ -360,15 +359,61 @@ func (api *API) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := make([]AttemptResultResponse, 0, len(rows))
+	results := make([]SubmissionSummary, 0, len(rows))
 	for _, row := range rows {
-		attempt := attemptDTOFromAttempt(row)
-		result, err := api.buildAttemptResult(r.Context(), attempt, row.TkQuiz, true)
+		// load quiz title
+		quizRow, err := api.queries.GetQuizByID(r.Context(), row.TkQuiz)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, "build_results_failed", "failed to build attempt result")
+			writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
 			return
 		}
-		results = append(results, result)
+
+		// load questions with correct flags
+		questions, err := api.loadQuizQuestions(r.Context(), row.TkQuiz, true)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "load_questions_failed", "failed to load quiz questions")
+			return
+		}
+
+		// build maps for quick lookup
+		questionValue := make(map[int32]float64, len(questions))
+		answerIsCorrect := make(map[int32]bool)
+		for _, q := range questions {
+			questionValue[q.ID] = q.Value
+			for _, a := range q.Answers {
+				answerIsCorrect[a.ID] = a.IsCorrect
+			}
+		}
+
+		// load attempt responses
+		responses, err := api.queries.ListAttemptQuestions(r.Context(), row.IDAttempt)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "list_responses_failed", "failed to load attempt responses")
+			return
+		}
+
+		// calculate scores
+		var maxPoints float64
+		for _, q := range questions {
+			maxPoints += q.Value
+		}
+		var achieved float64
+		for _, resp := range responses {
+			if correct, ok := answerIsCorrect[resp.TkAnswer]; ok && correct {
+				if val, ok := questionValue[resp.TkQuestion]; ok {
+					achieved += val
+				}
+			}
+		}
+
+		results = append(results, SubmissionSummary{
+			QuizID:           row.TkQuiz,
+			QuizTitle:        quizRow.Title,
+			StartTime:        row.StartTime,
+			TimeTakenSeconds: nullTimeToSeconds(row.TimeTaken),
+			MaxPoints:        maxPoints,
+			AchievedPoints:   achieved,
+		})
 	}
 
 	writeJSON(w, http.StatusOK, SubmissionsResponse{

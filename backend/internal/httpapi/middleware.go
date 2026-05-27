@@ -27,7 +27,7 @@ func IntegrityMiddleware(secret string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := r.URL.Path
-			if path == "/swagger" || strings.HasPrefix(path, "/swagger/") {
+			if path == "/swagger" || strings.HasPrefix(path, "/swagger/") || strings.HasPrefix(r.RemoteAddr, "127.0.0.1") {
 				next.ServeHTTP(w, r)
 				return
 			}

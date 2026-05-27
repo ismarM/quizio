@@ -15,6 +15,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/categories": {
+            "get": {
+                "description": "Fetch all available quiz categories.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Fetch all categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.CategoryListResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/questions/{questionId}": {
             "put": {
                 "description": "Update a question and optionally its answers (quiz not published).",
@@ -186,6 +218,12 @@ const docTemplate = `{
                         "type": "boolean",
                         "description": "Only quizzes the user submitted",
                         "name": "submitted_only",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by category name (use 'category')",
+                        "name": "sort",
                         "in": "query"
                     },
                     {
@@ -630,7 +668,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/httpapi.AttemptDTO"
+                            "$ref": "#/definitions/httpapi.AttemptResultResponse"
                         }
                     },
                     "400": {
@@ -810,6 +848,65 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/quizzes/{quizId}/leaderboard": {
+            "get": {
+                "description": "Get the top performances of users for a quiz (admin only).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quizzes"
+                ],
+                "summary": "Get leaderboard for a quiz",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Quiz ID",
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.LeaderboardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }
@@ -1482,10 +1579,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "attempt": {
-                    "$ref": "#/definitions/httpapi.AttemptDTO"
+                    "$ref": "#/definitions/httpapi.OpenAttemptDTO"
                 },
                 "time_limit_seconds": {
                     "type": "integer"
+                }
+            }
+        },
+        "httpapi.CategoryDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpapi.CategoryListResponse": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpapi.CategoryDTO"
+                    }
                 }
             }
         },
@@ -1509,7 +1628,13 @@ const docTemplate = `{
         "httpapi.CreateQuizRequest": {
             "type": "object",
             "properties": {
+                "category_id": {
+                    "type": "integer"
+                },
                 "description": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 },
                 "owner_id": {
@@ -1560,6 +1685,60 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "httpapi.LeaderboardEntryDTO": {
+            "type": "object",
+            "properties": {
+                "achieved_points": {
+                    "type": "number"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "max_points": {
+                    "type": "number"
+                },
+                "time_taken_seconds": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "httpapi.LeaderboardResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpapi.LeaderboardEntryDTO"
+                    }
+                },
+                "quiz_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "httpapi.OpenAttemptDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "quiz_id": {
+                    "type": "integer"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1625,6 +1804,12 @@ const docTemplate = `{
         "httpapi.QuizDTO": {
             "type": "object",
             "properties": {
+                "category_id": {
+                    "type": "integer"
+                },
+                "category_name": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1633,6 +1818,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
                 },
                 "is_archived": {
                     "type": "boolean"
@@ -1693,6 +1881,29 @@ const docTemplate = `{
                 }
             }
         },
+        "httpapi.SubmissionSummary": {
+            "type": "object",
+            "properties": {
+                "achieved_points": {
+                    "type": "number"
+                },
+                "max_points": {
+                    "type": "number"
+                },
+                "quiz_id": {
+                    "type": "integer"
+                },
+                "quiz_title": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "time_taken_seconds": {
+                    "type": "integer"
+                }
+            }
+        },
         "httpapi.SubmissionsResponse": {
             "type": "object",
             "properties": {
@@ -1705,7 +1916,7 @@ const docTemplate = `{
                 "results": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/httpapi.AttemptResultResponse"
+                        "$ref": "#/definitions/httpapi.SubmissionSummary"
                     }
                 }
             }
@@ -1760,7 +1971,13 @@ const docTemplate = `{
         "httpapi.UpdateQuizRequest": {
             "type": "object",
             "properties": {
+                "category_id": {
+                    "type": "integer"
+                },
                 "description": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 },
                 "time_limit_seconds": {
@@ -1813,14 +2030,38 @@ const docTemplate = `{
                 }
             }
         }
-    }
+    },
+    "securityDefinitions": {
+        "XUserEmail": {
+            "type": "apiKey",
+            "name": "X-User-Email",
+            "in": "header"
+        },
+        "XUserId": {
+            "type": "apiKey",
+            "name": "X-User-Id",
+            "in": "header"
+        },
+        "XUserIsAdmin": {
+            "type": "apiKey",
+            "name": "X-User-IsAdmin",
+            "in": "header"
+        }
+    },
+    "security": [
+        {
+            "XUserEmail": [],
+            "XUserId": [],
+            "XUserIsAdmin": []
+        }
+    ]
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.1.0",
 	Host:             "",
-	BasePath:         "/",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Quizio API",
 	Description:      "REST API for Quizio.",

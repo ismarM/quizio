@@ -1,3 +1,21 @@
+// @title Quizio API
+// @version 0.1.0
+// @description REST API for Quizio.
+//
+// @security XUserEmail && XUserId && XUserIsAdmin
+//
+// @securityDefinitions.apikey XUserEmail
+// @in header
+// @name X-User-Email
+//
+// @securityDefinitions.apikey XUserId
+// @in header
+// @name X-User-Id
+//
+// @securityDefinitions.apikey XUserIsAdmin
+// @in header
+// @name X-User-IsAdmin
+// @BasePath /
 package main
 
 import (
@@ -13,10 +31,6 @@ import (
 	"github.com/ismarM/quizio/internal/httpapi"
 )
 
-// @title Quizio API
-// @version 0.1.0
-// @description REST API for Quizio.
-// @BasePath /
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

@@ -16,7 +16,7 @@ import (
 // @Tags attempts
 // @Produce json
 // @Param quizId path int true "Quiz ID"
-// @Success 201 {object} AttemptDTO
+// @Success 201 {object} AttemptResultResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
@@ -63,7 +63,14 @@ func (api *API) StartAttempt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, attemptDTOFromAttempt(attempt))
+	attemptDTO := attemptDTOFromAttempt(attempt)
+	result, err := api.buildAttemptResult(r.Context(), attemptDTO, quizID, false)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "build_results_failed", "failed to build attempt result")
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, result)
 }
 
 // UpdateAttemptStatus godoc
@@ -125,25 +132,40 @@ func (api *API) UpdateAttemptStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	questionQuizIDs := make(map[int32]int32)
+	answerIDsByQuestion := make(map[int32]map[int32]struct{})
 	for _, update := range req.Updates {
 		if update.QuestionID <= 0 || update.AnswerID <= 0 {
 			writeError(w, http.StatusBadRequest, "invalid_payload", "question_id and answer_id are required")
 			return
 		}
-		questionQuizID, err := api.queries.GetQuestionQuizID(r.Context(), update.QuestionID)
-		if err != nil {
-			writeError(w, http.StatusBadRequest, "invalid_payload", "question does not belong to quiz")
-			return
+		questionQuizID, ok := questionQuizIDs[update.QuestionID]
+		if !ok {
+			questionQuizID, err = api.queries.GetQuestionQuizID(r.Context(), update.QuestionID)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "invalid_payload", "question does not belong to quiz")
+				return
+			}
+			questionQuizIDs[update.QuestionID] = questionQuizID
 		}
 		if questionQuizID != quizID {
 			writeError(w, http.StatusBadRequest, "invalid_payload", "question does not belong to quiz")
 			return
 		}
-		_, err = api.queries.GetAnswerForQuestion(r.Context(), sqlc.GetAnswerForQuestionParams{
-			IDAnswer:   update.AnswerID,
-			TkQuestion: update.QuestionID,
-		})
-		if err != nil {
+		answerIDs, ok := answerIDsByQuestion[update.QuestionID]
+		if !ok {
+			answerRows, err := api.queries.ListAnswersByQuestion(r.Context(), update.QuestionID)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "load_answers_failed", "failed to load question answers")
+				return
+			}
+			answerIDs = make(map[int32]struct{}, len(answerRows))
+			for _, answer := range answerRows {
+				answerIDs[answer.IDAnswer] = struct{}{}
+			}
+			answerIDsByQuestion[update.QuestionID] = answerIDs
+		}
+		if _, exists := answerIDs[update.AnswerID]; !exists {
 			writeError(w, http.StatusBadRequest, "invalid_payload", "answer does not belong to question")
 			return
 		}
@@ -223,14 +245,6 @@ func (api *API) GetAttemptStatus(w http.ResponseWriter, r *http.Request) {
 		attempt := attemptFromRow(row)
 		if err == nil {
 			attempt = attemptDTOFromAttempt(finalized)
-		} else if errors.Is(err, sql.ErrNoRows) {
-			latest, err := api.queries.GetAttemptByUserQuiz(r.Context(), sqlc.GetAttemptByUserQuizParams{
-				TkQuiz: quizID,
-				TkUser: userID,
-			})
-			if err == nil {
-				attempt = attemptDTOFromAttempt(latest)
-			}
 		}
 		result, err := api.buildAttemptResult(r.Context(), attempt, quizID, true)
 		if err != nil {
@@ -275,22 +289,26 @@ func (api *API) FinishAttempt(w http.ResponseWriter, r *http.Request) {
 	}
 	userID := claims.ID
 
-	attempt, err := api.queries.GetAttemptByUserQuiz(r.Context(), sqlc.GetAttemptByUserQuizParams{
-		TkQuiz: quizID,
-		TkUser: userID,
-	})
+	attempts, err := api.queries.ListAttemptsByUser(r.Context(), userID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "not_found", "attempt not found")
-			return
-		}
 		writeError(w, http.StatusInternalServerError, "get_attempt_failed", "failed to load attempt")
 		return
 	}
+	var attemptRow *sqlc.QuizioAttempt
+	for i := range attempts {
+		if attempts[i].TkQuiz == quizID {
+			attemptRow = &attempts[i]
+			break
+		}
+	}
+	if attemptRow == nil {
+		writeError(w, http.StatusNotFound, "not_found", "attempt not found")
+		return
+	}
 
-	attemptDTO := attemptDTOFromAttempt(attempt)
-	if !attempt.TimeTaken.Valid {
-		finalized, err := api.queries.FinalizeAttempt(r.Context(), attempt.IDAttempt)
+	attemptDTO := attemptDTOFromAttempt(*attemptRow)
+	if !attemptRow.TimeTaken.Valid {
+		finalized, err := api.queries.FinalizeAttempt(r.Context(), attemptRow.IDAttempt)
 		if err != nil {
 			if !errors.Is(err, sql.ErrNoRows) {
 				writeError(w, http.StatusInternalServerError, "finalize_attempt_failed", "failed to finalize attempt")
@@ -298,15 +316,6 @@ func (api *API) FinishAttempt(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			attemptDTO = attemptDTOFromAttempt(finalized)
-		}
-		if errors.Is(err, sql.ErrNoRows) {
-			latest, err := api.queries.GetAttemptByUserQuiz(r.Context(), sqlc.GetAttemptByUserQuizParams{
-				TkQuiz: quizID,
-				TkUser: userID,
-			})
-			if err == nil {
-				attemptDTO = attemptDTOFromAttempt(latest)
-			}
 		}
 	}
 

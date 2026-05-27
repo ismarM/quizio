@@ -30,6 +30,11 @@ type QuizioAttemptQuestion struct {
 	TkAnswer   int32 `json:"tk_answer"`
 }
 
+type QuizioCategory struct {
+	IDCategory int32  `json:"id_category"`
+	Name       string `json:"name"`
+}
+
 type QuizioQuestion struct {
 	IDQuestion int32   `json:"id_question"`
 	Title      string  `json:"title"`
@@ -46,6 +51,8 @@ type QuizioQuiz struct {
 	PublishDate sql.NullTime   `json:"publish_date"`
 	TkUser      int32          `json:"tk_user"`
 	IsArchived  bool           `json:"is_archived"`
+	TkCategory  sql.NullInt32  `json:"tk_category"`
+	ImageUrl    sql.NullString `json:"image_url"`
 }
 
 type QuizioUser struct {

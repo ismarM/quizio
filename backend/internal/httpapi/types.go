@@ -41,12 +41,16 @@ type CreateQuizRequest struct {
 	Description      *string         `json:"description,omitempty"`
 	TimeLimitSeconds int32           `json:"time_limit_seconds"`
 	Questions        []QuestionInput `json:"questions"`
+	CategoryID       *int32          `json:"category_id,omitempty"`
+	ImageURL         *string         `json:"image_url,omitempty"`
 }
 
 type UpdateQuizRequest struct {
 	Title            string  `json:"title"`
 	Description      *string `json:"description,omitempty"`
 	TimeLimitSeconds int32   `json:"time_limit_seconds"`
+	CategoryID       *int32  `json:"category_id,omitempty"`
+	ImageURL         *string `json:"image_url,omitempty"`
 }
 
 type PublishQuizRequest struct {
@@ -111,6 +115,9 @@ type QuizDTO struct {
 	IsArchived       bool       `json:"is_archived"`
 	TimeLimitSeconds int32      `json:"time_limit_seconds"`
 	QuestionCount    *int32     `json:"question_count,omitempty"`
+	CategoryID       *int32     `json:"category_id,omitempty"`
+	ImageURL         *string    `json:"image_url,omitempty"`
+	CategoryName     *string    `json:"category_name,omitempty"`
 }
 
 type QuizResponse struct {
@@ -150,6 +157,13 @@ type AttemptDTO struct {
 	UserID           int32     `json:"user_id"`
 }
 
+type OpenAttemptDTO struct {
+	ID        int32     `json:"id"`
+	StartTime time.Time `json:"start_time"`
+	QuizID    int32     `json:"quiz_id"`
+	UserID    int32     `json:"user_id"`
+}
+
 type AttemptQuestionDTO struct {
 	QuestionID int32 `json:"question_id"`
 	AnswerID   int32 `json:"answer_id"`
@@ -172,16 +186,48 @@ type OpenSessionsResponse struct {
 }
 
 type AttemptSessionDTO struct {
-	Attempt          AttemptDTO `json:"attempt"`
-	TimeLimitSeconds int32      `json:"time_limit_seconds"`
+	Attempt          OpenAttemptDTO `json:"attempt"`
+	TimeLimitSeconds int32          `json:"time_limit_seconds"`
 }
 
 type SubmissionsResponse struct {
-	Results []AttemptResultResponse `json:"results"`
-	Limit   int32                   `json:"limit"`
-	Offset  int32                   `json:"offset"`
+	Results []SubmissionSummary `json:"results"`
+	Limit   int32               `json:"limit"`
+	Offset  int32               `json:"offset"`
+}
+
+type SubmissionSummary struct {
+	QuizID           int32     `json:"quiz_id"`
+	QuizTitle        string    `json:"quiz_title"`
+	StartTime        time.Time `json:"start_time"`
+	TimeTakenSeconds *int32    `json:"time_taken_seconds,omitempty"`
+	MaxPoints        float64   `json:"max_points"`
+	AchievedPoints   float64   `json:"achieved_points"`
 }
 
 type ImageResponse struct {
 	URL string `json:"url"`
+}
+
+type CategoryDTO struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+type CategoryListResponse struct {
+	Categories []CategoryDTO `json:"categories"`
+}
+
+type LeaderboardEntryDTO struct {
+	UserID           int32   `json:"user_id"`
+	Email            string  `json:"email"`
+	DisplayName      *string `json:"display_name,omitempty"`
+	AchievedPoints   float64 `json:"achieved_points"`
+	MaxPoints        float64 `json:"max_points"`
+	TimeTakenSeconds *int32  `json:"time_taken_seconds,omitempty"`
+}
+
+type LeaderboardResponse struct {
+	QuizID  int32                 `json:"quiz_id"`
+	Entries []LeaderboardEntryDTO `json:"entries"`
 }

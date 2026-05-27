@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/ismarM/quizio/internal/db/sqlc"
@@ -70,6 +71,8 @@ func (api *API) CreateQuiz(w http.ResponseWriter, r *http.Request) {
 		Secs:        float64(req.TimeLimitSeconds),
 		Description: toNullString(req.Description),
 		TkUser:      claims.ID,
+		TkCategory:  toNullInt32(req.CategoryID),
+		ImageUrl:    toNullString(req.ImageURL),
 	})
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -146,6 +149,8 @@ func (api *API) CreateQuiz(w http.ResponseWriter, r *http.Request) {
 		IsArchived:       quizRow.IsArchived,
 		TimeLimitSeconds: quizRow.TimeLimitSeconds,
 		QuestionCount:    int32Ptr(int32(len(questions))),
+		CategoryID:       nullInt32Ptr(quizRow.TkCategory),
+		ImageURL:         nullStringPtr(quizRow.ImageUrl),
 	}
 
 	writeJSON(w, http.StatusCreated, QuizFullResponse{
@@ -225,6 +230,8 @@ func (api *API) UpdateQuiz(w http.ResponseWriter, r *http.Request) {
 		Title:       req.Title,
 		Description: toNullString(req.Description),
 		Secs:        float64(req.TimeLimitSeconds),
+		TkCategory:  toNullInt32(req.CategoryID),
+		ImageUrl:    toNullString(req.ImageURL),
 	})
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -257,7 +264,7 @@ func (api *API) GetQuizInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err := api.queries.GetQuizInfo(r.Context(), quizID)
+	row, err := api.queries.GetQuizByID(r.Context(), quizID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
@@ -272,7 +279,7 @@ func (api *API) GetQuizInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	quizDTO := quizFromInfoRow(row)
+	quizDTO := quizFromQuizRow(row, row.QuestionCount)
 	writeJSON(w, http.StatusOK, QuizResponse{Quiz: quizDTO})
 }
 
@@ -519,7 +526,6 @@ func (api *API) DeleteQuiz(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, nil)
 }
 
-// ListPublishedQuizzes godoc
 // ListQuizzes godoc
 // @Summary List quizzes
 // @Description List quizzes with filters and pagination.
@@ -529,6 +535,7 @@ func (api *API) DeleteQuiz(w http.ResponseWriter, r *http.Request) {
 // @Param title query string false "Filter by title"
 // @Param owner_id query int false "Filter by owner id"
 // @Param submitted_only query bool false "Only quizzes the user submitted"
+// @Param sort query string false "Sort by category name (use 'category')"
 // @Param limit query int false "Limit"
 // @Param offset query int false "Offset"
 // @Success 200 {object} QuizListResponse
@@ -578,6 +585,7 @@ func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 	if submittedOnly {
 		submittedBy = claims.ID
 	}
+	sortVal := r.URL.Query().Get("sort")
 
 	limit, err := parseQueryInt32(r, "limit", defaultLimit)
 	if err != nil {
@@ -595,19 +603,7 @@ func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var (
-		rows    []QuizDTO
-		loadErr error
-	)
-
-	switch scope {
-	case "published":
-		rows, loadErr = api.loadPublishedQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
-	case "archived":
-		rows, loadErr = api.loadArchivedQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
-	case "not_published":
-		rows, loadErr = api.loadNotPublishedQuizzes(r.Context(), title, ownerID, submittedOnly, submittedBy, limit, offset)
-	}
+	rows, loadErr := api.loadQuizzes(r.Context(), scope, title, ownerID, submittedOnly, submittedBy, sortVal, limit, offset)
 	if loadErr != nil {
 		writeError(w, http.StatusInternalServerError, "list_quizzes_failed", "failed to list quizzes")
 		return
@@ -620,12 +616,14 @@ func (api *API) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (api *API) loadPublishedQuizzes(ctx context.Context, title string, ownerID int32, submittedOnly bool, submittedBy int32, limit, offset int32) ([]QuizDTO, error) {
-	rows, err := api.queries.ListPublishedQuizzes(ctx, sqlc.ListPublishedQuizzesParams{
-		Column1: title,
-		Column2: ownerID,
-		Column3: submittedOnly,
+func (api *API) loadQuizzes(ctx context.Context, scope, title string, ownerID int32, submittedOnly bool, submittedBy int32, sortBy string, limit, offset int32) ([]QuizDTO, error) {
+	rows, err := api.queries.ListQuizzes(ctx, sqlc.ListQuizzesParams{
+		Column1: scope,
+		Column2: title,
+		Column3: ownerID,
+		Column4: submittedOnly,
 		TkUser:  submittedBy,
+		Column6: sortBy,
 		Limit:   limit,
 		Offset:  offset,
 	})
@@ -634,62 +632,22 @@ func (api *API) loadPublishedQuizzes(ctx context.Context, title string, ownerID 
 	}
 	results := make([]QuizDTO, 0, len(rows))
 	for _, row := range rows {
-		results = append(results, quizFromListRow(row.IDQuiz, row.Title, row.Description, row.CreatedAt, row.PublishDate, row.TkUser, row.IsArchived, row.TimeLimitSeconds, row.QuestionCount))
+		results = append(results, quizFromListRow(
+			row.IDQuiz,
+			row.Title,
+			row.Description,
+			row.CreatedAt,
+			row.PublishDate,
+			row.TkUser,
+			row.IsArchived,
+			row.TimeLimitSeconds,
+			row.QuestionCount,
+			row.TkCategory,
+			row.ImageUrl,
+			row.CategoryName,
+		))
 	}
 	return results, nil
-}
-
-func (api *API) loadNotPublishedQuizzes(ctx context.Context, title string, ownerID int32, submittedOnly bool, submittedBy int32, limit, offset int32) ([]QuizDTO, error) {
-	rows, err := api.queries.ListNotPublishedQuizzes(ctx, sqlc.ListNotPublishedQuizzesParams{
-		Column1: title,
-		Column2: ownerID,
-		Column3: submittedOnly,
-		TkUser:  submittedBy,
-		Limit:   limit,
-		Offset:  offset,
-	})
-	if err != nil {
-		return nil, err
-	}
-	results := make([]QuizDTO, 0, len(rows))
-	for _, row := range rows {
-		results = append(results, quizFromListRow(row.IDQuiz, row.Title, row.Description, row.CreatedAt, row.PublishDate, row.TkUser, row.IsArchived, row.TimeLimitSeconds, row.QuestionCount))
-	}
-	return results, nil
-}
-
-func (api *API) loadArchivedQuizzes(ctx context.Context, title string, ownerID int32, submittedOnly bool, submittedBy int32, limit, offset int32) ([]QuizDTO, error) {
-	rows, err := api.queries.ListArchivedQuizzes(ctx, sqlc.ListArchivedQuizzesParams{
-		Column1: title,
-		Column2: ownerID,
-		Column3: submittedOnly,
-		TkUser:  submittedBy,
-		Limit:   limit,
-		Offset:  offset,
-	})
-	if err != nil {
-		return nil, err
-	}
-	results := make([]QuizDTO, 0, len(rows))
-	for _, row := range rows {
-		results = append(results, quizFromListRow(row.IDQuiz, row.Title, row.Description, row.CreatedAt, row.PublishDate, row.TkUser, row.IsArchived, row.TimeLimitSeconds, row.QuestionCount))
-	}
-	return results, nil
-}
-
-func quizFromInfoRow(row sqlc.GetQuizInfoRow) QuizDTO {
-	count := row.QuestionCount
-	return QuizDTO{
-		ID:               row.IDQuiz,
-		Title:            row.Title,
-		Description:      nullStringPtr(row.Description),
-		CreatedAt:        row.CreatedAt,
-		PublishDate:      nullTimePtr(row.PublishDate),
-		OwnerID:          row.TkUser,
-		IsArchived:       row.IsArchived,
-		TimeLimitSeconds: row.TimeLimitSeconds,
-		QuestionCount:    int32Ptr(count),
-	}
 }
 
 func quizFromQuizRow(row sqlc.GetQuizByIDRow, questionCount int32) QuizDTO {
@@ -703,6 +661,9 @@ func quizFromQuizRow(row sqlc.GetQuizByIDRow, questionCount int32) QuizDTO {
 		IsArchived:       row.IsArchived,
 		TimeLimitSeconds: row.TimeLimitSeconds,
 		QuestionCount:    int32Ptr(questionCount),
+		CategoryID:       nullInt32Ptr(row.TkCategory),
+		ImageURL:         nullStringPtr(row.ImageUrl),
+		CategoryName:     nullStringPtr(row.CategoryName),
 	}
 }
 
@@ -716,6 +677,8 @@ func quizFromUpdateRow(row sqlc.UpdateQuizRow) QuizDTO {
 		OwnerID:          row.TkUser,
 		IsArchived:       row.IsArchived,
 		TimeLimitSeconds: row.TimeLimitSeconds,
+		CategoryID:       nullInt32Ptr(row.TkCategory),
+		ImageURL:         nullStringPtr(row.ImageUrl),
 	}
 }
 
@@ -729,6 +692,8 @@ func quizFromPublishRow(row sqlc.SetQuizPublishDateRow) QuizDTO {
 		OwnerID:          row.TkUser,
 		IsArchived:       row.IsArchived,
 		TimeLimitSeconds: row.TimeLimitSeconds,
+		CategoryID:       nullInt32Ptr(row.TkCategory),
+		ImageURL:         nullStringPtr(row.ImageUrl),
 	}
 }
 
@@ -742,10 +707,12 @@ func quizFromArchiveRow(row sqlc.ArchiveQuizRow) QuizDTO {
 		OwnerID:          row.TkUser,
 		IsArchived:       row.IsArchived,
 		TimeLimitSeconds: row.TimeLimitSeconds,
+		CategoryID:       nullInt32Ptr(row.TkCategory),
+		ImageURL:         nullStringPtr(row.ImageUrl),
 	}
 }
 
-func quizFromListRow(id int32, title string, description sql.NullString, createdAt time.Time, publishDate sql.NullTime, ownerID int32, isArchived bool, timeLimitSeconds int32, questionCount int32) QuizDTO {
+func quizFromListRow(id int32, title string, description sql.NullString, createdAt time.Time, publishDate sql.NullTime, ownerID int32, isArchived bool, timeLimitSeconds int32, questionCount int32, categoryID sql.NullInt32, imageURL sql.NullString, categoryName sql.NullString) QuizDTO {
 	count := questionCount
 	return QuizDTO{
 		ID:               id,
@@ -757,9 +724,165 @@ func quizFromListRow(id int32, title string, description sql.NullString, created
 		IsArchived:       isArchived,
 		TimeLimitSeconds: timeLimitSeconds,
 		QuestionCount:    int32Ptr(count),
+		CategoryID:       nullInt32Ptr(categoryID),
+		ImageURL:         nullStringPtr(imageURL),
+		CategoryName:     nullStringPtr(categoryName),
 	}
 }
 
 func int32Ptr(value int32) *int32 {
 	return &value
+}
+
+// ListCategories godoc
+// @Summary Fetch all categories
+// @Description Fetch all available quiz categories.
+// @Tags categories
+// @Produce json
+// @Success 200 {object} CategoryListResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/categories [get]
+func (api *API) ListCategories(w http.ResponseWriter, r *http.Request) {
+	_, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+
+	rows, err := api.queries.ListCategories(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "list_categories_failed", "failed to fetch categories")
+		return
+	}
+
+	categories := make([]CategoryDTO, 0, len(rows))
+	for _, row := range rows {
+		categories = append(categories, CategoryDTO{
+			ID:   row.IDCategory,
+			Name: row.Name,
+		})
+	}
+
+	writeJSON(w, http.StatusOK, CategoryListResponse{Categories: categories})
+}
+
+// GetQuizLeaderboard godoc
+// @Summary Get leaderboard for a quiz
+// @Description Get the top performances of users for a quiz (admin only).
+// @Tags quizzes
+// @Produce json
+// @Param quizId path int true "Quiz ID"
+// @Success 200 {object} LeaderboardResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/quizzes/{quizId}/leaderboard [get]
+func (api *API) GetQuizLeaderboard(w http.ResponseWriter, r *http.Request) {
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can view the leaderboard")
+		return
+	}
+
+	quizID, err := parseIDParam(r, "quizId")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_quiz_id", "quiz id is required")
+		return
+	}
+
+	_, err = api.queries.GetQuizByID(r.Context(), quizID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+
+	questions, err := api.loadQuizQuestions(r.Context(), quizID, true)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "load_questions_failed", "failed to load quiz questions")
+		return
+	}
+
+	questionValue := make(map[int32]float64, len(questions))
+	answerIsCorrect := make(map[int32]bool)
+	var maxPoints float64
+	for _, q := range questions {
+		questionValue[q.ID] = q.Value
+		maxPoints += q.Value
+		for _, a := range q.Answers {
+			answerIsCorrect[a.ID] = a.IsCorrect
+		}
+	}
+
+	attempts, err := api.queries.ListFinishedAttemptsByQuiz(r.Context(), quizID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "list_attempts_failed", "failed to load attempts")
+		return
+	}
+
+	entries := make([]LeaderboardEntryDTO, 0, len(attempts))
+	for _, att := range attempts {
+		responses, err := api.queries.ListAttemptQuestions(r.Context(), att.IDAttempt)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "list_responses_failed", "failed to load attempt responses")
+			return
+		}
+
+		var achieved float64
+		for _, resp := range responses {
+			if correct, ok := answerIsCorrect[resp.TkAnswer]; ok && correct {
+				if val, ok := questionValue[resp.TkQuestion]; ok {
+					achieved += val
+				}
+			}
+		}
+
+		var timeTakenSecs *int32
+		if att.TimeTaken.Valid {
+			timeTakenSecs = nullTimeToSeconds(att.TimeTaken)
+		}
+
+		var displayName *string
+		if att.UserDisplayName.Valid {
+			displayName = &att.UserDisplayName.String
+		}
+
+		entries = append(entries, LeaderboardEntryDTO{
+			UserID:           att.TkUser,
+			Email:            att.UserEmail,
+			DisplayName:      displayName,
+			AchievedPoints:   achieved,
+			MaxPoints:        maxPoints,
+			TimeTakenSeconds: timeTakenSecs,
+		})
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].AchievedPoints != entries[j].AchievedPoints {
+			return entries[i].AchievedPoints > entries[j].AchievedPoints
+		}
+		var ti, tj int32 = 999999, 999999
+		if entries[i].TimeTakenSeconds != nil {
+			ti = *entries[i].TimeTakenSeconds
+		}
+		if entries[j].TimeTakenSeconds != nil {
+			tj = *entries[j].TimeTakenSeconds
+		}
+		return ti < tj
+	})
+
+	writeJSON(w, http.StatusOK, LeaderboardResponse{
+		QuizID:  quizID,
+		Entries: entries,
+	})
 }

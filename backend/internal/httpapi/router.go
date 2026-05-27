@@ -40,6 +40,8 @@ func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
 			r.Get("/me/submissions", api.GetSubmissions)
 		})
 
+		r.Get("/categories", api.ListCategories)
+
 		r.Route("/quizzes", func(r chi.Router) {
 			r.Post("/", api.CreateQuiz)
 			r.Get("/", api.ListQuizzes)
@@ -49,6 +51,7 @@ func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
 			r.Patch("/{quizId}/publish", api.PublishQuiz)
 			r.Patch("/{quizId}/archive", api.ArchiveQuiz)
 			r.Delete("/{quizId}", api.DeleteQuiz)
+			r.Get("/{quizId}/leaderboard", api.GetQuizLeaderboard)
 			r.Post("/{quizId}/questions", api.CreateQuestion)
 
 			// Attempts nested routes under quizzes

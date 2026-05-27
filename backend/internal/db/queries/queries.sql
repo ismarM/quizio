@@ -50,9 +50,11 @@ INSERT INTO quizio."Quiz" (
 	title,
 	time_limit,
 	description,
-	tk_User
+	tk_User,
+	tk_Category,
+	image_url
 )
-VALUES ($1, make_interval(secs => $2), $3, $4)
+VALUES ($1, make_interval(secs => $2), $3, $4, $5, $6)
 RETURNING id_Quiz,
 	title,
 	description,
@@ -60,13 +62,17 @@ RETURNING id_Quiz,
 	publish_date,
 	tk_User,
 	is_archived,
+	tk_Category,
+	image_url,
 	EXTRACT(EPOCH FROM time_limit)::int AS time_limit_seconds;
 
 -- name: UpdateQuiz :one
 UPDATE quizio."Quiz"
 SET title = $2,
 		description = $3,
-		time_limit = make_interval(secs => $4)
+		time_limit = make_interval(secs => $4),
+		tk_Category = $5,
+		image_url = $6
 WHERE id_Quiz = $1
 RETURNING id_Quiz,
 	title,
@@ -75,6 +81,8 @@ RETURNING id_Quiz,
 	publish_date,
 	tk_User,
 	is_archived,
+	tk_Category,
+	image_url,
 	EXTRACT(EPOCH FROM time_limit)::int AS time_limit_seconds;
 
 -- name: SetQuizPublishDate :one
@@ -88,6 +96,8 @@ RETURNING id_Quiz,
 	publish_date,
 	tk_User,
 	is_archived,
+	tk_Category,
+	image_url,
 	EXTRACT(EPOCH FROM time_limit)::int AS time_limit_seconds;
 
 -- name: ArchiveQuiz :one
@@ -101,30 +111,40 @@ RETURNING id_Quiz,
 	publish_date,
 	tk_User,
 	is_archived,
+	tk_Category,
+	image_url,
 	EXTRACT(EPOCH FROM time_limit)::int AS time_limit_seconds;
 
 -- name: DeleteQuiz :exec
 DELETE FROM quizio."Quiz"
 WHERE id_Quiz = $1;
 
+
 -- name: GetQuizByID :one
-SELECT id_Quiz,
-	title,
-	description,
-	created_at,
-	publish_date,
-	tk_User,
-	is_archived,
-	EXTRACT(EPOCH FROM time_limit)::int AS time_limit_seconds
-FROM quizio."Quiz"
-WHERE id_Quiz = $1;
+SELECT q.id_Quiz,
+	q.title,
+	q.description,
+	q.created_at,
+	q.publish_date,
+	q.tk_User,
+	q.is_archived,
+	q.tk_Category,
+	q.image_url,
+	c.name AS category_name,
+	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
+	COUNT(qq.id_Question)::int AS question_count
+FROM quizio."Quiz" q
+LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
+LEFT JOIN quizio."Category" c ON q.tk_Category = c.id_Category
+WHERE q.id_Quiz = $1
+GROUP BY q.id_Quiz, c.name;
 
 -- name: GetQuizState :one
 SELECT id_Quiz, tk_User, publish_date, is_archived
 FROM quizio."Quiz"
 WHERE id_Quiz = $1;
 
--- name: GetQuizInfo :one
+-- name: ListQuizzes :many
 SELECT q.id_Quiz,
 	q.title,
 	q.description,
@@ -133,88 +153,53 @@ SELECT q.id_Quiz,
 	q.tk_User,
 	q.is_archived,
 	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
-	COUNT(qq.id_Question)::int AS question_count
+	COUNT(qq.id_Question)::int AS question_count,
+	q.tk_Category,
+	q.image_url,
+	c.name AS category_name
 FROM quizio."Quiz" q
 LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
-WHERE q.id_Quiz = $1
-GROUP BY q.id_Quiz;
-
--- name: ListPublishedQuizzes :many
-SELECT q.id_Quiz,
-	q.title,
-	q.description,
-	q.created_at,
-	q.publish_date,
-	q.tk_User,
-	q.is_archived,
-	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
-	COUNT(qq.id_Question)::int AS question_count
-FROM quizio."Quiz" q
-LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
-WHERE q.is_archived = FALSE
-	AND q.publish_date IS NOT NULL
-	AND q.publish_date <= NOW()
-	AND ($1 = '' OR q.title ILIKE '%' || $1 || '%')
-	AND ($2 = 0 OR q.tk_User = $2)
-	AND ($3 = FALSE OR EXISTS (
+LEFT JOIN quizio."Category" c ON q.tk_Category = c.id_Category
+WHERE (
+	($1 = 'published' AND q.is_archived = FALSE AND q.publish_date IS NOT NULL AND q.publish_date <= NOW())
+	OR ($1 = 'not_published' AND q.is_archived = FALSE)
+	OR ($1 = 'archived' AND q.is_archived = TRUE)
+)
+	AND ($2 = '' OR q.title ILIKE '%' || $2 || '%')
+	AND ($3 = 0 OR q.tk_User = $3)
+	AND ($4 = FALSE OR EXISTS (
 		SELECT 1
 		FROM quizio."Attempt" a
 		WHERE a.tk_Quiz = q.id_Quiz
-			AND a.tk_User = $4
+			AND a.tk_User = $5
 	))
-GROUP BY q.id_Quiz
-ORDER BY q.publish_date DESC
-LIMIT $5 OFFSET $6;
+GROUP BY q.id_Quiz, c.name
+ORDER BY 
+	CASE WHEN $6 = 'category' THEN c.name END ASC,
+	CASE WHEN $6 = 'category' THEN q.id_Quiz END ASC,
+	CASE WHEN $6 = '' AND $1 = 'published' THEN q.publish_date END DESC,
+	CASE WHEN $6 = '' AND $1 <> 'published' THEN q.created_at END DESC
+LIMIT $7 OFFSET $8;
 
--- name: ListNotPublishedQuizzes :many
-SELECT q.id_Quiz,
-	q.title,
-	q.description,
-	q.created_at,
-	q.publish_date,
-	q.tk_User,
-	q.is_archived,
-	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
-	COUNT(qq.id_Question)::int AS question_count
-FROM quizio."Quiz" q
-LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
-WHERE q.is_archived = FALSE
-	AND ($1 = '' OR q.title ILIKE '%' || $1 || '%')
-	AND ($2 = 0 OR q.tk_User = $2)
-	AND ($3 = FALSE OR EXISTS (
-		SELECT 1
-		FROM quizio."Attempt" a
-		WHERE a.tk_Quiz = q.id_Quiz
-			AND a.tk_User = $4
-	))
-GROUP BY q.id_Quiz
-ORDER BY q.created_at DESC
-LIMIT $5 OFFSET $6;
+-- Categories
+-- name: ListCategories :many
+SELECT id_Category, name
+FROM quizio."Category"
+ORDER BY name ASC;
 
--- name: ListArchivedQuizzes :many
-SELECT q.id_Quiz,
-	q.title,
-	q.description,
-	q.created_at,
-	q.publish_date,
-	q.tk_User,
-	q.is_archived,
-	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
-	COUNT(qq.id_Question)::int AS question_count
-FROM quizio."Quiz" q
-LEFT JOIN quizio."Question" qq ON qq.tk_Quiz = q.id_Quiz
-WHERE q.is_archived = TRUE
-	AND ($1 = '' OR q.title ILIKE '%' || $1 || '%')
-	AND ($2 = 0 OR q.tk_User = $2)
-	AND ($3 = FALSE OR EXISTS (
-		SELECT 1
-		FROM quizio."Attempt" a
-		WHERE a.tk_Quiz = q.id_Quiz
-			AND a.tk_User = $4
-	))
-GROUP BY q.id_Quiz
-ORDER BY q.created_at DESC
-LIMIT $5 OFFSET $6;
+-- Leaderboard
+-- name: ListFinishedAttemptsByQuiz :many
+SELECT a.id_Attempt,
+	a.start_time,
+	a.time_taken,
+	a.tk_Quiz,
+	a.tk_User,
+	u.email AS user_email,
+	u.displayName AS user_display_name
+FROM quizio."Attempt" a
+JOIN quizio."User" u ON a.tk_User = u.id_User
+WHERE a.tk_Quiz = $1
+	AND a.time_taken IS NOT NULL;
 
 -- Questions
 -- name: CreateQuestion :one
@@ -260,23 +245,17 @@ SELECT tk_Quiz
 FROM quizio."Question"
 WHERE id_Question = $1;
 
--- name: GetAnswerForQuestion :one
-SELECT id_Answer, tk_Question
-FROM quizio."Answer"
-WHERE id_Answer = $1
-	AND tk_Question = $2;
-
 -- Attempts
 -- name: CreateAttempt :one
 INSERT INTO quizio."Attempt" (start_time, tk_Quiz, tk_User)
 VALUES (NOW(), $1, $2)
 RETURNING id_Attempt, start_time, time_taken, tk_Quiz, tk_User;
 
--- name: GetAttemptByUserQuiz :one
+-- name: ListAttemptsByUser :many
 SELECT id_Attempt, start_time, time_taken, tk_Quiz, tk_User
 FROM quizio."Attempt"
-WHERE tk_Quiz = $1
-	AND tk_User = $2;
+WHERE tk_User = $1
+ORDER BY start_time DESC;
 
 -- name: GetAttemptWithQuiz :one
 SELECT a.id_Attempt,
@@ -293,7 +272,7 @@ WHERE a.tk_Quiz = $1
 
 -- name: FinalizeAttemptIfExpired :one
 UPDATE quizio."Attempt" a
-SET time_taken = LEAST(NOW() - a.start_time, q.time_limit)::time
+SET time_taken = q.time_limit::time
 FROM quizio."Quiz" q
 WHERE a.id_Attempt = $1
 	AND a.tk_Quiz = q.id_Quiz
@@ -303,7 +282,7 @@ RETURNING a.id_Attempt, a.start_time, a.time_taken, a.tk_Quiz, a.tk_User;
 
 -- name: FinalizeExpiredAttemptsForUser :exec
 UPDATE quizio."Attempt" a
-SET time_taken = LEAST(NOW() - a.start_time, q.time_limit)::time
+SET time_taken = q.time_limit::time
 FROM quizio."Quiz" q
 WHERE a.tk_User = $1
 	AND a.tk_Quiz = q.id_Quiz
