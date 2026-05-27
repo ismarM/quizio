@@ -11,7 +11,6 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <FeatureCards />
-      <TestimonialSection />
       <SiteFooter />
       <MobileBottomNav />
     </main>

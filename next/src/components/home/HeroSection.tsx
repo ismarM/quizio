@@ -14,13 +14,9 @@ export function HeroSection() {
   return (
     <section className="q-container grid gap-10 pb-12 pt-8 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-16 md:pb-16 md:pt-14">
       <div>
-        <p className="mb-5 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-          Quiz platform
-        </p>
 
         <h1 className="font-display text-[72px] leading-[0.88] text-[#211F20] sm:text-[84px] md:text-[118px]">
           Create.
-          <span className="block">Share.</span>
           <span className="block text-[#FF3C38]">Challenge.</span>
         </h1>
 

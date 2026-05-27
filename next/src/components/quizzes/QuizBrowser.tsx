@@ -100,7 +100,7 @@ export function QuizBrowser({ quizzes }: QuizBrowserProps) {
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      {/*<div className="flex gap-2 overflow-x-auto pb-1">
         {categories.map((item) => (
           <button
             key={item}
@@ -121,14 +121,12 @@ export function QuizBrowser({ quizzes }: QuizBrowserProps) {
           More
           <ChevronDown className="h-4 w-4" />
         </button>
-      </div>
+      </div> */}
 
       {filtersOpen ? (
         <div className="grid gap-4 border border-[#D7D0C4] bg-[#F4EFE6] p-4 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
           <FilterSelect label="Category" value="All categories" />
-          <FilterSelect label="Difficulty" value="Any" />
           <FilterSelect label="Duration" value="Any" />
-          <FilterSelect label="# Questions" value="Any" />
           <FilterSelect label="Sort by" value="Newest" />
 
           <button
@@ -138,7 +136,7 @@ export function QuizBrowser({ quizzes }: QuizBrowserProps) {
               setQuery("");
               setPage(1);
             }}
-            className="flex items-end gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
+            className="mt-6 flex items-center gap-2 q-body font-medium text-[#211F20] hover:text-[#FF3C38]"
           >
             <X className="h-4 w-4" />
             Clear all

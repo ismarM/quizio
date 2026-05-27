@@ -23,9 +23,6 @@ export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
     <section className="border-2 border-[#211F20] bg-[#FFFAF2]">
       {/* COVER IMAGE / HERO VISUAL */}
       <div className="relative border-b-2 border-[#211F20] bg-[#EBE4D8] p-5 md:p-7">
-        <div className="absolute right-6 top-6 h-3 w-3 rotate-45 bg-[#FF3C38]" />
-        <div className="absolute bottom-7 left-7 h-3 w-3 rotate-45 bg-[#006E5A]" />
-
         <Link
           href={routes.quizzes}
           className="mb-5 inline-flex items-center gap-2 q-body text-[#211F20] hover:text-[#FF3C38]"
@@ -104,21 +101,8 @@ export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
         </div>
 
         {/* SIDE PANEL */}
-        <aside className="grid content-start gap-4">
-          <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-1 h-5 w-5 text-[#006E5A]" />
-              <div>
-                <p className="font-display text-2xl text-[#211F20]">
-                  Login required
-                </p>
-                <p className="q-body text-[#211F20]">
-                  You need to be signed in to start this quiz and save your
-                  result.
-                </p>
-              </div>
-            </div>
-          </div>
+        <aside className="grid content-center gap-4">
+          
 
           <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
             <p className="font-display text-2xl text-[#211F20]">Quiz rules</p>
@@ -133,19 +117,12 @@ export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
           <div className="grid gap-3">
             <Link
                 href={isLoggedIn ? routes.attempt(quiz.id) : `${routes.login}?next=${routes.attempt(quiz.id)}`}
-                className="q-button q-button-primary w-full border-[#FF3C38] bg-[#FF3C38]"
+                className="q-button q-button-primary h-14 w-full items-center justify-center gap-[3px] border-[#FF3C38] bg-[#FF3C38] text-lg"
             >
-              <Play className="h-4 w-4" />
+              <Play className="h-6 w-6" />
               Start quiz
             </Link>
 
-            <Link
-              href={routes.dashboard}
-              className="q-button q-button-secondary w-full"
-            >
-              <UserRound className="h-4 w-4" />
-              Dashboard
-            </Link>
           </div>
         </aside>
       </div>
