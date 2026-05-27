@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -11,7 +12,9 @@ import {
   Save,
 } from "lucide-react";
 
+import { proxyFetchJson } from "@/lib/proxyClient";
 import { routes } from "@/lib/routes";
+import type { QuizFullResponse } from "@/lib/types";
 
 const categories = [
   "Science",
@@ -24,6 +27,7 @@ const categories = [
 ];
 
 export function AdminQuizForm() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Science");
@@ -32,8 +36,15 @@ export function AdminQuizForm() {
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => [
     createQuestion(),
   ]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isValid = title.trim().length > 0 && Number(timeLimit) > 0;
+  const validationErrors = getValidationErrors({
+    title,
+    timeLimit,
+    questions,
+  });
+  const isValid = validationErrors.length === 0;
 
   function addQuestion() {
     setQuestions((current) => [...current, createQuestion()]);
@@ -128,9 +139,59 @@ export function AdminQuizForm() {
     );
   }
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitError(null);
+
+    if (!isValid) {
+      setSubmitError(validationErrors[0] ?? "Please complete all required fields.");
+      return;
+    }
+
+    const payload = buildCreatePayload({
+      title,
+      description,
+      timeLimit,
+      questions,
+    });
+
+    if (!payload) {
+      setSubmitError("Please complete all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const data = await proxyFetchJson<QuizFullResponse>("/quizzes", {
+        method: "POST",
+        body: payload,
+      });
+
+      const publishDate = toPublishDate(opensAt);
+      if (publishDate) {
+        await proxyFetchJson(`/quizzes/${data.quiz.id}/publish`, {
+          method: "PATCH",
+          body: { publish_date: publishDate },
+        });
+      }
+
+      router.push(routes.adminQuizDetail(data.quiz.id));
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to create quiz";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_360px]">
-      <form className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 shadow-[8px_8px_0_#EBE4D8] md:p-6">
+      <form
+        className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 shadow-[8px_8px_0_#EBE4D8] md:p-6"
+        onSubmit={handleSubmit}
+      >
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={routes.adminQuizzes}
@@ -349,20 +410,25 @@ export function AdminQuizForm() {
 
           <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
             <button
-              type="button"
+              type="submit"
               className={[
                 "q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]",
-                !isValid ? "pointer-events-none opacity-50" : "",
+                !isValid || isSubmitting ? "pointer-events-none opacity-50" : "",
               ].join(" ")}
+              disabled={!isValid || isSubmitting}
             >
               <Save className="h-4 w-4" />
-              Save draft
+              {isSubmitting ? "Saving..." : "Save draft"}
             </button>
 
             <Link href={routes.adminQuizzes} className="q-button q-button-secondary">
               Cancel
             </Link>
           </div>
+
+          {submitError ? (
+            <p className="q-mini text-[#FF3C38]">{submitError}</p>
+          ) : null}
         </div>
       </form>
 
@@ -472,4 +538,102 @@ function createQuestion(): DraftQuestion {
     points: "5",
     answers: [createAnswer(true), createAnswer(false)],
   };
+}
+
+type CreateQuizPayload = {
+  title: string;
+  description?: string;
+  time_limit_seconds: number;
+  questions: Array<{
+    title: string;
+    value: number;
+    answers: Array<{
+      title: string;
+      is_correct: boolean;
+    }>;
+  }>;
+};
+
+function getValidationErrors({
+  title,
+  timeLimit,
+  questions,
+}: {
+  title: string;
+  timeLimit: string;
+  questions: DraftQuestion[];
+}) {
+  const errors: string[] = [];
+  if (!title.trim()) {
+    errors.push("Title is required.");
+  }
+  if (Number(timeLimit) <= 0) {
+    errors.push("Time limit must be at least 1 minute.");
+  }
+  if (questions.length === 0) {
+    errors.push("Add at least one question.");
+  }
+
+  questions.forEach((question, index) => {
+    const label = `Question ${index + 1}`;
+    if (!question.title.trim()) {
+      errors.push(`${label} needs a title.`);
+    }
+    if (Number(question.points) <= 0) {
+      errors.push(`${label} needs positive points.`);
+    }
+    if (question.answers.length < 2) {
+      errors.push(`${label} needs at least 2 answers.`);
+    }
+    if (!question.answers.some((answer) => answer.isCorrect)) {
+      errors.push(`${label} needs a correct answer.`);
+    }
+    if (question.answers.some((answer) => !answer.text.trim())) {
+      errors.push(`${label} has empty answers.`);
+    }
+  });
+
+  return errors;
+}
+
+function buildCreatePayload({
+  title,
+  description,
+  timeLimit,
+  questions,
+}: {
+  title: string;
+  description: string;
+  timeLimit: string;
+  questions: DraftQuestion[];
+}): CreateQuizPayload | null {
+  const timeLimitSeconds = Math.round(Number(timeLimit) * 60);
+  if (!title.trim() || timeLimitSeconds <= 0) {
+    return null;
+  }
+
+  return {
+    title: title.trim(),
+    description: description.trim() ? description.trim() : undefined,
+    time_limit_seconds: timeLimitSeconds,
+    questions: questions.map((question) => ({
+      title: question.title.trim(),
+      value: Number(question.points),
+      answers: question.answers.map((answer) => ({
+        title: answer.text.trim(),
+        is_correct: answer.isCorrect,
+      })),
+    })),
+  };
+}
+
+function toPublishDate(value: string) {
+  if (!value) {
+    return undefined;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return date.toISOString();
 }

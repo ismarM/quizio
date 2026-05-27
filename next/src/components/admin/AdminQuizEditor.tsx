@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowLeft,
-  Clock3,
   Eye,
   FilePlus2,
   ImagePlus,
@@ -13,12 +12,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import type { AdminQuizListItem } from "@/lib/mock-data";
-import { adminQuizQuestions } from "@/lib/mock-data";
+import type { AdminQuizDetail } from "@/lib/admin-quiz-mappers";
 import { routes } from "@/lib/routes";
 
 type AdminQuizEditorProps = {
-  quiz: AdminQuizListItem;
+  quiz: AdminQuizDetail;
 };
 
 export function AdminQuizEditor({ quiz }: AdminQuizEditorProps) {
@@ -184,7 +182,7 @@ export function AdminQuizEditor({ quiz }: AdminQuizEditorProps) {
         <div className="h-[2px] bg-[#211F20]" />
 
         <div className="mt-4 grid gap-3">
-          {adminQuizQuestions.map((question, index) => (
+          {quiz.questions.map((question, index) => (
             <article
               key={question.id}
               className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[48px_1fr_auto]"
@@ -198,7 +196,7 @@ export function AdminQuizEditor({ quiz }: AdminQuizEditorProps) {
                   {question.title}
                 </p>
                 <p className="mt-1 q-mini text-[#8F8F8F]">
-                  {question.type} · {question.points} points · {question.answers} answers
+                  {question.points} points · {question.answers} answers
                 </p>
               </div>
 
@@ -255,7 +253,7 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusBadge({ status }: { status: AdminQuizListItem["status"] }) {
+function StatusBadge({ status }: { status: AdminQuizDetail["status"] }) {
   const classes = {
     draft: "bg-[#EBE4D8] text-[#211F20]",
     published: "bg-[#006E5A] text-[#FFFAF2]",

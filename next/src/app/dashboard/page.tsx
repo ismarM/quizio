@@ -228,7 +228,7 @@ export default async function DashboardPage() {
                           {formatTimeLeft(session.timeLeftSeconds)} left
                         </span>
                         <Link
-                          href={routes.attempt(session.attemptId)}
+                          href={routes.attempt(session.quizId)}
                           className="q-button q-button-secondary"
                         >
                           Continue

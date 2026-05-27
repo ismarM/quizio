@@ -8,7 +8,7 @@ import { QuizLeaderboardMini } from "@/components/quizzes/QuizLeaderboardMini";
 import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
 import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { getSessionUser } from "@/lib/serverAuth";
-import type { QuizResponse } from "@/lib/types";
+import type { QuizResponse, SubmissionSummary, SubmissionsResponse } from "@/lib/types";
 
 type QuizDetailPageProps = {
   params: Promise<{
@@ -31,6 +31,9 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   }
 
   const user = await getSessionUser();
+  const resultSummary = user
+    ? await loadQuizResultSummary(quiz.id)
+    : undefined;
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -44,7 +47,11 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
         </div>
 
         <div className="grid gap-8">
-          <QuizDetailCard quiz={quiz} isLoggedIn={Boolean(user)}/>
+          <QuizDetailCard
+            quiz={quiz}
+            isLoggedIn={Boolean(user)}
+            resultSummary={resultSummary}
+          />
           <QuizLeaderboardMini quizId={quiz.id} />
         </div>
       </section>
@@ -53,4 +60,54 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
       <MobileBottomNav />
     </main>
   );
+}
+
+async function loadQuizResultSummary(quizId: number) {
+  try {
+    const submissions = await serverFetchJson<SubmissionsResponse>(
+      "/api/users/me/submissions?limit=20&offset=0"
+    );
+    const match = submissions.results.find(
+      (submission) => submission.quiz_id === quizId
+    );
+    if (!match) {
+      return undefined;
+    }
+    return mapSubmissionSummary(match);
+  } catch (error) {
+    console.error("Failed to load quiz submission:", error);
+    return undefined;
+  }
+}
+
+function mapSubmissionSummary(submission: SubmissionSummary) {
+  const totalMax = submission.max_points;
+  const totalAchieved = submission.achieved_points;
+  const percentage = totalMax > 0 ? Math.round((totalAchieved / totalMax) * 100) : 0;
+  const timeTakenSeconds = submission.time_taken_seconds ?? 0;
+
+  return {
+    scoreText: `${Math.round(totalAchieved)}/${Math.round(totalMax)}`,
+    percentage,
+    timeTaken: formatDuration(timeTakenSeconds),
+    submittedAt: formatDate(submission.start_time, timeTakenSeconds),
+  };
+}
+
+function formatDuration(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.max(0, totalSeconds % 60);
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatDate(startTime: string, timeTakenSeconds: number) {
+  const startDate = new Date(startTime);
+  if (Number.isNaN(startDate.getTime())) {
+    return "Unknown";
+  }
+  const submitted = new Date(startDate.getTime() + timeTakenSeconds * 1000);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(submitted);
 }

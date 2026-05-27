@@ -15,9 +15,16 @@ import { routes } from "@/lib/routes";
 type QuizDetailCardProps = {
   quiz: QuizListItem;
   isLoggedIn: boolean;
+  resultSummary?: QuizResultSummary;
 };
 
-export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
+export function QuizDetailCard({
+  quiz,
+  isLoggedIn,
+  resultSummary,
+}: QuizDetailCardProps) {
+  const hasResult = Boolean(resultSummary);
+
   return (
     <section className="border-2 border-[#211F20] bg-[#FFFAF2]">
       {/* COVER IMAGE / HERO VISUAL */}
@@ -101,7 +108,20 @@ export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
 
         {/* SIDE PANEL */}
         <aside className="grid content-center gap-4">
-          
+          {hasResult ? (
+            <div className="border-2 border-[#006E5A] bg-[#DDECE8] p-4">
+              <p className="font-display text-2xl text-[#211F20]">
+                Completed
+              </p>
+              <p className="mt-1 q-body text-[#211F20]">
+                Score: <strong>{resultSummary?.scoreText}</strong> · {resultSummary?.percentage}%
+              </p>
+              <div className="mt-3 grid gap-2 q-mini text-[#211F20]">
+                <span>Time: {resultSummary?.timeTaken}</span>
+                <span>Submitted: {resultSummary?.submittedAt}</span>
+              </div>
+            </div>
+          ) : null}
 
           <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
             <p className="font-display text-2xl text-[#211F20]">Quiz rules</p>
@@ -114,14 +134,32 @@ export function QuizDetailCard({ quiz, isLoggedIn }: QuizDetailCardProps) {
           </div>
 
           <div className="grid gap-3">
-            <Link
+            {hasResult ? (
+              <Link
+                href={routes.attemptResult(quiz.id)}
+                className="q-button q-button-secondary h-14 w-full items-center justify-center"
+              >
+                View result
+              </Link>
+            ) : (
+              <Link
                 href={isLoggedIn ? routes.attempt(quiz.id) : `${routes.login}?next=${routes.attempt(quiz.id)}`}
                 className="q-button q-button-primary h-14 w-full items-center justify-center gap-[3px] border-[#FF3C38] bg-[#FF3C38] text-lg"
-            >
-              <Play className="h-6 w-6" />
-              Start quiz
-            </Link>
+              >
+                <Play className="h-6 w-6" />
+                Start quiz
+              </Link>
+            )}
 
+            {hasResult ? (
+              <button
+                type="button"
+                className="q-button q-button-secondary h-12 w-full opacity-60"
+                disabled
+              >
+                Quiz already completed
+              </button>
+            ) : null}
           </div>
         </aside>
       </div>
@@ -167,3 +205,10 @@ function RuleItem({ text }: { text: string }) {
     </div>
   );
 }
+
+type QuizResultSummary = {
+  scoreText: string;
+  percentage: number;
+  timeTaken: string;
+  submittedAt: string;
+};

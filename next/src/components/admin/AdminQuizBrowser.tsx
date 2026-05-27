@@ -14,7 +14,7 @@ import {
   Users,
 } from "lucide-react";
 
-import type { AdminQuizListItem } from "@/lib/mock-data";
+import type { AdminQuizListItem } from "@/lib/admin-quiz-mappers";
 import { routes } from "@/lib/routes";
 
 const statuses = ["all", "draft", "published", "archived"] as const;

@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { AdminQuizEditor } from "@/components/admin/AdminQuizEditor";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { getAdminQuizById } from "@/lib/mock-data";
+import { mapFullQuizToAdminDetail } from "@/lib/admin-quiz-mappers";
+import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { requireAuth } from "@/lib/serverAuth";
+import type { QuizFullResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +26,16 @@ export default async function AdminQuizDetailPage({
   }
 
   const { id } = await params;
-  const quiz = getAdminQuizById(id);
+  let quiz;
 
-  if (!quiz) {
-    notFound();
+  try {
+    const data = await serverFetchJson<QuizFullResponse>(`/api/quizzes/${id}`);
+    quiz = mapFullQuizToAdminDetail(data.quiz, data.questions);
+  } catch (error) {
+    if (error instanceof ServerFetchError && error.status === 404) {
+      notFound();
+    }
+    throw error;
   }
 
   return (

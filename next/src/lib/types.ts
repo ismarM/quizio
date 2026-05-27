@@ -23,6 +23,11 @@ export type QuizResponse = {
   quiz: QuizDTO;
 };
 
+export type QuizFullResponse = {
+  quiz: QuizDTO;
+  questions: QuestionDTO[];
+};
+
 export type OpenAttemptDTO = {
   id: number;
   start_time: string;

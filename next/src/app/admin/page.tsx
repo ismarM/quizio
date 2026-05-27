@@ -11,32 +11,24 @@ import { redirect } from "next/navigation";
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { adminQuizzes } from "@/lib/mock-data";
+import { mapQuizDtoToAdminListItem } from "@/lib/admin-quiz-mappers";
 import { routes } from "@/lib/routes";
+import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { requireAuth } from "@/lib/serverAuth";
+import type { QuizListResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 const adminStats = [
   {
     label: "Total quizzes",
-    value: "8",
+    value: "0",
     icon: ListChecks,
   },
   {
     label: "Published",
-    value: "6",
+    value: "0",
     icon: BarChart3,
-  },
-]
-
-const adminActions = [
-  {
-    title: "Create new quiz",
-    description: "Start a new quiz draft with title, time limit and questions.",
-    href: routes.adminQuizNew,
-    icon: FilePlus2,
-    primary: true,
   },
 ];
 
@@ -46,6 +38,10 @@ export default async function AdminPage() {
   if (!user.isAdmin) {
     redirect("/login?reason=unauthorized");
   }
+
+  const quizzes = await loadAdminQuizzes();
+  const totalCount = quizzes.length;
+  const publishedCount = quizzes.filter((quiz) => quiz.status === "published").length;
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -119,6 +115,10 @@ export default async function AdminPage() {
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {adminStats.map((stat) => {
                 const Icon = stat.icon;
+                const value =
+                  stat.label === "Total quizzes"
+                    ? String(totalCount)
+                    : String(publishedCount);
 
                 return (
                   <article
@@ -131,7 +131,7 @@ export default async function AdminPage() {
 
                     <p className="q-mini text-[#8F8F8F]">{stat.label}</p>
                     <p className="mt-1 font-display text-[42px] leading-none text-[#211F20]">
-                      {stat.value}
+                      {value}
                     </p>
                   </article>
                 );
@@ -154,7 +154,7 @@ export default async function AdminPage() {
               <div className="h-[2px] bg-[#211F20]" />
 
               <div className="mt-4">
-                <AdminQuizBrowser quizzes={adminQuizzes} />
+                <AdminQuizBrowser quizzes={quizzes} />
               </div>
             </section>
           </div>
@@ -162,4 +162,33 @@ export default async function AdminPage() {
       </section>
     </main>
   )
+}
+
+async function loadAdminQuizzes() {
+  try {
+    const [published, drafts, archived] = await Promise.all([
+      fetchQuizzes("published"),
+      fetchQuizzes("not_published"),
+      fetchQuizzes("archived"),
+    ]);
+
+    const all = [...drafts, ...published, ...archived];
+    const uniqueById = new Map<number, (typeof all)[number]>();
+    all.forEach((quiz) => {
+      uniqueById.set(quiz.id, quiz);
+    });
+    return Array.from(uniqueById.values()).map(mapQuizDtoToAdminListItem);
+  } catch (error) {
+    if (error instanceof ServerFetchError && error.status === 401) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+async function fetchQuizzes(scope: "published" | "not_published" | "archived") {
+  const data = await serverFetchJson<QuizListResponse>(
+    `/api/quizzes?scope=${scope}&limit=50&offset=0`
+  );
+  return data.quizzes;
 }
