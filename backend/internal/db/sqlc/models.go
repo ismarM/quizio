@@ -17,11 +17,11 @@ type QuizioAnswer struct {
 }
 
 type QuizioAttempt struct {
-	IDAttempt int32        `json:"id_attempt"`
-	StartTime time.Time    `json:"start_time"`
-	TimeTaken sql.NullTime `json:"time_taken"`
-	TkQuiz    int32        `json:"tk_quiz"`
-	TkUser    int32        `json:"tk_user"`
+	IDAttempt int32          `json:"id_attempt"`
+	StartTime time.Time      `json:"start_time"`
+	TimeTaken sql.NullString `json:"time_taken"`
+	TkQuiz    int32          `json:"tk_quiz"`
+	TkUser    int32          `json:"tk_user"`
 }
 
 type QuizioAttemptQuestion struct {

@@ -295,7 +295,7 @@ func (q *Queries) DeleteUser(ctx context.Context, idUser int32) error {
 
 const finalizeAttempt = `-- name: FinalizeAttempt :one
 UPDATE quizio."Attempt" a
-SET time_taken = LEAST(NOW() - a.start_time, q.time_limit)::time
+SET time_taken = time '00:00' + LEAST(NOW() - a.start_time, q.time_limit)
 FROM quizio."Quiz" q
 WHERE a.id_Attempt = $1
 	AND a.tk_Quiz = q.id_Quiz
@@ -318,7 +318,7 @@ func (q *Queries) FinalizeAttempt(ctx context.Context, idAttempt int32) (QuizioA
 
 const finalizeAttemptIfExpired = `-- name: FinalizeAttemptIfExpired :one
 UPDATE quizio."Attempt" a
-SET time_taken = q.time_limit::time
+SET time_taken = time '00:00' + q.time_limit
 FROM quizio."Quiz" q
 WHERE a.id_Attempt = $1
 	AND a.tk_Quiz = q.id_Quiz
@@ -342,7 +342,7 @@ func (q *Queries) FinalizeAttemptIfExpired(ctx context.Context, idAttempt int32)
 
 const finalizeExpiredAttemptsForUser = `-- name: FinalizeExpiredAttemptsForUser :exec
 UPDATE quizio."Attempt" a
-SET time_taken = q.time_limit::time
+SET time_taken = time '00:00' + q.time_limit
 FROM quizio."Quiz" q
 WHERE a.tk_User = $1
 	AND a.tk_Quiz = q.id_Quiz
@@ -375,13 +375,13 @@ type GetAttemptWithQuizParams struct {
 }
 
 type GetAttemptWithQuizRow struct {
-	IDAttempt        int32        `json:"id_attempt"`
-	StartTime        time.Time    `json:"start_time"`
-	TimeTaken        sql.NullTime `json:"time_taken"`
-	TkQuiz           int32        `json:"tk_quiz"`
-	TkUser           int32        `json:"tk_user"`
-	IsActive         bool         `json:"is_active"`
-	TimeLimitSeconds int32        `json:"time_limit_seconds"`
+	IDAttempt        int32          `json:"id_attempt"`
+	StartTime        time.Time      `json:"start_time"`
+	TimeTaken        sql.NullString `json:"time_taken"`
+	TkQuiz           int32          `json:"tk_quiz"`
+	TkUser           int32          `json:"tk_user"`
+	IsActive         bool           `json:"is_active"`
+	TimeLimitSeconds int32          `json:"time_limit_seconds"`
 }
 
 func (q *Queries) GetAttemptWithQuiz(ctx context.Context, arg GetAttemptWithQuizParams) (GetAttemptWithQuizRow, error) {
@@ -681,7 +681,7 @@ WHERE a.tk_Quiz = $1
 type ListFinishedAttemptsByQuizRow struct {
 	IDAttempt       int32          `json:"id_attempt"`
 	StartTime       time.Time      `json:"start_time"`
-	TimeTaken       sql.NullTime   `json:"time_taken"`
+	TimeTaken       sql.NullString `json:"time_taken"`
 	TkQuiz          int32          `json:"tk_quiz"`
 	TkUser          int32          `json:"tk_user"`
 	UserEmail       string         `json:"user_email"`
@@ -780,12 +780,12 @@ ORDER BY a.start_time DESC
 `
 
 type ListOpenAttemptsByUserRow struct {
-	IDAttempt        int32        `json:"id_attempt"`
-	StartTime        time.Time    `json:"start_time"`
-	TimeTaken        sql.NullTime `json:"time_taken"`
-	TkQuiz           int32        `json:"tk_quiz"`
-	TkUser           int32        `json:"tk_user"`
-	TimeLimitSeconds int32        `json:"time_limit_seconds"`
+	IDAttempt        int32          `json:"id_attempt"`
+	StartTime        time.Time      `json:"start_time"`
+	TimeTaken        sql.NullString `json:"time_taken"`
+	TkQuiz           int32          `json:"tk_quiz"`
+	TkUser           int32          `json:"tk_user"`
+	TimeLimitSeconds int32          `json:"time_limit_seconds"`
 }
 
 func (q *Queries) ListOpenAttemptsByUser(ctx context.Context, tkUser int32) ([]ListOpenAttemptsByUserRow, error) {

@@ -69,6 +69,21 @@ func nullTimePtr(value sql.NullTime) *time.Time {
 	return &value.Time
 }
 
+func nullTimeStringToSeconds(value sql.NullString) *int32 {
+	if !value.Valid {
+		return nil
+	}
+	t, err := time.Parse("15:04:05", value.String)
+	if err != nil {
+		t, err = time.Parse("15:04:05.999999", value.String)
+		if err != nil {
+			return nil
+		}
+	}
+	seconds := int32(t.Hour()*3600 + t.Minute()*60 + t.Second())
+	return &seconds
+}
+
 func nullTimeToSeconds(value sql.NullTime) *int32 {
 	if !value.Valid {
 		return nil

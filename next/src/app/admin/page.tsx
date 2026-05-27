@@ -4,15 +4,14 @@ import {
   FilePlus2,
   LayoutDashboard,
   ListChecks,
-  LockKeyhole,
-  ShieldCheck,
-  Users
+  LockKeyhole
 } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import LogoutButton from "@/components/auth/LogoutButton";
+import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { adminQuizzes } from "@/lib/mock-data";
 import { routes } from "@/lib/routes";
 import { requireAuth } from "@/lib/serverAuth";
 
@@ -38,38 +37,6 @@ const adminActions = [
     href: routes.adminQuizNew,
     icon: FilePlus2,
     primary: true,
-  },
-  {
-    title: "Manage quizzes",
-    description: "Edit drafts, publish quizzes and review existing quiz data.",
-    href: routes.adminQuizzes,
-    icon: ListChecks,
-    primary: false,
-  },
-  {
-    title: "Review results",
-    description: "Check attempts, scores and public leaderboard data.",
-    href: routes.admin,
-    icon: BarChart3,
-    primary: false,
-  },
-];
-
-const recentQuizzes = [
-  {
-    title: "Science Fundamentals",
-    status: "Published",
-    attempts: 42,
-  },
-  {
-    title: "Math Challenge",
-    status: "Draft",
-    attempts: 0,
-  },
-  {
-    title: "Technology Essentials",
-    status: "Published",
-    attempts: 31,
   },
 ];
 
@@ -131,13 +98,6 @@ export default async function AdminPage() {
                   <FilePlus2 className="h-4 w-4" />
                   Create quiz
                 </Link>
-
-                <Link
-                  href={routes.adminQuizzes}
-                  className="q-button q-button-secondary"
-                >
-                  Manage quizzes
-                </Link>
               </div>
             </section>
 
@@ -178,84 +138,23 @@ export default async function AdminPage() {
               })}
             </section>
 
-            <section className="grid gap-4 md:grid-cols-3">
-              {adminActions.map((action) => {
-                const Icon = action.icon;
-
-                return (
-                  <Link
-                    key={action.title}
-                    href={action.href}
-                    className={[
-                      "border-2 border-[#211F20] p-5 transition hover:-translate-y-1 hover:shadow-[6px_6px_0_#EBE4D8]",
-                      action.primary
-                        ? "bg-[#FF3C38] text-[#FFFAF2]"
-                        : "bg-[#FFFAF2] text-[#211F20]"
-                    ].join(" ")}
-                  >
-                    <Icon className="mb-8 h-8 w-8" />
-
-                    <p className="font-display text-3xl leading-none">
-                      {action.title}
-                    </p>
-
-                    <p className="mt-3 q-body">{action.description}</p>
-                  </Link>
-                );
-              })}
-            </section>
-
             <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
               <div className="mb-4 flex items-end justify-between gap-4">
                 <div>
                   <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                    Recent
+                    All quizzes
                   </p>
 
                   <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                    Recent quizzes
+                    Quiz list
                   </h2>
                 </div>
-
-                <Link
-                  href={routes.adminQuizzes}
-                  className="q-button q-button-secondary hidden md:inline-flex"
-                >
-                  View all
-                </Link>
               </div>
 
               <div className="h-[2px] bg-[#211F20]" />
 
-              <div className="mt-4 grid gap-3">
-                {recentQuizzes.map((quiz) => (
-                  <article
-                    key={quiz.title}
-                    className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[1fr_auto]"
-                  >
-                    <div>
-                      <p className="font-display text-2xl leading-none text-[#211F20]">
-                        {quiz.title}
-                      </p>
-                      <p className="mt-1 q-mini text-[#8F8F8F]">
-                        {quiz.attempts} attempts
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3 md:justify-end">
-                      <span
-                        className={[
-                          "px-2 py-1 text-[12px] leading-4",
-                          quiz.status === "Published"
-                            ? "bg-[#DDECE8] text-[#006E5A]"
-                            : "bg-[#EBE4D8] text-[#211F20]",
-                        ].join(" ")}
-                      >
-                        {quiz.status}
-                      </span>
-                    </div>
-                  </article>
-                ))}
+              <div className="mt-4">
+                <AdminQuizBrowser quizzes={adminQuizzes} />
               </div>
             </section>
           </div>

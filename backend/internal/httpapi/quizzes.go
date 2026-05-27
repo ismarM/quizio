@@ -849,7 +849,7 @@ func (api *API) GetQuizLeaderboard(w http.ResponseWriter, r *http.Request) {
 
 		var timeTakenSecs *int32
 		if att.TimeTaken.Valid {
-			timeTakenSecs = nullTimeToSeconds(att.TimeTaken)
+			timeTakenSecs = nullTimeStringToSeconds(att.TimeTaken)
 		}
 
 		var displayName *string

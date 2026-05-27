@@ -2,26 +2,22 @@ import Link from "next/link";
 import {
     ArrowLeft,
     Check,
-    Clock3,
-    ListChecks,
     Trophy,
     X,
 } from "lucide-react";
 
-import { mockAttemptResult } from "@/lib/mock-data";
 import { routes } from "@/lib/routes";
+import type { AttemptResultResponse } from "@/lib/types";
 
 type AttemptResultProps = {
-    attemptId: number;
+    result: AttemptResultResponse;
 }
 
-export function AttemptResult({ attemptId }: AttemptResultProps) {
-    const result = {
-        ...mockAttemptResult,
-        attemptId,
-    };
-
-    const percentage = Math.round((result.totalScore / result.maxScore) * 100);
+export function AttemptResult({ result }: AttemptResultProps) {
+    const summary = buildResultSummary(result);
+    const percentage = summary.maxScore > 0
+        ? Math.round((summary.totalScore / summary.maxScore) * 100)
+        : 0;
 
     return (
         <section className="q-container pb-12 pt-6 md:pb-20 md:pt-10">
@@ -65,20 +61,20 @@ export function AttemptResult({ attemptId }: AttemptResultProps) {
                             </h1>
 
                             <p className="mt-5 max-w-2xl text-[18px] leading-7 text-[#211F20]">
-                                You finished <strong>{result.quizTitle}</strong>. Your score is
+                                You finished <strong>{summary.quizTitle}</strong>. Your score is
                                 saved and can be shown on the quiz leaderboard.
                             </p>
 
                             <div className="mt-7 grid gap-3 sm:grid-cols-3">
                                 <StatBox
                                     label="Score"
-                                    value={`${result.totalScore}/${result.maxScore}`}
+                                    value={`${summary.totalScore}/${summary.maxScore}`}
                                 />
                                 <StatBox
                                     label="Correct"
-                                    value={`${result.correctAnswers}/${result.totalQuestions}`}
+                                    value={`${summary.correctAnswers}/${summary.totalQuestions}`}
                                 />
-                                <StatBox label="Time" value={result.timeTaken} />
+                                <StatBox label="Time" value={summary.timeTaken} />
                             </div>
 
                             <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -89,12 +85,6 @@ export function AttemptResult({ attemptId }: AttemptResultProps) {
                                 Explore more quizzes
                                 </Link>
 
-                                <Link
-                                href={routes.dashboard}
-                                className="q-button q-button-secondary"
-                                >
-                                Dashboard
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -115,7 +105,7 @@ export function AttemptResult({ attemptId }: AttemptResultProps) {
 
                         <div className="mt-6 border-2 border-[#FFFAF2] p-4">
                             <p className="q-mini">Submitted</p>
-                            <p className="font-display text-3xl">{result.submittedAt}</p>
+                            <p className="font-display text-3xl">{summary.submittedAt}</p>
                         </div>
                     </aside>
 
@@ -136,7 +126,7 @@ export function AttemptResult({ attemptId }: AttemptResultProps) {
                         <div className="h-[2px] bg-[#211F20]" />
 
                         <div className="mt-4 grid gap-3">
-                            {result.answers.map((answer, index) => (
+                            {summary.answers.map((answer, index) => (
                                 <AnswerReview key={answer.question} index={index} {...answer} />
                             ))}
                         </div>
@@ -217,4 +207,85 @@ function ResultLine({ label, value }: { label: string; value: string }) {
         </p>
       </div>
     );
+}
+
+type AnswerSummary = {
+    question: string;
+    selected: string;
+    correct: string;
+    isCorrect: boolean;
+    points: number;
+};
+
+type ResultSummary = {
+    quizTitle: string;
+    totalScore: number;
+    maxScore: number;
+    correctAnswers: number;
+    totalQuestions: number;
+    timeTaken: string;
+    submittedAt: string;
+    answers: AnswerSummary[];
+};
+
+function buildResultSummary(result: AttemptResultResponse): ResultSummary {
+    const responseMap = new Map(
+        result.responses.map((response) => [response.question_id, response.answer_id])
+    );
+
+    let totalScore = 0;
+    let correctAnswers = 0;
+    const answers: AnswerSummary[] = result.questions.map((question) => {
+        const selectedId = responseMap.get(question.id);
+        const selectedAnswer = question.answers.find((answer) => answer.id === selectedId);
+        const correctAnswer = question.answers.find((answer) => answer.is_correct);
+        const isCorrect = Boolean(selectedAnswer && correctAnswer && selectedAnswer.id === correctAnswer.id);
+        const points = isCorrect ? question.value : 0;
+
+        if (isCorrect) {
+            totalScore += question.value;
+            correctAnswers += 1;
+        }
+
+        return {
+            question: question.title,
+            selected: selectedAnswer?.title ?? "Not answered",
+            correct: correctAnswer?.title ?? "Unknown",
+            isCorrect,
+            points,
+        };
+    });
+
+    const maxScore = result.questions.reduce((sum, question) => sum + question.value, 0);
+    const totalQuestions = result.questions.length;
+    const timeTakenSeconds = result.attempt.time_taken_seconds ?? 0;
+
+    return {
+        quizTitle: result.quiz.title,
+        totalScore,
+        maxScore,
+        correctAnswers,
+        totalQuestions,
+        timeTaken: formatDuration(timeTakenSeconds),
+        submittedAt: formatDate(result.attempt, timeTakenSeconds),
+        answers,
+    };
+}
+
+function formatDuration(totalSeconds: number) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.max(0, totalSeconds % 60);
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatDate(attempt: AttemptResultResponse["attempt"], timeTakenSeconds: number) {
+    const start = new Date(attempt.start_time);
+    if (Number.isNaN(start.getTime())) {
+        return "Unknown";
+    }
+    const submitted = new Date(start.getTime() + timeTakenSeconds * 1000);
+    return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+    }).format(submitted);
 }

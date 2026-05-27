@@ -108,7 +108,7 @@ export function AdminQuizBrowser({ quizzes }: AdminQuizBrowserProps) {
 
 function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
   return (
-    <article className="grid gap-4 border-2 border-[#211F20] bg-[#FFFAF2] p-4 transition hover:shadow-[6px_6px_0_#EBE4D8] md:grid-cols-[1fr_auto]">
+    <article className="grid gap-4 border-2 border-[#211F20] bg-[#FFFAF2] p-5 transition hover:shadow-[6px_6px_0_#EBE4D8] lg:grid-cols-[minmax(0,1fr)_260px]">
       <div>
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <h2 className="font-display text-[34px] leading-none text-[#211F20]">
@@ -122,9 +122,9 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
           </span>
         </div>
 
-        <p className="max-w-2xl q-body text-[#211F20]">{quiz.description}</p>
+        <p className="max-w-3xl q-body text-[#211F20]">{quiz.description}</p>
 
-        <div className="mt-4 grid gap-2 text-[14px] leading-5 text-[#211F20] sm:grid-cols-4">
+        <div className="mt-4 flex flex-wrap gap-3 text-[14px] leading-5 text-[#211F20]">
           <MetaItem
             icon={<ListChecks className="h-4 w-4" />}
             text={`${quiz.questionCount} questions`}
@@ -144,7 +144,7 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3 md:w-[280px] md:grid-cols-1">
+      <div className="grid gap-2 sm:grid-cols-3 lg:w-[240px] lg:grid-cols-1">
         <Link
           href={routes.adminQuizDetail(quiz.id)}
           className="q-button q-button-primary border-[#211F20] bg-[#211F20]"
@@ -173,6 +173,13 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
           <ShieldCheck className="h-4 w-4" />
           {quiz.status === "published" ? "Locked" : "Publish"}
         </button>
+
+        {quiz.status === "published" ? (
+          <button type="button" className="q-button q-button-secondary">
+            <Archive className="h-4 w-4" />
+            Archive
+          </button>
+        ) : null}
       </div>
     </article>
   );

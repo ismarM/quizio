@@ -11,3 +11,6 @@ sql:
         out: "internal/db/sqlc"
         sql_package: "database/sql"
         emit_json_tags: true
+        overrides:
+          - column: "quizio.Attempt.time_taken"
+            go_type: "database/sql.NullString"

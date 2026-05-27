@@ -8,48 +8,100 @@ import {
   UserRound,
 } from "lucide-react";
 
-import LogoutButton from "@/components/auth/LogoutButton";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
 import { routes } from "@/lib/routes";
+import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { requireAuth } from "@/lib/serverAuth";
+import type { OpenSessionsResponse, QuizResponse, SubmissionsResponse, SubmissionSummary } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const recentAttempts = [
-  {
-    quizTitle: "Science Fundamentals",
-    score: "15/20",
-    status: "Completed",
-    date: "May 24",
-  },
-  {
-    quizTitle: "Geography Basics",
-    score: "12/15",
-    status: "Completed",
-    date: "May 22",
-  },
-  {
-    quizTitle: "Math Challenge",
-    score: "In progress",
-    status: "Continue",
-    date: "Today",
-  },
-];
+type OpenSessionView = {
+  attemptId: number;
+  quizId: number;
+  quizTitle: string;
+  timeLeftSeconds: number;
+  startedAt: string;
+};
 
-const recommendedQuizzes = [
-  {
-    title: "Technology Essentials",
-    meta: "18 questions · 15 min",
-  },
-  {
-    title: "World Capitals",
-    meta: "22 questions · 15 min",
-  },
-];
+function formatTimeLeft(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatSessionDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
 
 export default async function DashboardPage() {
   const user = await requireAuth();
+
+  let openSessions: OpenSessionView[] = [];
+  let submissions: SubmissionSummary[] = [];
+  let averageScore = 0;
+
+  try {
+    const [openSessionsData, submissionsData] = await Promise.all([
+      serverFetchJson<OpenSessionsResponse>("/api/users/me/open-sessions"),
+      serverFetchJson<SubmissionsResponse>("/api/users/me/submissions?limit=5&offset=0")
+    ]);
+
+    submissions = submissionsData.results;
+    if (submissions.length > 0) {
+      const totalAchieved = submissions.reduce((sum, s) => sum + s.achieved_points, 0);
+      const totalMax = submissions.reduce((sum, s) => sum + s.max_points, 0);
+      averageScore = totalMax > 0 ? Math.round((totalAchieved / totalMax) * 100) : 0;
+    }
+
+    const openSessionViews = await Promise.all(
+      openSessionsData.attempts.map(async (session) => {
+        const startTime = new Date(session.attempt.start_time);
+        const elapsedSeconds = Math.max(
+          0,
+          Math.floor((Date.now() - startTime.getTime()) / 1000)
+        );
+        const timeLeftSeconds = Math.max(
+          0,
+          session.time_limit_seconds - elapsedSeconds
+        );
+
+        let quizTitle = `Quiz #${session.attempt.quiz_id}`;
+
+        try {
+          const quizResponse = await serverFetchJson<QuizResponse>(
+            `/api/quizzes/${session.attempt.quiz_id}/info`
+          );
+          quizTitle = mapQuizDtoToListItem(quizResponse.quiz).title;
+        } catch (error) {
+          if (!(error instanceof ServerFetchError && error.status === 404)) {
+            console.error("Failed to load quiz info:", error);
+          }
+        }
+
+        return {
+          attemptId: session.attempt.id,
+          quizId: session.attempt.quiz_id,
+          quizTitle,
+          timeLeftSeconds,
+          startedAt: formatSessionDate(session.attempt.start_time),
+        } satisfies OpenSessionView;
+      })
+    );
+
+    openSessions = openSessionViews.filter((session) => session.timeLeftSeconds > 0);
+  } catch (error) {
+    console.error("Failed to load open sessions:", error);
+  }
 
   const displayName = user.displayName || user.email?.split("@")[0] || "User";
   const initial = displayName.slice(0, 1).toUpperCase();
@@ -61,9 +113,6 @@ export default async function DashboardPage() {
       <section className="q-container pb-12 pt-6 md:pb-20 md:pt-10">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="mb-3 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Dashboard
-            </p>
 
             <h1 className="font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
               Welcome back.
@@ -74,8 +123,6 @@ export default async function DashboardPage() {
               quizzes.
             </p>
           </div>
-
-          <LogoutButton className="q-button q-button-secondary w-fit" />
         </div>
 
         <div className="grid gap-6 md:grid-cols-[0.85fr_1.15fr]">
@@ -132,18 +179,65 @@ export default async function DashboardPage() {
               <StatCard
                 icon={<ListChecks className="h-5 w-5" />}
                 label="Completed"
-                value="2"
+                value={submissions.length.toString()}
               />
               <StatCard
                 icon={<BarChart3 className="h-5 w-5" />}
                 label="Average"
-                value="78%"
+                value={`${averageScore}%`}
               />
-              <StatCard
-                icon={<Medal className="h-5 w-5" />}
-                label="Best score"
-                value="15/20"
-              />
+            </section>
+
+            <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
+                    In progress
+                  </p>
+                  <h2 className="font-display text-[48px] leading-none text-[#211F20]">
+                    Open sessions
+                  </h2>
+                </div>
+              </div>
+
+              <div className="h-[2px] bg-[#211F20]" />
+
+              {openSessions.length === 0 ? (
+                <p className="mt-4 q-body text-[#211F20]">
+                  No active quiz sessions right now.
+                </p>
+              ) : (
+                <div className="mt-4 grid gap-3">
+                  {openSessions.map((session) => (
+                    <article
+                      key={session.attemptId}
+                      className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[1fr_auto]"
+                    >
+                      <div>
+                        <p className="font-display text-2xl leading-none text-[#211F20]">
+                          {session.quizTitle}
+                        </p>
+                        <p className="mt-1 q-mini text-[#8F8F8F]">
+                          Started {session.startedAt}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-4 md:justify-end">
+                        <span className="inline-flex items-center gap-2 text-[#006E5A]">
+                          <Clock3 className="h-4 w-4" />
+                          {formatTimeLeft(session.timeLeftSeconds)} left
+                        </span>
+                        <Link
+                          href={routes.attempt(session.attemptId)}
+                          className="q-button q-button-secondary"
+                        >
+                          Continue
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
@@ -160,65 +254,37 @@ export default async function DashboardPage() {
 
               <div className="h-[2px] bg-[#211F20]" />
 
-              <div className="mt-4 grid gap-3">
-                {recentAttempts.map((attempt) => (
-                  <article
-                    key={attempt.quizTitle}
-                    className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[1fr_auto]"
-                  >
-                    <div>
-                      <p className="font-display text-2xl leading-none text-[#211F20]">
-                        {attempt.quizTitle}
-                      </p>
-                      <p className="mt-1 q-mini text-[#8F8F8F]">
-                        {attempt.date} · {attempt.status}
-                      </p>
-                    </div>
+              {submissions.length === 0 ? (
+                <p className="mt-4 q-body text-[#211F20]">
+                  No recent attempts. Start a quiz to see your history!
+                </p>
+              ) : (
+                <div className="mt-4 grid gap-3">
+                  {submissions.map((submission) => (
+                    <article
+                      key={submission.quiz_id + submission.start_time}
+                      className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[1fr_auto]"
+                    >
+                      <div>
+                        <p className="font-display text-2xl leading-none text-[#211F20]">
+                          {submission.quiz_title}
+                        </p>
+                        <p className="mt-1 q-mini text-[#8F8F8F]">
+                          {formatSessionDate(submission.start_time)} · Completed
+                        </p>
+                      </div>
 
-                    <div className="flex items-center gap-3 md:justify-end">
-                      <span className="font-display text-2xl text-[#006E5A]">
-                        {attempt.score}
-                      </span>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
-              <div className="mb-4 flex items-end justify-between gap-4">
-                <div>
-                  <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                    Recommended
-                  </p>
-                  <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                    Try next
-                  </h2>
+                      <div className="flex items-center gap-3 md:justify-end">
+                        <span className="font-display text-2xl text-[#006E5A]">
+                          {submission.achieved_points}/{submission.max_points}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-
-                <Link
-                  href={routes.quizzes}
-                  className="q-button q-button-secondary hidden md:inline-flex"
-                >
-                  View all
-                </Link>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                {recommendedQuizzes.map((quiz) => (
-                  <Link
-                    key={quiz.title}
-                    href={routes.quizzes}
-                    className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4 transition hover:border-[#211F20] hover:shadow-[6px_6px_0_#EBE4D8]"
-                  >
-                    <p className="font-display text-3xl leading-none text-[#211F20]">
-                      {quiz.title}
-                    </p>
-                    <p className="mt-2 q-mini text-[#8F8F8F]">{quiz.meta}</p>
-                  </Link>
-                ))}
-              </div>
+              )}
             </section>
+
           </div>
         </div>
       </section>

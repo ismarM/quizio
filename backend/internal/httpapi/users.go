@@ -410,7 +410,7 @@ func (api *API) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 			QuizID:           row.TkQuiz,
 			QuizTitle:        quizRow.Title,
 			StartTime:        row.StartTime,
-			TimeTakenSeconds: nullTimeToSeconds(row.TimeTaken),
+			TimeTakenSeconds: nullTimeStringToSeconds(row.TimeTaken),
 			MaxPoints:        maxPoints,
 			AchievedPoints:   achieved,
 		})

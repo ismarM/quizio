@@ -391,7 +391,7 @@ func attemptDTOFromAttempt(attempt sqlc.QuizioAttempt) AttemptDTO {
 	return AttemptDTO{
 		ID:               attempt.IDAttempt,
 		StartTime:        attempt.StartTime,
-		TimeTakenSeconds: nullTimeToSeconds(attempt.TimeTaken),
+		TimeTakenSeconds: nullTimeStringToSeconds(attempt.TimeTaken),
 		QuizID:           attempt.TkQuiz,
 		UserID:           attempt.TkUser,
 	}
@@ -401,7 +401,7 @@ func attemptFromRow(row sqlc.GetAttemptWithQuizRow) AttemptDTO {
 	return AttemptDTO{
 		ID:               row.IDAttempt,
 		StartTime:        row.StartTime,
-		TimeTakenSeconds: nullTimeToSeconds(row.TimeTaken),
+		TimeTakenSeconds: nullTimeStringToSeconds(row.TimeTaken),
 		QuizID:           row.TkQuiz,
 		UserID:           row.TkUser,
 	}

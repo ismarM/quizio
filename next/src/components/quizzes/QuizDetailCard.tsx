@@ -6,11 +6,10 @@ import {
   ListChecks,
   Play,
   ShieldCheck,
-  UserRound,
   Users,
 } from "lucide-react";
 
-import type { QuizListItem } from "@/lib/mock-data";
+import type { QuizListItem } from "@/lib/types";
 import { routes } from "@/lib/routes";
 
 type QuizDetailCardProps = {

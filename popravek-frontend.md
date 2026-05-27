@@ -1,7 +1,9 @@
-/dashboard: fukni vun TRY NEXT
-dodaj keri kvizi so še odprti
-DASHBOARD ne rabimo
-Best Score ne rabimo
+/dashboard:
+
+- fukni vun TRY NEXT
+- dodaj keri kvizi so še odprti
+- DASHBOARD ne rabimo
+- Best Score ne rabimo
 
 /admin/quizzes/new: ne loči questionov
 

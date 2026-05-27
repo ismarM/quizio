@@ -29,8 +29,104 @@ export function AdminQuizForm() {
   const [category, setCategory] = useState("Science");
   const [timeLimit, setTimeLimit] = useState("15");
   const [opensAt, setOpensAt] = useState("");
+  const [questions, setQuestions] = useState<DraftQuestion[]>(() => [
+    createQuestion(),
+  ]);
 
   const isValid = title.trim().length > 0 && Number(timeLimit) > 0;
+
+  function addQuestion() {
+    setQuestions((current) => [...current, createQuestion()]);
+  }
+
+  function updateQuestion(id: string, updates: Partial<DraftQuestion>) {
+    setQuestions((current) =>
+      current.map((question) =>
+        question.id === id ? { ...question, ...updates } : question
+      )
+    );
+  }
+
+  function removeQuestion(id: string) {
+    setQuestions((current) => current.filter((question) => question.id !== id));
+  }
+
+  function addAnswer(questionId: string) {
+    setQuestions((current) =>
+      current.map((question) =>
+        question.id === questionId
+          ? {
+              ...question,
+              answers: [...question.answers, createAnswer(false)],
+            }
+          : question
+      )
+    );
+  }
+
+  function updateAnswer(
+    questionId: string,
+    answerId: string,
+    updates: Partial<DraftAnswer>
+  ) {
+    setQuestions((current) =>
+      current.map((question) => {
+        if (question.id !== questionId) {
+          return question;
+        }
+
+        return {
+          ...question,
+          answers: question.answers.map((answer) =>
+            answer.id === answerId ? { ...answer, ...updates } : answer
+          ),
+        };
+      })
+    );
+  }
+
+  function removeAnswer(questionId: string, answerId: string) {
+    setQuestions((current) =>
+      current.map((question) => {
+        if (question.id !== questionId) {
+          return question;
+        }
+
+        if (question.answers.length <= 2) {
+          return question;
+        }
+
+        const nextAnswers = question.answers.filter(
+          (answer) => answer.id !== answerId
+        );
+
+        if (!nextAnswers.some((answer) => answer.isCorrect)) {
+          nextAnswers[0] = { ...nextAnswers[0], isCorrect: true };
+        }
+
+        return {
+          ...question,
+          answers: nextAnswers,
+        };
+      })
+    );
+  }
+
+  function setCorrectAnswer(questionId: string, answerId: string) {
+    setQuestions((current) =>
+      current.map((question) =>
+        question.id === questionId
+          ? {
+              ...question,
+              answers: question.answers.map((answer) => ({
+                ...answer,
+                isCorrect: answer.id === answerId,
+              })),
+            }
+          : question
+      )
+    );
+  }
 
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_360px]">
@@ -113,15 +209,143 @@ export function AdminQuizForm() {
               <Info className="mt-1 h-5 w-5 text-[#006E5A]" />
               <div>
                 <p className="font-display text-2xl leading-none text-[#211F20]">
-                  Draft first, questions after
+                  Build the quiz in one go
                 </p>
                 <p className="mt-1 q-body text-[#211F20]">
-                  This creates the quiz shell. After saving, you can add
-                  questions, answers, images and publish validation.
+                  You can add questions and answers while creating the quiz or
+                  come back later to refine them.
                 </p>
               </div>
             </div>
           </div>
+
+          <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-4">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="inline-flex bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
+                  Questions
+                </p>
+                <p className="mt-2 font-display text-3xl leading-none text-[#211F20]">
+                  Add questions now
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={addQuestion}
+                className="q-button q-button-secondary"
+              >
+                <FilePlus2 className="h-4 w-4" />
+                Add question
+              </button>
+            </div>
+
+            <div className="grid gap-4">
+              {questions.map((question, index) => (
+                <article
+                  key={question.id}
+                  className="border-2 border-[#D7D0C4] bg-[#FFFAF2] p-4"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-display text-2xl text-[#211F20]">
+                      Question {index + 1}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => removeQuestion(question.id)}
+                      className="q-button q-button-secondary"
+                      disabled={questions.length <= 1}
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4">
+                    <FormField label="Question text" required>
+                      <input
+                        className="q-input h-12"
+                        value={question.title}
+                        onChange={(event) =>
+                          updateQuestion(question.id, {
+                            title: event.target.value,
+                          })
+                        }
+                        placeholder="Example: Which planet is known as the Red Planet?"
+                      />
+                    </FormField>
+
+                    <FormField label="Points" required>
+                      <input
+                        className="q-input h-12"
+                        value={question.points}
+                        onChange={(event) =>
+                          updateQuestion(question.id, {
+                            points: event.target.value,
+                          })
+                        }
+                        type="number"
+                        min="1"
+                      />
+                    </FormField>
+
+                    <div className="grid gap-3">
+                      <p className="font-display text-2xl leading-none text-[#211F20]">
+                        Answers
+                      </p>
+
+                      {question.answers.map((answer, answerIndex) => (
+                        <div
+                          key={answer.id}
+                          className="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center"
+                        >
+                          <label className="flex items-center gap-2 q-mini text-[#211F20]">
+                            <input
+                              type="radio"
+                              name={`correct-${question.id}`}
+                              checked={answer.isCorrect}
+                              onChange={() =>
+                                setCorrectAnswer(question.id, answer.id)
+                              }
+                            />
+                            Correct
+                          </label>
+
+                          <input
+                            className="q-input h-12"
+                            value={answer.text}
+                            onChange={(event) =>
+                              updateAnswer(question.id, answer.id, {
+                                text: event.target.value,
+                              })
+                            }
+                            placeholder={`Answer ${answerIndex + 1}`}
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => removeAnswer(question.id, answer.id)}
+                            className="q-button q-button-secondary"
+                            disabled={question.answers.length <= 2}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={() => addAnswer(question.id)}
+                        className="q-button q-button-secondary w-fit"
+                      >
+                        Add answer
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
 
           <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
             <button
@@ -156,7 +380,7 @@ export function AdminQuizForm() {
             <ChecklistItem done={title.trim().length > 0} text="Add title" />
             <ChecklistItem done={description.trim().length > 0} text="Add description" />
             <ChecklistItem done={Number(timeLimit) > 0} text="Set time limit" />
-            <ChecklistItem done={false} text="Add questions later" />
+            <ChecklistItem done={questions.length > 0} text="Add questions" />
             <ChecklistItem done={false} text="Publish when ready" />
           </div>
         </section>
@@ -211,4 +435,41 @@ function ChecklistItem({ done, text }: { done: boolean; text: string }) {
       <span>{text}</span>
     </div>
   );
+}
+
+type DraftAnswer = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+};
+
+type DraftQuestion = {
+  id: string;
+  title: string;
+  points: string;
+  answers: DraftAnswer[];
+};
+
+function createId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createAnswer(isCorrect: boolean): DraftAnswer {
+  return {
+    id: createId(),
+    text: "",
+    isCorrect,
+  };
+}
+
+function createQuestion(): DraftQuestion {
+  return {
+    id: createId(),
+    title: "",
+    points: "5",
+    answers: [createAnswer(true), createAnswer(false)],
+  };
 }

@@ -1,43 +1,121 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Clock3, Flag } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import type { AttemptQuestion } from "@/lib/mock-data";
+import { buildProxyUrl, proxyFetchJson } from "@/lib/proxyClient";
 import { routes } from "@/lib/routes";
+import type {
+  AttemptQuestionDTO,
+  QuestionDTO,
+  UpdateAttemptRequest,
+} from "@/lib/types";
 
 type AttemptPlayerProps = {
-  attemptId: number;
+  quizId: number;
   quizTitle: string;
-  timeLeft: string;
-  questions: AttemptQuestion[];
+  questions: QuestionDTO[];
+  responses: AttemptQuestionDTO[];
+  initialTimeLeftSeconds: number;
 };
 
 export function AttemptPlayer({
-  attemptId,
+  quizId,
   quizTitle,
-  timeLeft,
   questions,
+  responses,
+  initialTimeLeftSeconds,
 }: AttemptPlayerProps) {
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<number, number>>(() => {
+    const initial: Record<number, number> = {};
+    responses.forEach((response) => {
+      initial[response.question_id] = response.answer_id;
+    });
+    return initial;
+  });
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(
+    initialTimeLeftSeconds
+  );
+  const isFinishingRef = useRef(false);
+
+  useEffect(() => {
+    if (initialTimeLeftSeconds <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setTimeLeftSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [initialTimeLeftSeconds]);
+
+  useEffect(() => {
+    if (timeLeftSeconds === 0) {
+      void finishAttempt();
+    }
+  }, [timeLeftSeconds]);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      if (isFinishingRef.current) {
+        return;
+      }
+
+      isFinishingRef.current = true;
+      const url = buildProxyUrl(`/quizzes/${quizId}/attempts/finish`);
+      navigator.sendBeacon(url);
+    };
+
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, [quizId]);
 
   const currentQuestion = questions[currentIndex];
-  const selectedOptionId = answers[currentQuestion.id];
+  const selectedOptionId = currentQuestion
+    ? answers[currentQuestion.id]
+    : undefined;
 
   const progressPercent = useMemo(() => {
+    if (questions.length === 0) {
+      return 0;
+    }
     return ((currentIndex + 1) / questions.length) * 100;
   }, [currentIndex, questions.length]);
 
   const answeredCount = Object.keys(answers).length;
   const isLastQuestion = currentIndex === questions.length - 1;
 
-  function selectAnswer(optionId: number) {
+  async function selectAnswer(optionId: number) {
+    if (!currentQuestion) {
+      return;
+    }
+
     setAnswers((previous) => ({
       ...previous,
       [currentQuestion.id]: optionId,
     }));
+
+    const payload: UpdateAttemptRequest = {
+      updates: [
+        {
+          question_id: currentQuestion.id,
+          answer_id: optionId,
+        },
+      ],
+    };
+
+    try {
+      await proxyFetchJson(`/quizzes/${quizId}/attempts`, {
+        method: "PATCH",
+        body: payload,
+      });
+    } catch (error) {
+      console.error("Failed to update attempt:", error);
+    }
   }
 
   function goPrevious() {
@@ -46,6 +124,25 @@ export function AttemptPlayer({
 
   function goNext() {
     setCurrentIndex((value) => Math.min(questions.length - 1, value + 1));
+  }
+
+  async function finishAttempt() {
+    if (isFinishingRef.current) {
+      return;
+    }
+
+    isFinishingRef.current = true;
+
+    try {
+      await proxyFetchJson(`/quizzes/${quizId}/attempts/finish`, {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Failed to finish attempt:", error);
+    } finally {
+      router.push(routes.attemptResult(quizId));
+      router.refresh();
+    }
   }
 
   return (
@@ -64,7 +161,7 @@ export function AttemptPlayer({
 
             <div className="flex h-10 items-center gap-2 border-2 border-[#211F20] px-3 font-display text-xl text-[#211F20]">
               <Clock3 className="h-4 w-4 text-[#006E5A]" />
-              {timeLeft}
+              {formatTimeLeft(timeLeftSeconds)}
             </div>
           </div>
 
@@ -80,16 +177,23 @@ export function AttemptPlayer({
               Single choice
             </span>
             <span className="inline-flex bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#211F20]">
-              {currentQuestion.points} points
+              {currentQuestion?.value ?? 0} points
             </span>
           </div>
 
-          <h2 className="font-display text-[46px] leading-[0.95] text-[#211F20] md:text-[64px]">
-            {currentQuestion.text}
-          </h2>
+          {currentQuestion ? (
+            <h2 className="font-display text-[46px] leading-[0.95] text-[#211F20] md:text-[64px]">
+              {currentQuestion.title}
+            </h2>
+          ) : (
+            <h2 className="font-display text-[46px] leading-[0.95] text-[#211F20] md:text-[64px]">
+              No questions available.
+            </h2>
+          )}
 
           <div className="mt-8 grid gap-3">
-            {currentQuestion.options.map((option) => {
+            {currentQuestion
+              ? currentQuestion.answers.map((option) => {
               const isSelected = selectedOptionId === option.id;
 
               return (
@@ -117,10 +221,11 @@ export function AttemptPlayer({
                     ) : null}
                   </span>
 
-                  <span className="q-body text-[#211F20]">{option.text}</span>
+                  <span className="q-body text-[#211F20]">{option.title}</span>
                 </button>
               );
-            })}
+            })
+              : null}
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-3">
@@ -141,13 +246,14 @@ export function AttemptPlayer({
           </button>
 
             {isLastQuestion ? (
-              <Link
-                href={routes.attemptResult(attemptId)}
+              <button
+                type="button"
+                onClick={() => void finishAttempt()}
                 className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
               >
                 <Flag className="h-4 w-4" />
                 Submit
-              </Link>
+              </button>
             ) : (
               <button
                 type="button"
@@ -214,4 +320,10 @@ export function AttemptPlayer({
       </div>
     </section>
   );
+}
+
+function formatTimeLeft(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.max(0, totalSeconds % 60);
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }

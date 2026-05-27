@@ -5,8 +5,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { QuizDetailCard } from "@/components/quizzes/QuizDetailCard";
 import { QuizLeaderboardMini } from "@/components/quizzes/QuizLeaderboardMini";
-import { getQuizById } from "@/lib/mock-data";
+import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
+import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { getSessionUser } from "@/lib/serverAuth";
+import type { QuizResponse } from "@/lib/types";
 
 type QuizDetailPageProps = {
   params: Promise<{
@@ -16,13 +18,19 @@ type QuizDetailPageProps = {
 
 export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   const { id } = await params;
-  const quiz = getQuizById(id);
+  let quiz;
+
+  try {
+    const data = await serverFetchJson<QuizResponse>(`/api/quizzes/${id}/info`);
+    quiz = mapQuizDtoToListItem(data.quiz);
+  } catch (error) {
+    if (error instanceof ServerFetchError && error.status === 404) {
+      notFound();
+    }
+    throw error;
+  }
 
   const user = await getSessionUser();
-
-  if (!quiz) {
-    notFound();
-  }
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">

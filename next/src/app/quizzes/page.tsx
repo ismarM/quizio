@@ -2,9 +2,22 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { QuizBrowser } from "@/components/quizzes/QuizBrowser";
-import { quizzes } from "@/lib/mock-data";
+import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
+import { serverFetchJson } from "@/lib/serverFetch";
+import type { QuizListItem, QuizListResponse } from "@/lib/types";
 
-export default function QuizzesPage() {
+export default async function QuizzesPage() {
+  let quizzes: QuizListItem[] = [];
+
+  try {
+    const data = await serverFetchJson<QuizListResponse>(
+      "/api/quizzes?limit=20&offset=0"
+    );
+    quizzes = data.quizzes.map(mapQuizDtoToListItem);
+  } catch (error) {
+    console.error("Failed to load quizzes:", error);
+  }
+
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
       <SiteHeader />

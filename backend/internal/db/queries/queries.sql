@@ -272,7 +272,7 @@ WHERE a.tk_Quiz = $1
 
 -- name: FinalizeAttemptIfExpired :one
 UPDATE quizio."Attempt" a
-SET time_taken = q.time_limit::time
+SET time_taken = time '00:00' + q.time_limit
 FROM quizio."Quiz" q
 WHERE a.id_Attempt = $1
 	AND a.tk_Quiz = q.id_Quiz
@@ -282,7 +282,7 @@ RETURNING a.id_Attempt, a.start_time, a.time_taken, a.tk_Quiz, a.tk_User;
 
 -- name: FinalizeExpiredAttemptsForUser :exec
 UPDATE quizio."Attempt" a
-SET time_taken = q.time_limit::time
+SET time_taken = time '00:00' + q.time_limit
 FROM quizio."Quiz" q
 WHERE a.tk_User = $1
 	AND a.tk_Quiz = q.id_Quiz
@@ -291,7 +291,7 @@ WHERE a.tk_User = $1
 
 -- name: FinalizeAttempt :one
 UPDATE quizio."Attempt" a
-SET time_taken = LEAST(NOW() - a.start_time, q.time_limit)::time
+SET time_taken = time '00:00' + LEAST(NOW() - a.start_time, q.time_limit)
 FROM quizio."Quiz" q
 WHERE a.id_Attempt = $1
 	AND a.tk_Quiz = q.id_Quiz

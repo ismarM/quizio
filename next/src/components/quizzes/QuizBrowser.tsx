@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 
-import type { QuizListItem } from "@/lib/mock-data";
+import type { QuizListItem } from "@/lib/types";
 import { QuizCard } from "@/components/quizzes/QuizCard";
 
 const categories = [
