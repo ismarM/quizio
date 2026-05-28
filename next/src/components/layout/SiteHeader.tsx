@@ -1,11 +1,9 @@
-import Link from "next/link";
 import { UserRound } from "lucide-react";
+import Link from "next/link";
 
 import LogoutButton from "@/components/auth/LogoutButton";
-import { getSessionUser } from "@/lib/serverAuth";
 import { routes } from "@/lib/routes";
-
-const adminEmail = (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+import { getSessionUser } from "@/lib/serverAuth";
 
 function getInitials(email?: string | null, displayName?: string | null) {
   const source = displayName || email || "U";
@@ -16,8 +14,7 @@ export async function SiteHeader() {
   const user = await getSessionUser();
 
   const isLoggedIn = Boolean(user);
-  const isAdmin =
-    user?.email?.trim().toLowerCase() === adminEmail && adminEmail.length > 0;
+  const isAdmin = user?.isAdmin
 
   return (
     <header className="q-container flex items-center justify-between border-b-2 border-transparent py-5 md:py-7">
@@ -32,9 +29,9 @@ export async function SiteHeader() {
         <Link href={routes.quizzes} className="hover:text-[#FF3C38]">
           Explore quizzes
         </Link>
-        <a href="/#how-it-works" className="hover:text-[#FF3C38]">
+        <Link href="/#how-it-works" className="hover:text-[#FF3C38]">
           How it works
-        </a>
+        </Link>
       </nav>
 
       <div className="hidden items-center gap-3 md:flex">

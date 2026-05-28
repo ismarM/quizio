@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   Home,
   LayoutDashboard,
@@ -6,18 +5,16 @@ import {
   LogIn,
   UserRound,
 } from "lucide-react";
+import Link from "next/link";
 
-import { getSessionUser } from "@/lib/serverAuth";
 import { routes } from "@/lib/routes";
-
-const adminEmail = (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+import { getSessionUser } from "@/lib/serverAuth";
 
 export async function MobileBottomNav() {
   const user = await getSessionUser();
 
   const isLoggedIn = Boolean(user);
-  const isAdmin =
-    user?.email?.trim().toLowerCase() === adminEmail && adminEmail.length > 0;
+  const isAdmin = user?.isAdmin
 
   const navItems = [
     {

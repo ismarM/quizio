@@ -1,7 +1,8 @@
 type QueryValue = string | number | boolean | null | undefined;
 
-type ProxyFetchOptions = RequestInit & {
+type ProxyFetchOptions = Omit<RequestInit, "body"> & {
   query?: Record<string, QueryValue>;
+  body?: unknown;
 };
 
 function normalizePath(path: string) {
@@ -44,7 +45,7 @@ export async function proxyFetch(path: string, options: ProxyFetchOptions = {}) 
   const url = buildProxyUrl(path, query);
   const requestHeaders = new Headers(headers);
 
-  let requestBody = body;
+  let requestBody: unknown = body;
   if (isJsonBody(body)) {
     requestHeaders.set("Content-Type", "application/json");
     requestBody = JSON.stringify(body);
@@ -53,7 +54,7 @@ export async function proxyFetch(path: string, options: ProxyFetchOptions = {}) 
   return fetch(url, {
     ...rest,
     headers: requestHeaders,
-    body: requestBody,
+    body: requestBody as BodyInit | null,
   });
 }
 

@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { applyHmacHeaders } from "@/lib/requestIntegrity";
 import { getSessionUser } from "@/lib/serverAuth";
+import { serverFetch } from "@/lib/serverFetch";
 
 export const runtime = "nodejs";
-
-const GO_BACKEND_URL = process.env.GO_BACKEND_URL;
-const HMAC_SECRET = process.env.HMAC_SECRET;
 
 type RouteContext = {
   params: Promise<{ path?: string[] }>;
@@ -42,14 +39,6 @@ function isAdminRoute(
   );
 }
 
-function buildTargetUrl(baseUrl: string, pathname: string, search: string) {
-  const target = new URL(baseUrl);
-  const normalizedBase = target.pathname.replace(/\/$/, "");
-  target.pathname = `${normalizedBase}${pathname}`;
-  target.search = search;
-  return target;
-}
-
 function sanitizeRequestHeaders(headers: Headers) {
   const sanitized = new Headers(headers);
   sanitized.delete("cookie");
@@ -66,17 +55,6 @@ function sanitizeResponseHeaders(headers: Headers) {
 }
 
 async function handleProxy(request: Request, { params }: RouteContext) {
-  if (!GO_BACKEND_URL) {
-    return NextResponse.json(
-      { error: "Missing GO_BACKEND_URL" },
-      { status: 500 }
-    );
-  }
-
-  if (!HMAC_SECRET) {
-    return NextResponse.json({ error: "Missing HMAC_SECRET" }, { status: 500 });
-  }
-
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -94,21 +72,11 @@ async function handleProxy(request: Request, { params }: RouteContext) {
   const body =
     method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
 
-  const headers = sanitizeRequestHeaders(request.headers);
-  headers.set("X-User-Email", sessionUser.email ?? "");
-  headers.set("X-User-Id", sessionUser.postgresId.toString());
-  headers.set("X-User-IsAdmin", sessionUser.isAdmin ? "true" : "false");
-
-  const targetUrl = buildTargetUrl(GO_BACKEND_URL, pathname, search);
-  const requestPath = `${targetUrl.pathname}${targetUrl.search}`;
-  applyHmacHeaders(headers, requestPath, body, HMAC_SECRET);
-
   try {
-    const upstream = await fetch(targetUrl, {
+    const upstream = await serverFetch(`${pathname}${search}`, {
       method,
-      headers,
+      headers: sanitizeRequestHeaders(request.headers),
       body: body ?? undefined,
-      cache: "no-store",
     });
 
     const responseHeaders = sanitizeResponseHeaders(upstream.headers);
