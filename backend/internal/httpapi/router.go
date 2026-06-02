@@ -8,8 +8,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/ismarM/quizio/docs"
+	"github.com/ismarM/quizio/internal/db/sqlc"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
+
+type API struct {
+	db      *sql.DB
+	queries *sqlc.Queries
+}
 
 func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
 	r := chi.NewRouter()
@@ -23,7 +29,10 @@ func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
 		httpSwagger.URL("/swagger/doc.json"),
 	))
 
-	api := NewAPI(db)
+	api := &API{
+		db:      db,
+		queries: sqlc.New(db),
+	}
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(AuthMiddleware)
