@@ -208,6 +208,28 @@ definitions:
       value:
         type: number
     type: object
+  httpapi.QuizAttemptDTO:
+    properties:
+      id_attempt:
+        type: integer
+      score_achieved:
+        type: number
+      start_time:
+        type: string
+      time_taken_seconds:
+        type: integer
+      user_email:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  httpapi.QuizAttemptsResponse:
+    properties:
+      attempts:
+        items:
+          $ref: '#/definitions/httpapi.QuizAttemptDTO'
+        type: array
+    type: object
   httpapi.QuizDTO:
     properties:
       category_id:
@@ -746,6 +768,51 @@ paths:
       summary: Archive quiz
       tags:
       - quizzes
+  /api/quizzes/{quizId}/attempt/{userId}:
+    get:
+      description: Get all questions, answers, and user responses for a specific user's
+        attempt on a quiz (admin only).
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.AttemptResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: Get user attempt details (admin only)
+      tags:
+      - attempts
   /api/quizzes/{quizId}/attempts:
     get:
       description: Get attempt status for session restoration; finalize if expired.
@@ -859,6 +926,46 @@ paths:
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
       summary: Start attempt
+      tags:
+      - attempts
+  /api/quizzes/{quizId}/attempts/admin:
+    get:
+      description: Retrieve a list of all attempts on a quiz with start time, time
+        taken, user email, and score achieved.
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: quizId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpapi.QuizAttemptsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+      summary: List all attempts for a quiz (admin only)
       tags:
       - attempts
   /api/quizzes/{quizId}/attempts/finish:

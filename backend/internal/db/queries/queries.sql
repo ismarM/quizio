@@ -330,3 +330,15 @@ DO UPDATE SET tk_Answer = EXCLUDED.tk_Answer;
 SELECT tk_Attempt, tk_Question, tk_Answer
 FROM quizio."Attempt_Question"
 WHERE tk_Attempt = $1;
+
+-- name: ListAttemptsByQuiz :many
+SELECT a.id_Attempt,
+	a.start_time,
+	a.time_taken,
+	a.tk_Quiz,
+	a.tk_User,
+	u.email AS user_email
+FROM quizio."Attempt" a
+JOIN quizio."User" u ON a.tk_User = u.id_User
+WHERE a.tk_Quiz = $1
+ORDER BY a.start_time DESC;

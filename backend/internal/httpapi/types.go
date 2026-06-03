@@ -231,3 +231,16 @@ type LeaderboardResponse struct {
 	QuizID  int32                 `json:"quiz_id"`
 	Entries []LeaderboardEntryDTO `json:"entries"`
 }
+
+type QuizAttemptsResponse struct {
+	Attempts []QuizAttemptDTO `json:"attempts"`
+}
+
+type QuizAttemptDTO struct {
+	IDAttempt        int32     `json:"id_attempt"`
+	UserID           int32     `json:"user_id"`
+	UserEmail        string    `json:"user_email"`
+	StartTime        time.Time `json:"start_time"`
+	TimeTakenSeconds *int32    `json:"time_taken_seconds,omitempty"`
+	ScoreAchieved    float64   `json:"score_achieved"`
+}

@@ -80,6 +80,8 @@ func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
 				r.Post("/{quizId}/attempts", api.StartAttempt)
 				r.Patch("/{quizId}/attempts", api.UpdateAttemptStatus)
 				r.Get("/{quizId}/attempts", api.GetAttemptStatus)
+				r.Get("/{quizId}/attempts/admin", api.ListQuizAttemptsAdmin)
+				r.Get("/{quizId}/attempt/{userId}", api.GetAttemptForUser)
 				r.Post("/{quizId}/attempts/finish", api.FinishAttempt)
 			})
 

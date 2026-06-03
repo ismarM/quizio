@@ -417,3 +417,169 @@ func mapAttemptResponses(rows []sqlc.QuizioAttemptQuestion) []AttemptQuestionDTO
 	}
 	return responses
 }
+
+// ListQuizAttemptsAdmin godoc
+// @Summary List all attempts for a quiz (admin only)
+// @Description Retrieve a list of all attempts on a quiz with start time, time taken, user email, and score achieved.
+// @Tags attempts
+// @Produce json
+// @Param quizId path int true "Quiz ID"
+// @Success 200 {object} QuizAttemptsResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/quizzes/{quizId}/attempts/admin [get]
+func (api *API) ListQuizAttemptsAdmin(w http.ResponseWriter, r *http.Request) {
+	quizID, err := parseIDParam(r, "quizId")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_quiz_id", "quiz id is required")
+		return
+	}
+
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can list all attempts")
+		return
+	}
+
+	// Verify quiz exists
+	_, err = api.queries.GetQuizByID(r.Context(), quizID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
+		return
+	}
+
+	questions, err := api.loadQuizQuestions(r.Context(), quizID, true)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "load_questions_failed", "failed to load quiz questions")
+		return
+	}
+
+	questionValue := make(map[int32]float64, len(questions))
+	answerIsCorrect := make(map[int32]bool)
+	for _, q := range questions {
+		questionValue[q.ID] = q.Value
+		for _, a := range q.Answers {
+			answerIsCorrect[a.ID] = a.IsCorrect
+		}
+	}
+
+	attempts, err := api.queries.ListAttemptsByQuiz(r.Context(), quizID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "list_attempts_failed", "failed to list attempts")
+		return
+	}
+
+	attemptsDTO := make([]QuizAttemptDTO, 0, len(attempts))
+	for _, att := range attempts {
+		responses, err := api.queries.ListAttemptQuestions(r.Context(), att.IDAttempt)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "load_responses_failed", "failed to load attempt responses")
+			return
+		}
+
+		var achieved float64
+		for _, resp := range responses {
+			if correct, ok := answerIsCorrect[resp.TkAnswer]; ok && correct {
+				if val, ok := questionValue[resp.TkQuestion]; ok {
+					achieved += val
+				}
+			}
+		}
+
+		var timeTakenSecs *int32
+		if att.TimeTaken.Valid {
+			timeTakenSecs = nullTimeStringToSeconds(att.TimeTaken)
+		}
+
+		attemptsDTO = append(attemptsDTO, QuizAttemptDTO{
+			IDAttempt:        att.IDAttempt,
+			UserID:           att.TkUser,
+			UserEmail:        att.UserEmail,
+			StartTime:        att.StartTime,
+			TimeTakenSeconds: timeTakenSecs,
+			ScoreAchieved:    achieved,
+		})
+	}
+
+	writeJSON(w, http.StatusOK, QuizAttemptsResponse{Attempts: attemptsDTO})
+}
+
+// GetAttemptForUser godoc
+// @Summary Get user attempt details (admin only)
+// @Description Get all questions, answers, and user responses for a specific user's attempt on a quiz (admin only).
+// @Tags attempts
+// @Produce json
+// @Param quizId path int true "Quiz ID"
+// @Param userId path int true "User ID"
+// @Success 200 {object} AttemptResultResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/quizzes/{quizId}/attempt/{userId} [get]
+func (api *API) GetAttemptForUser(w http.ResponseWriter, r *http.Request) {
+	quizID, err := parseIDParam(r, "quizId")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_quiz_id", "quiz id is required")
+		return
+	}
+
+	userID, err := parseIDParam(r, "userId")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_user_id", "user id is required")
+		return
+	}
+
+	claims, ok := UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "unauthorized")
+		return
+	}
+
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can view user attempts")
+		return
+	}
+
+	row, err := api.queries.GetAttemptWithQuiz(r.Context(), sqlc.GetAttemptWithQuizParams{
+		TkQuiz: quizID,
+		TkUser: userID,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "not_found", "attempt not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "get_attempt_failed", "failed to load attempt")
+		return
+	}
+
+	attempt := attemptFromRow(row)
+	if !row.TimeTaken.Valid && !row.IsActive {
+		finalized, err := api.queries.FinalizeAttemptIfExpired(r.Context(), row.IDAttempt)
+		if err == nil {
+			attempt = attemptDTOFromAttempt(finalized)
+		}
+	}
+
+	result, err := api.buildAttemptResult(r.Context(), attempt, quizID, true)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "build_results_failed", "failed to build attempt result")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}

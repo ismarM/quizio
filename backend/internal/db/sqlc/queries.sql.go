@@ -598,6 +598,58 @@ func (q *Queries) ListAttemptQuestions(ctx context.Context, tkAttempt int32) ([]
 	return items, nil
 }
 
+const listAttemptsByQuiz = `-- name: ListAttemptsByQuiz :many
+SELECT a.id_Attempt,
+	a.start_time,
+	a.time_taken,
+	a.tk_Quiz,
+	a.tk_User,
+	u.email AS user_email
+FROM quizio."Attempt" a
+JOIN quizio."User" u ON a.tk_User = u.id_User
+WHERE a.tk_Quiz = $1
+ORDER BY a.start_time DESC
+`
+
+type ListAttemptsByQuizRow struct {
+	IDAttempt int32          `json:"id_attempt"`
+	StartTime time.Time      `json:"start_time"`
+	TimeTaken sql.NullString `json:"time_taken"`
+	TkQuiz    int32          `json:"tk_quiz"`
+	TkUser    int32          `json:"tk_user"`
+	UserEmail string         `json:"user_email"`
+}
+
+func (q *Queries) ListAttemptsByQuiz(ctx context.Context, tkQuiz int32) ([]ListAttemptsByQuizRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAttemptsByQuiz, tkQuiz)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAttemptsByQuizRow
+	for rows.Next() {
+		var i ListAttemptsByQuizRow
+		if err := rows.Scan(
+			&i.IDAttempt,
+			&i.StartTime,
+			&i.TimeTaken,
+			&i.TkQuiz,
+			&i.TkUser,
+			&i.UserEmail,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAttemptsByUser = `-- name: ListAttemptsByUser :many
 SELECT id_Attempt, start_time, time_taken, tk_Quiz, tk_User
 FROM quizio."Attempt"
