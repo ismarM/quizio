@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -34,11 +35,57 @@ type QuizBrowserProps = {
 };
 
 export function QuizBrowser({ quizzes }: QuizBrowserProps) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
+  return (
+    <Suspense fallback={null}>
+      <QuizBrowserInner quizzes={quizzes} />
+    </Suspense>
+  );
+}
+
+function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [query, setQuery] = useState(() => searchParams.get("query") || "");
+  const [category, setCategory] = useState(() => searchParams.get("category") || "All");
   const [filtersOpen, setFiltersOpen] = useState(true);
-  const [page, setPage] = useState(1);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [page, setPage] = useState(() => parseInt(searchParams.get("page") || "1", 10));
+  const [viewMode, setViewMode] = useState<"grid" | "list">(
+    () => (searchParams.get("view") as "grid" | "list") || "grid"
+  );
+
+  useEffect(() => {
+    setQuery(searchParams.get("query") || "");
+    setCategory(searchParams.get("category") || "All");
+    setPage(parseInt(searchParams.get("page") || "1", 10));
+    setViewMode((searchParams.get("view") as "grid" | "list") || "grid");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      
+      if (query) params.set("query", query);
+      else params.delete("query");
+      
+      if (category !== "All") params.set("category", category);
+      else params.delete("category");
+      
+      if (page > 1) params.set("page", page.toString());
+      else params.delete("page");
+      
+      if (viewMode !== "grid") params.set("view", viewMode);
+      else params.delete("view");
+      
+      const newSearch = params.toString();
+      if (newSearch !== searchParams.toString()) {
+        router.replace(`${pathname}?${newSearch}`, { scroll: false });
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, category, page, viewMode, pathname, router, searchParams]);
 
   const filteredQuizzes = useMemo(() => {
     return quizzes.filter((quiz) => {

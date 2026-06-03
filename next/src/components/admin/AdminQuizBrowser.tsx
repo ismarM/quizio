@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, type ReactNode } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useEffect, useMemo, useState, Suspense, type ReactNode } from "react";
 import {
   Archive,
   CalendarClock,
@@ -58,9 +58,51 @@ export function AdminQuizBrowser({
   quizzes,
   archivedView = false,
 }: AdminQuizBrowserProps) {
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<StatusFilter>("all");
+  return (
+    <Suspense fallback={null}>
+      <AdminQuizBrowserInner quizzes={quizzes} archivedView={archivedView} />
+    </Suspense>
+  );
+}
+
+function AdminQuizBrowserInner({
+  quizzes,
+  archivedView = false,
+}: AdminQuizBrowserProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [query, setQuery] = useState(() => searchParams.get("query") || "");
+  const [status, setStatus] = useState<StatusFilter>(
+    () => (searchParams.get("status") as StatusFilter) || "all"
+  );
+  
   const statusOptions = archivedView ? archivedStatuses : activeStatuses;
+
+  useEffect(() => {
+    setQuery(searchParams.get("query") || "");
+    setStatus((searchParams.get("status") as StatusFilter) || "all");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      
+      if (query) params.set("query", query);
+      else params.delete("query");
+      
+      if (status !== "all") params.set("status", status);
+      else params.delete("status");
+      
+      const newSearch = params.toString();
+      if (newSearch !== searchParams.toString()) {
+        router.replace(`${pathname}?${newSearch}`, { scroll: false });
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, status, pathname, router, searchParams]);
 
   const filteredQuizzes = useMemo(() => {
     return quizzes.filter((quiz) => {
