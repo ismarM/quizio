@@ -110,7 +110,7 @@ export function AttemptPlayer({
   const isLastQuestion = currentIndex === questions.length - 1;
 
   async function selectAnswer(optionId: number) {
-    if (!currentQuestion) {
+    if (!currentQuestion || isFinishingRef.current) {
       return;
     }
 
@@ -133,7 +133,10 @@ export function AttemptPlayer({
         method: "PATCH",
         body: payload,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.message === "attempt_finished") {
+        return;
+      }
       console.error("Failed to update attempt:", error);
     }
   }

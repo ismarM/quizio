@@ -1,14 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 
-import { quizLeaderboardPreview } from "@/lib/mock-data";
 import { routes } from "@/lib/routes";
+import { useLeaderboard } from "@/lib/useLeaderboard";
+import { formatScore, getDisplayName } from "@/lib/leaderboard-utils";
 
 type QuizLeaderboardMiniProps = {
   quizId: number;
 };
 
 export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
+  const { entries, isConnected } = useLeaderboard(quizId);
+  const topEntries = entries.slice(0, 5);
+  const isLoading = entries.length === 0 && isConnected;
+
   return (
     <section className="grid gap-5 md:grid-cols-[0.75fr_1.25fr]">
       <div className="border-2 border-[#211F20] bg-[#006E5A] p-6 text-[#FFFAF2]">
@@ -37,9 +44,14 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
             <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
               Ranking
             </p>
-            <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-              Top results
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="font-display text-[48px] leading-none text-[#211F20]">
+                Top results
+              </h2>
+              {isConnected && (
+                <div className="h-3 w-3 animate-pulse rounded-full bg-[#006E5A]" title="Live" />
+              )}
+            </div>
           </div>
 
           <Link
@@ -53,29 +65,53 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
         <div className="h-[2px] bg-[#211F20]" />
 
         <div className="mt-4 grid gap-2">
-          {quizLeaderboardPreview.map((item) => (
-            <div
-              key={item.rank}
-              className="grid grid-cols-[48px_1fr_auto] items-center border-b border-[#D7D0C4] py-3 last:border-b-0"
-            >
-              <span
-                className={[
-                  "flex h-9 w-9 items-center justify-center font-display text-xl",
-                  item.rank === 1
-                    ? "bg-[#FF3C38] text-[#FFFAF2]"
-                    : "bg-[#EBE4D8] text-[#211F20]",
-                ].join(" ")}
-              >
-                {item.rank}
-              </span>
+          {isLoading ? (
+            <>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-[48px_1fr_auto] items-center border-b border-[#D7D0C4] py-3 last:border-b-0 animate-pulse"
+                >
+                  <div className="h-9 w-9 bg-[#EBE4D8]" />
+                  <div className="h-5 w-32 bg-[#EBE4D8]" />
+                  <div className="h-6 w-16 bg-[#EBE4D8]" />
+                </div>
+              ))}
+            </>
+          ) : topEntries.length > 0 ? (
+            topEntries.map((item, index) => {
+              const rank = index + 1;
+              return (
+                <div
+                  key={item.user_id}
+                  className="grid grid-cols-[48px_1fr_auto] items-center border-b border-[#D7D0C4] py-3 last:border-b-0"
+                >
+                  <span
+                    className={[
+                      "flex h-9 w-9 items-center justify-center font-display text-xl",
+                      rank === 1
+                        ? "bg-[#FF3C38] text-[#FFFAF2]"
+                        : "bg-[#EBE4D8] text-[#211F20]",
+                    ].join(" ")}
+                  >
+                    {rank}
+                  </span>
 
-              <span className="q-body text-[#211F20]">{item.name}</span>
+                  <span className="q-body text-[#211F20]">
+                    {getDisplayName(item)}
+                  </span>
 
-              <span className="font-display text-2xl text-[#006E5A]">
-                {item.score}
-              </span>
+                  <span className="font-display text-2xl text-[#006E5A]">
+                    {formatScore(item.achieved_points, item.max_points)}
+                  </span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="py-8 text-center text-[#211F20] opacity-60">
+              No results yet
             </div>
-          ))}
+          )}
         </div>
       </div>
     </section>
