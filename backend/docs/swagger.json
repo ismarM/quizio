@@ -918,6 +918,59 @@
                 }
             }
         },
+        "/api/quizzes/{quizId}/leaderboard/stream": {
+            "get": {
+                "description": "Stream the real-time leaderboard performance of users for a quiz via Server-Sent Events (SSE).",
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "quizzes"
+                ],
+                "summary": "Stream leaderboard for a quiz (SSE)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Quiz ID",
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "data: {LeaderboardResponse}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/quizzes/{quizId}/publish": {
             "patch": {
                 "description": "Publish a quiz immediately or schedule a publish date.",
