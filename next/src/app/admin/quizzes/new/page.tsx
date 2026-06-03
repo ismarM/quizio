@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { requireAuth } from "@/lib/serverAuth";
 import { AdminQuizForm } from "@/components/admin/AdminQuizForm";
+import { serverFetchJson } from "@/lib/serverFetch";
+import type { CategoryListResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,8 @@ export default async function NewAdminQuizPage() {
   if (!user.isAdmin) {
     redirect("/login?reason=unauthorized");
   }
+
+  const categories = await loadCategories();
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -34,10 +38,15 @@ export default async function NewAdminQuizPage() {
           </p>
         </div>
 
-        <AdminQuizForm />
+        <AdminQuizForm categories={categories} />
       </section>
 
       <MobileBottomNav />
     </main>
   );
+}
+
+async function loadCategories() {
+  const data = await serverFetchJson<CategoryListResponse>("/api/categories");
+  return data.categories;
 }

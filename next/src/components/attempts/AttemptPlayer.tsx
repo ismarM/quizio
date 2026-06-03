@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Clock3, Flag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { buildProxyUrl, proxyFetchJson } from "@/lib/proxyClient";
+import { isImageUrl } from "@/lib/admin-quiz-assets";
 import { routes } from "@/lib/routes";
 import type {
   AttemptQuestionDTO,
@@ -41,6 +42,25 @@ export function AttemptPlayer({
   );
   const isFinishingRef = useRef(false);
 
+  const finishAttempt = useCallback(async () => {
+    if (isFinishingRef.current) {
+      return;
+    }
+
+    isFinishingRef.current = true;
+
+    try {
+      await proxyFetchJson(`/quizzes/${quizId}/attempts/finish`, {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Failed to finish attempt:", error);
+    } finally {
+      router.push(routes.attemptResult(quizId));
+      router.refresh();
+    }
+  }, [quizId, router]);
+
   useEffect(() => {
     if (initialTimeLeftSeconds <= 0) {
       return undefined;
@@ -57,7 +77,7 @@ export function AttemptPlayer({
     if (timeLeftSeconds === 0) {
       void finishAttempt();
     }
-  }, [timeLeftSeconds]);
+  }, [finishAttempt, timeLeftSeconds]);
 
   useEffect(() => {
     const handleUnload = () => {
@@ -124,25 +144,6 @@ export function AttemptPlayer({
 
   function goNext() {
     setCurrentIndex((value) => Math.min(questions.length - 1, value + 1));
-  }
-
-  async function finishAttempt() {
-    if (isFinishingRef.current) {
-      return;
-    }
-
-    isFinishingRef.current = true;
-
-    try {
-      await proxyFetchJson(`/quizzes/${quizId}/attempts/finish`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Failed to finish attempt:", error);
-    } finally {
-      router.push(routes.attemptResult(quizId));
-      router.refresh();
-    }
   }
 
   return (
@@ -221,7 +222,7 @@ export function AttemptPlayer({
                     ) : null}
                   </span>
 
-                  <span className="q-body text-[#211F20]">{option.title}</span>
+                  <AnswerOptionContent value={option.title} />
                 </button>
               );
             })
@@ -319,6 +320,24 @@ export function AttemptPlayer({
         </aside>
       </div>
     </section>
+  );
+}
+
+function AnswerOptionContent({ value }: { value: string }) {
+  if (!isImageUrl(value)) {
+    return <span className="q-body text-[#211F20]">{value}</span>;
+  }
+
+  return (
+    <span className="grid flex-1 gap-2">
+      <span
+        aria-label="Answer image"
+        className="min-h-[160px] w-full border border-[#D7D0C4] bg-[#EBE4D8] bg-contain bg-center bg-no-repeat"
+        role="img"
+        style={{ backgroundImage: `url("${value}")` }}
+      />
+      <span className="q-mini text-[#8F8F8F]">Image answer</span>
+    </span>
   );
 }
 

@@ -65,5 +65,15 @@ export async function proxyFetchJson<T>(path: string, options: ProxyFetchOptions
     const message = payload?.error ?? "Proxy request failed";
     throw new Error(message);
   }
-  return response.json() as Promise<T>;
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }

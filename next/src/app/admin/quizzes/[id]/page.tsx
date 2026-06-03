@@ -3,10 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { AdminQuizEditor } from "@/components/admin/AdminQuizEditor";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { loadQuizAttemptCount } from "@/lib/admin-quiz-attempt-counts";
 import { mapFullQuizToAdminDetail } from "@/lib/admin-quiz-mappers";
 import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { requireAuth } from "@/lib/serverAuth";
-import type { QuizFullResponse } from "@/lib/types";
+import type { CategoryListResponse, QuizFullResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +28,19 @@ export default async function AdminQuizDetailPage({
 
   const { id } = await params;
   let quiz;
+  let categories;
 
   try {
-    const data = await serverFetchJson<QuizFullResponse>(`/api/quizzes/${id}`);
-    quiz = mapFullQuizToAdminDetail(data.quiz, data.questions);
+    const [data, categoryData, attemptCount] = await Promise.all([
+      serverFetchJson<QuizFullResponse>(`/api/quizzes/${id}`),
+      serverFetchJson<CategoryListResponse>("/api/categories"),
+      loadQuizAttemptCount(id),
+    ]);
+    quiz = {
+      ...mapFullQuizToAdminDetail(data.quiz, data.questions),
+      attempts: attemptCount,
+    };
+    categories = categoryData.categories;
   } catch (error) {
     if (error instanceof ServerFetchError && error.status === 404) {
       notFound();
@@ -57,7 +67,7 @@ export default async function AdminQuizDetailPage({
           </p>
         </div>
 
-        <AdminQuizEditor quiz={quiz} />
+        <AdminQuizEditor categories={categories} quiz={quiz} />
       </section>
 
       <MobileBottomNav />

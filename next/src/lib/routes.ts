@@ -12,6 +12,7 @@ export const routes = {
   
     admin: "/admin",
     adminQuizzes: "/admin/quizzes",
+    adminArchivedQuizzes: "/admin/quizzes/archived",
     adminQuizNew: "/admin/quizzes/new",
     adminQuizDetail: (id: string | number) => `/admin/quizzes/${id}`,
 

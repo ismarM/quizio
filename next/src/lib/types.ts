@@ -8,6 +8,7 @@ export type QuizDTO = {
   is_archived?: boolean;
   time_limit_seconds?: number;
   question_count?: number;
+  attempt_count?: number;
   category_id?: number;
   category_name?: string;
   image_url?: string;
@@ -26,6 +27,15 @@ export type QuizResponse = {
 export type QuizFullResponse = {
   quiz: QuizDTO;
   questions: QuestionDTO[];
+};
+
+export type CategoryDTO = {
+  id: number;
+  name: string;
+};
+
+export type CategoryListResponse = {
+  categories: CategoryDTO[];
 };
 
 export type OpenAttemptDTO = {
@@ -108,4 +118,18 @@ export type SubmissionsResponse = {
   results: SubmissionSummary[];
   limit: number;
   offset: number;
+};
+
+export type LeaderboardEntryDTO = {
+  user_id: number;
+  email: string;
+  display_name?: string;
+  achieved_points: number;
+  max_points: number;
+  time_taken_seconds?: number;
+};
+
+export type LeaderboardResponse = {
+  quiz_id: number;
+  entries: LeaderboardEntryDTO[];
 };

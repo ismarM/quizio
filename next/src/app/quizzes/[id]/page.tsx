@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { QuizDetailCard } from "@/components/quizzes/QuizDetailCard";
 import { QuizLeaderboardMini } from "@/components/quizzes/QuizLeaderboardMini";
+import { loadQuizAttemptCount } from "@/lib/admin-quiz-attempt-counts";
 import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
 import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
 import { getSessionUser } from "@/lib/serverAuth";
@@ -31,6 +32,14 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   }
 
   const user = await getSessionUser();
+  if (user?.isAdmin) {
+    const attemptCount = await loadQuizAttemptCount(quiz.id);
+    quiz = {
+      ...quiz,
+      plays: String(attemptCount),
+    };
+  }
+
   const resultSummary = user
     ? await loadQuizResultSummary(quiz.id)
     : undefined;

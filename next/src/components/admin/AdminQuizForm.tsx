@@ -4,40 +4,42 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+  ArrowDown,
   ArrowLeft,
-  CalendarDays,
+  ArrowUp,
   Clock3,
   FilePlus2,
-  Info,
+  ImagePlus,
   Save,
+  Shuffle,
+  Trash2,
 } from "lucide-react";
 
+import { isImageUrl, uploadImageFile } from "@/lib/admin-quiz-assets";
 import { proxyFetchJson } from "@/lib/proxyClient";
 import { routes } from "@/lib/routes";
-import type { QuizFullResponse } from "@/lib/types";
+import type { CategoryDTO, QuizFullResponse } from "@/lib/types";
 
-const categories = [
-  "Science",
-  "Geography",
-  "History",
-  "Math",
-  "Technology",
-  "Literature",
-  "Arts",
-];
+type AdminQuizFormProps = {
+  categories: CategoryDTO[];
+};
 
-export function AdminQuizForm() {
+export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Science");
+  const [categoryId, setCategoryId] = useState(() =>
+    categories[0] ? String(categories[0].id) : ""
+  );
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [timeLimit, setTimeLimit] = useState("15");
-  const [opensAt, setOpensAt] = useState("");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => [
     createQuestion(),
   ]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
   const validationErrors = getValidationErrors({
     title,
@@ -60,6 +62,33 @@ export function AdminQuizForm() {
 
   function removeQuestion(id: string) {
     setQuestions((current) => current.filter((question) => question.id !== id));
+  }
+
+  function moveQuestion(id: string, direction: -1 | 1) {
+    setQuestions((current) => {
+      const index = current.findIndex((question) => question.id === id);
+      const nextIndex = index + direction;
+
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      const [item] = next.splice(index, 1);
+      next.splice(nextIndex, 0, item);
+      return next;
+    });
+  }
+
+  function shuffleQuestions() {
+    setQuestions((current) => {
+      const next = [...current];
+      for (let index = next.length - 1; index > 0; index -= 1) {
+        const target = Math.floor(Math.random() * (index + 1));
+        [next[index], next[target]] = [next[target], next[index]];
+      }
+      return next;
+    });
   }
 
   function addAnswer(questionId: string) {
@@ -139,6 +168,49 @@ export function AdminQuizForm() {
     );
   }
 
+  async function handleThumbnailUpload(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
+    setUploadError(null);
+    setUploadingTarget("thumbnail");
+    try {
+      const data = await uploadImageFile(file);
+      setThumbnailUrl(data.url);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to upload thumbnail";
+      setUploadError(message);
+    } finally {
+      setUploadingTarget(null);
+    }
+  }
+
+  async function handleAnswerImageUpload(
+    questionId: string,
+    answerId: string,
+    file: File | undefined
+  ) {
+    if (!file) {
+      return;
+    }
+
+    const target = `${questionId}:${answerId}`;
+    setUploadError(null);
+    setUploadingTarget(target);
+    try {
+      const data = await uploadImageFile(file);
+      updateAnswer(questionId, answerId, { text: data.url });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to upload answer image";
+      setUploadError(message);
+    } finally {
+      setUploadingTarget(null);
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitError(null);
@@ -151,6 +223,8 @@ export function AdminQuizForm() {
     const payload = buildCreatePayload({
       title,
       description,
+      categoryId,
+      thumbnailUrl,
       timeLimit,
       questions,
     });
@@ -167,14 +241,6 @@ export function AdminQuizForm() {
         body: payload,
       });
 
-      const publishDate = toPublishDate(opensAt);
-      if (publishDate) {
-        await proxyFetchJson(`/quizzes/${data.quiz.id}/publish`, {
-          method: "PATCH",
-          body: { publish_date: publishDate },
-        });
-      }
-
       router.push(routes.adminQuizDetail(data.quiz.id));
       router.refresh();
     } catch (error) {
@@ -187,9 +253,9 @@ export function AdminQuizForm() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_360px]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <form
-        className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 shadow-[8px_8px_0_#EBE4D8] md:p-6"
+        className="border-2 border-[#211F20] bg-[#FFFAF2] p-4 shadow-[4px_4px_0_#EBE4D8] md:p-5"
         onSubmit={handleSubmit}
       >
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -225,15 +291,18 @@ export function AdminQuizForm() {
             />
           </FormField>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2">
             <FormField label="Category">
               <select
                 className="q-input h-12"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
+                disabled={categories.length === 0}
+                value={categoryId}
+                onChange={(event) => setCategoryId(event.target.value)}
               >
                 {categories.map((item) => (
-                  <option key={item}>{item}</option>
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
                 ))}
               </select>
             </FormField>
@@ -251,36 +320,41 @@ export function AdminQuizForm() {
                 />
               </div>
             </FormField>
-
-            <FormField label="Opens at">
-              <div className="relative">
-                <CalendarDays className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F8F8F]" />
-                <input
-                  className="q-input h-12 pl-10"
-                  value={opensAt}
-                  onChange={(event) => setOpensAt(event.target.value)}
-                  type="datetime-local"
-                />
-              </div>
-            </FormField>
           </div>
 
-          <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
-            <div className="flex items-start gap-3">
-              <Info className="mt-1 h-5 w-5 text-[#006E5A]" />
-              <div>
-                <p className="font-display text-2xl leading-none text-[#211F20]">
-                  Build the quiz in one go
-                </p>
-                <p className="mt-1 q-body text-[#211F20]">
-                  You can add questions and answers while creating the quiz or
-                  come back later to refine them.
-                </p>
+          <FormField label="Thumbnail image">
+            <div className="grid gap-3 md:grid-cols-[220px_1fr]">
+              <ImagePreview
+                label="Quiz thumbnail"
+                value={thumbnailUrl}
+              />
+
+              <div className="grid content-start gap-3">
+                <input
+                  className="q-input h-12"
+                  value={thumbnailUrl}
+                  onChange={(event) => setThumbnailUrl(event.target.value)}
+                  placeholder="Paste image URL or upload a file"
+                />
+
+                <label className="q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]">
+                  <ImagePlus className="h-4 w-4" />
+                  {uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}
+                  <input
+                    className="sr-only"
+                    accept="image/*"
+                    type="file"
+                    onChange={(event) => {
+                      void handleThumbnailUpload(event.target.files?.[0]);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </label>
               </div>
             </div>
-          </div>
+          </FormField>
 
-          <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-4">
+          <section className="border-2 border-[#211F20] bg-white p-4 shadow-[4px_4px_0_#EBE4D8]">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="inline-flex bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
@@ -293,8 +367,18 @@ export function AdminQuizForm() {
 
               <button
                 type="button"
+                onClick={shuffleQuestions}
+                className="q-button q-button-secondary border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
+                disabled={questions.length < 2}
+              >
+                <Shuffle className="h-4 w-4" />
+                Shuffle
+              </button>
+
+              <button
+                type="button"
                 onClick={addQuestion}
-                className="q-button q-button-secondary"
+                className="q-button q-button-primary border-[#006E5A] bg-[#006E5A]"
               >
                 <FilePlus2 className="h-4 w-4" />
                 Add question
@@ -305,21 +389,44 @@ export function AdminQuizForm() {
               {questions.map((question, index) => (
                 <article
                   key={question.id}
-                  className="border-2 border-[#D7D0C4] bg-[#FFFAF2] p-4"
+                  className="border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 shadow-[3px_3px_0_#EBE4D8]"
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="font-display text-2xl text-[#211F20]">
                       Question {index + 1}
                     </p>
 
-                    <button
-                      type="button"
-                      onClick={() => removeQuestion(question.id)}
-                      className="q-button q-button-secondary"
-                      disabled={questions.length <= 1}
-                    >
-                      Remove
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveQuestion(question.id, -1)}
+                        className="q-button q-button-secondary"
+                        disabled={index === 0}
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                        Up
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => moveQuestion(question.id, 1)}
+                        className="q-button q-button-secondary"
+                        disabled={index === questions.length - 1}
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                        Down
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(question.id)}
+                        className="q-button q-button-secondary border-[#FF3C38] text-[#FF3C38] hover:bg-[#FF3C38] hover:text-[#FFFAF2]"
+                        disabled={questions.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remove
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid gap-4">
@@ -358,7 +465,7 @@ export function AdminQuizForm() {
                       {question.answers.map((answer, answerIndex) => (
                         <div
                           key={answer.id}
-                          className="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center"
+                          className="grid gap-3 border border-[#EBE4D8] bg-[#FFFAF2] p-3 md:grid-cols-[auto_1fr_auto] md:items-start"
                         >
                           <label className="flex items-center gap-2 q-mini text-[#211F20]">
                             <input
@@ -372,23 +479,53 @@ export function AdminQuizForm() {
                             Correct
                           </label>
 
-                          <input
-                            className="q-input h-12"
-                            value={answer.text}
-                            onChange={(event) =>
-                              updateAnswer(question.id, answer.id, {
-                                text: event.target.value,
-                              })
-                            }
-                            placeholder={`Answer ${answerIndex + 1}`}
-                          />
+                          <div className="grid gap-2">
+                            <input
+                              className="q-input h-12"
+                              value={answer.text}
+                              onChange={(event) =>
+                                updateAnswer(question.id, answer.id, {
+                                  text: event.target.value,
+                                })
+                              }
+                              placeholder={`Answer ${answerIndex + 1} text or image URL`}
+                            />
+
+                            {isImageUrl(answer.text) ? (
+                              <ImagePreview
+                                label={`Answer ${answerIndex + 1}`}
+                                value={answer.text}
+                              />
+                            ) : null}
+
+                            <label className="q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]">
+                              <ImagePlus className="h-4 w-4" />
+                              {uploadingTarget === `${question.id}:${answer.id}`
+                                ? "Uploading..."
+                                : "Use image"}
+                              <input
+                                className="sr-only"
+                                accept="image/*"
+                                type="file"
+                                onChange={(event) => {
+                                  void handleAnswerImageUpload(
+                                    question.id,
+                                    answer.id,
+                                    event.target.files?.[0]
+                                  );
+                                  event.currentTarget.value = "";
+                                }}
+                              />
+                            </label>
+                          </div>
 
                           <button
                             type="button"
                             onClick={() => removeAnswer(question.id, answer.id)}
-                            className="q-button q-button-secondary"
+                            className="q-button q-button-secondary border-[#FF3C38] text-[#FF3C38] hover:bg-[#FF3C38] hover:text-[#FFFAF2]"
                             disabled={question.answers.length <= 2}
                           >
+                            <Trash2 className="h-4 w-4" />
                             Remove
                           </button>
                         </div>
@@ -397,8 +534,9 @@ export function AdminQuizForm() {
                       <button
                         type="button"
                         onClick={() => addAnswer(question.id)}
-                        className="q-button q-button-secondary w-fit"
+                        className="q-button q-button-primary w-fit border-[#211F20] bg-[#211F20]"
                       >
+                        <FilePlus2 className="h-4 w-4" />
                         Add answer
                       </button>
                     </div>
@@ -429,15 +567,19 @@ export function AdminQuizForm() {
           {submitError ? (
             <p className="q-mini text-[#FF3C38]">{submitError}</p>
           ) : null}
+
+          {uploadError ? (
+            <p className="q-mini text-[#FF3C38]">{uploadError}</p>
+          ) : null}
         </div>
       </form>
 
-      <aside className="grid content-start gap-5">
-        <section className="border-2 border-[#211F20] bg-[#EBE4D8] p-5 md:p-6">
+      <aside className="grid content-start gap-5 lg:sticky lg:top-24">
+        <section className="border-2 border-[#211F20] bg-[#EBE4D8] p-5">
           <FilePlus2 className="mb-5 h-10 w-10 text-[#006E5A]" />
 
-          <p className="font-display text-[42px] leading-[0.9] text-[#211F20]">
-            Quiz setup checklist
+          <p className="font-display text-[34px] leading-none text-[#211F20]">
+            Draft checklist
           </p>
 
           <div className="my-5 h-[2px] bg-[#211F20]" />
@@ -449,16 +591,6 @@ export function AdminQuizForm() {
             <ChecklistItem done={questions.length > 0} text="Add questions" />
             <ChecklistItem done={false} text="Publish when ready" />
           </div>
-        </section>
-
-        <section className="border-2 border-[#211F20] bg-[#006E5A] p-5 text-[#FFFAF2] md:p-6">
-          <p className="font-display text-[38px] leading-[0.9]">
-            Published quizzes lock editing.
-          </p>
-          <p className="mt-4 q-body">
-            Keep drafts editable. After publishing, question and answer changes
-            should be locked to protect results.
-          </p>
         </section>
       </aside>
     </div>
@@ -475,13 +607,13 @@ function FormField({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
+    <div className="block">
       <span className="mb-2 block font-display text-2xl leading-none text-[#211F20]">
         {label}
         {required ? <span className="text-[#FF3C38]"> *</span> : null}
       </span>
       {children}
-    </label>
+    </div>
   );
 }
 
@@ -543,6 +675,8 @@ function createQuestion(): DraftQuestion {
 type CreateQuizPayload = {
   title: string;
   description?: string;
+  category_id?: number;
+  image_url?: string;
   time_limit_seconds: number;
   questions: Array<{
     title: string;
@@ -599,11 +733,15 @@ function getValidationErrors({
 function buildCreatePayload({
   title,
   description,
+  categoryId,
+  thumbnailUrl,
   timeLimit,
   questions,
 }: {
   title: string;
   description: string;
+  categoryId: string;
+  thumbnailUrl: string;
   timeLimit: string;
   questions: DraftQuestion[];
 }): CreateQuizPayload | null {
@@ -615,6 +753,8 @@ function buildCreatePayload({
   return {
     title: title.trim(),
     description: description.trim() ? description.trim() : undefined,
+    category_id: Number(categoryId) > 0 ? Number(categoryId) : undefined,
+    image_url: thumbnailUrl.trim() ? thumbnailUrl.trim() : undefined,
     time_limit_seconds: timeLimitSeconds,
     questions: questions.map((question) => ({
       title: question.title.trim(),
@@ -627,13 +767,21 @@ function buildCreatePayload({
   };
 }
 
-function toPublishDate(value: string) {
-  if (!value) {
-    return undefined;
+function ImagePreview({ label, value }: { label: string; value: string }) {
+  if (!isImageUrl(value)) {
+    return (
+      <div className="flex min-h-[132px] items-center justify-center border-2 border-[#D7D0C4] bg-[#EBE4D8] p-4 text-center q-mini text-[#211F20]">
+        No image selected
+      </div>
+    );
   }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return undefined;
-  }
-  return date.toISOString();
+
+  return (
+    <div
+      aria-label={label}
+      className="min-h-[132px] border-2 border-[#211F20] bg-[#EBE4D8] bg-contain bg-center bg-no-repeat"
+      role="img"
+      style={{ backgroundImage: `url("${value}")` }}
+    />
+  );
 }

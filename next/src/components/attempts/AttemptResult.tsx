@@ -6,6 +6,7 @@ import {
     X,
 } from "lucide-react";
 
+import { isImageUrl } from "@/lib/admin-quiz-assets";
 import { routes } from "@/lib/routes";
 import type { AttemptResultResponse } from "@/lib/types";
 
@@ -202,9 +203,21 @@ function ResultLine({ label, value }: { label: string; value: string }) {
     return (
       <div className="border border-[#EBE4D8] p-3">
         <p className="q-mini text-[#8F8F8F]">{label}</p>
-        <p className="font-display text-xl leading-none text-[#211F20]">
-          {value}
-        </p>
+        {isImageUrl(value) ? (
+          <div className="mt-2 grid gap-2">
+            <div
+              aria-label={`${label} image`}
+              className="min-h-[120px] border border-[#D7D0C4] bg-[#EBE4D8] bg-contain bg-center bg-no-repeat"
+              role="img"
+              style={{ backgroundImage: `url("${value}")` }}
+            />
+            <p className="q-mini text-[#8F8F8F]">Image answer</p>
+          </div>
+        ) : (
+          <p className="font-display text-xl leading-none text-[#211F20]">
+            {value}
+          </p>
+        )}
       </div>
     );
 }

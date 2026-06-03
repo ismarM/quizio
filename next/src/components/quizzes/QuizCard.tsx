@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -17,10 +18,11 @@ import {
 
 import type { QuizListItem } from "@/lib/types";
 import { routes } from "@/lib/routes";
+import { isImageUrl } from "@/lib/admin-quiz-assets";
 
 type QuizCardProps = {
-    quiz: QuizListItem;
-    viewMode?: "grid" | "list";
+  quiz: QuizListItem;
+  viewMode?: "grid" | "list";
 };
 
 const categoryIconMap = {
@@ -45,7 +47,7 @@ const categoryColorMap = {
   Space: "#FF3C38",
 };
 
-export function QuizCard({ quiz, viewMode="grid" }: QuizCardProps) {
+export function QuizCard({ quiz, viewMode = "grid" }: QuizCardProps) {
   const Icon =
     categoryIconMap[quiz.category as keyof typeof categoryIconMap] ??
     ListChecks;
@@ -61,21 +63,33 @@ export function QuizCard({ quiz, viewMode="grid" }: QuizCardProps) {
         "group border-2 border-[#D7D0C4] bg-[#FFFAF2] p-3 transition hover:-translate-y-1 hover:border-[#211F20] hover:shadow-[6px_6px_0_#EBE4D8]",
         viewMode === "grid"
           ? "grid grid-cols-[84px_1fr_auto] gap-4 md:grid-cols-1 md:gap-3"
-          : "grid grid-cols-[84px_1fr_auto] gap-4 md:grid-cols-[96px_1fr_auto]",
+          : "grid grid-cols-[84px_1fr_auto] gap-4 md:grid-cols-[96px_minmax(0,1fr)_auto]",
       ].join(" ")}
     >
-      <div
-        className={[
+      {isImageUrl(quiz.image) ? (
+        <div
+          aria-label={`${quiz.title} thumbnail`}
+          className={[
+            "h-20 w-20 border border-[#D7D0C4] bg-[#EBE4D8] bg-cover bg-center",
+            viewMode === "grid" ? "md:h-28 md:w-full" : "md:h-24 md:w-24",
+          ].join(" ")}
+          role="img"
+          style={{ backgroundImage: `url("${quiz.image}")` }}
+        />
+      ) : (
+        <div
+          className={[
             "flex h-20 w-20 items-center justify-center border border-[#D7D0C4] bg-[#EBE4D8]",
             viewMode === "grid" ? "md:h-28 md:w-full" : "md:h-24 md:w-24",
-        ].join(" ")}
+          ].join(" ")}
         >
-        <Icon
-          className="h-10 w-10 md:h-12 md:w-12"
-          style={{ color: iconColor }}
-          strokeWidth={1.8}
-        />
-      </div>
+          <Icon
+            className="h-10 w-10 md:h-12 md:w-12"
+            style={{ color: iconColor }}
+            strokeWidth={1.8}
+          />
+        </div>
+      )}
 
       <div className="min-w-0">
         <h2 className="font-display text-[28px] leading-none text-[#211F20] md:text-[30px]">
@@ -90,26 +104,28 @@ export function QuizCard({ quiz, viewMode="grid" }: QuizCardProps) {
           {quiz.description}
         </p>
 
-        <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[14px] leading-5 text-[#211F20] md:grid-cols-4">
-          <span className="inline-flex items-center gap-1">
-            <ListChecks className="h-4 w-4 text-[#006E5A]" />
-            {quiz.questionCount} qs
-          </span>
-
-          <span className="inline-flex items-center gap-1">
-            <Clock3 className="h-4 w-4 text-[#006E5A]" />
-            {quiz.timeLimitMinutes} min
-          </span>
-
-          <span className="inline-flex items-center gap-1">
-            <Users className="h-4 w-4 text-[#006E5A]" />
-            {quiz.plays}
-          </span>
-
-          <span className="hidden items-center gap-1 md:inline-flex">
-            <CalendarDays className="h-4 w-4 text-[#006E5A]" />
-            {quiz.opensAt}
-          </span>
+        <div className="mt-4 grid grid-cols-2 gap-2 text-[#211F20]">
+          <QuizMetaItem
+            icon={<ListChecks className="h-4 w-4" />}
+            label="Questions"
+            value={`${quiz.questionCount}`}
+          />
+          <QuizMetaItem
+            icon={<Clock3 className="h-4 w-4" />}
+            label="Time"
+            value={`${quiz.timeLimitMinutes} min`}
+          />
+          <QuizMetaItem
+            icon={<Users className="h-4 w-4" />}
+            label="Attempts"
+            value={formatAttemptCount(quiz.plays)}
+          />
+          <QuizMetaItem
+            className="hidden md:grid"
+            icon={<CalendarDays className="h-4 w-4" />}
+            label="Opens"
+            value={quiz.opensAt}
+          />
         </div>
       </div>
 
@@ -120,4 +136,35 @@ export function QuizCard({ quiz, viewMode="grid" }: QuizCardProps) {
       </div>
     </Link>
   );
+}
+
+function QuizMetaItem({
+  icon,
+  label,
+  value,
+  className = "",
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={[
+        "grid min-h-[52px] grid-cols-[auto_1fr] items-center gap-x-2 border border-[#EBE4D8] bg-[#FFFDF8] px-2 py-2",
+        className,
+      ].join(" ")}
+    >
+      <span className="row-span-2 text-[#006E5A]">{icon}</span>
+      <span className="q-mini text-[#8F8F8F]">{label}</span>
+      <span className="truncate text-[14px] font-semibold leading-5 text-[#211F20]">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function formatAttemptCount(value: string) {
+  return `${value} ${value === "1" ? "attempt" : "attempts"}`;
 }

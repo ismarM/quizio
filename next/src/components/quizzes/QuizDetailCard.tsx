@@ -5,12 +5,12 @@ import {
   Clock3,
   ListChecks,
   Play,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 
 import type { QuizListItem } from "@/lib/types";
 import { routes } from "@/lib/routes";
+import { isImageUrl } from "@/lib/admin-quiz-assets";
 
 type QuizDetailCardProps = {
   quiz: QuizListItem;
@@ -37,24 +37,33 @@ export function QuizDetailCard({
           Back to quizzes
         </Link>
 
-        <div className="flex min-h-[260px] items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] md:min-h-[340px]">
-          <div className="text-center">
-            <div className="mx-auto flex h-28 w-28 items-center justify-center bg-[#DDECE8] md:h-36 md:w-36">
-              <ListChecks
-                className="h-16 w-16 text-[#006E5A] md:h-20 md:w-20"
-                strokeWidth={1.8}
-              />
+        {isImageUrl(quiz.image) ? (
+          <div
+            aria-label={`${quiz.title} thumbnail`}
+            className="min-h-[260px] border-2 border-[#211F20] bg-[#FFFAF2] bg-cover bg-center md:min-h-[340px]"
+            role="img"
+            style={{ backgroundImage: `url("${quiz.image}")` }}
+          />
+        ) : (
+          <div className="flex min-h-[260px] items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] md:min-h-[340px]">
+            <div className="text-center">
+              <div className="mx-auto flex h-28 w-28 items-center justify-center bg-[#DDECE8] md:h-36 md:w-36">
+                <ListChecks
+                  className="h-16 w-16 text-[#006E5A] md:h-20 md:w-20"
+                  strokeWidth={1.8}
+                />
+              </div>
+
+              <p className="mt-6 font-display text-[42px] leading-none text-[#211F20] md:text-[64px]">
+                {quiz.category}
+              </p>
+
+              <p className="mx-auto mt-3 max-w-md q-body text-[#211F20]">
+                Ready to test your knowledge? Start the quiz and beat the clock.
+              </p>
             </div>
-
-            <p className="mt-6 font-display text-[42px] leading-none text-[#211F20] md:text-[64px]">
-              {quiz.category}
-            </p>
-
-            <p className="mx-auto mt-3 max-w-md q-body text-[#211F20]">
-              Ready to test your knowledge? Start the quiz and beat the clock.
-            </p>
           </div>
-        </div>
+        )}
       </div>
 
       {/* CONTENT */}
@@ -95,7 +104,7 @@ export function QuizDetailCard({
               icon={<Users className="h-5 w-5" />}
               label="Players"
               value={quiz.plays}
-              suffix="plays"
+              suffix="attempts"
             />
             <InfoBox
               icon={<CalendarDays className="h-5 w-5" />}

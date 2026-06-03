@@ -1,16 +1,19 @@
 import Link from "next/link";
 import {
+  Archive,
   BarChart3,
+  CalendarClock,
   FilePlus2,
   LayoutDashboard,
   ListChecks,
-  LockKeyhole
+  LockKeyhole,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { loadQuizAttemptCounts } from "@/lib/admin-quiz-attempt-counts";
 import { mapQuizDtoToAdminListItem } from "@/lib/admin-quiz-mappers";
 import { routes } from "@/lib/routes";
 import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
@@ -21,13 +24,19 @@ export const dynamic = "force-dynamic";
 
 const adminStats = [
   {
-    label: "Total quizzes",
-    value: "0",
+    label: "Active quizzes",
     icon: ListChecks,
   },
   {
+    label: "Drafts",
+    icon: FilePlus2,
+  },
+  {
+    label: "Scheduled",
+    icon: CalendarClock,
+  },
+  {
     label: "Published",
-    value: "0",
     icon: BarChart3,
   },
 ];
@@ -39,9 +48,15 @@ export default async function AdminPage() {
     redirect("/login?reason=unauthorized");
   }
 
-  const quizzes = await loadAdminQuizzes();
+  const { quizzes, archivedCount } = await loadAdminQuizzes();
   const totalCount = quizzes.length;
-  const publishedCount = quizzes.filter((quiz) => quiz.status === "published").length;
+  const draftCount = quizzes.filter((quiz) => quiz.status === "draft").length;
+  const scheduledCount = quizzes.filter(
+    (quiz) => quiz.status === "scheduled"
+  ).length;
+  const publishedCount = quizzes.filter(
+    (quiz) => quiz.status === "published"
+  ).length;
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -94,6 +109,14 @@ export default async function AdminPage() {
                   <FilePlus2 className="h-4 w-4" />
                   Create quiz
                 </Link>
+
+                <Link
+                  href={routes.adminArchivedQuizzes}
+                  className="q-button q-button-secondary"
+                >
+                  <Archive className="h-4 w-4" />
+                  Archived quizzes ({archivedCount})
+                </Link>
               </div>
             </section>
 
@@ -116,8 +139,12 @@ export default async function AdminPage() {
               {adminStats.map((stat) => {
                 const Icon = stat.icon;
                 const value =
-                  stat.label === "Total quizzes"
+                  stat.label === "Active quizzes"
                     ? String(totalCount)
+                    : stat.label === "Drafts"
+                    ? String(draftCount)
+                    : stat.label === "Scheduled"
+                    ? String(scheduledCount)
                     : String(publishedCount);
 
                 return (
@@ -146,7 +173,7 @@ export default async function AdminPage() {
                   </p>
 
                   <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                    Quiz list
+                    Active quiz list
                   </h2>
                 </div>
               </div>
@@ -160,6 +187,8 @@ export default async function AdminPage() {
           </div>
         </div>
       </section>
+
+      <MobileBottomNav />
     </main>
   )
 }
@@ -172,15 +201,29 @@ async function loadAdminQuizzes() {
       fetchQuizzes("archived"),
     ]);
 
-    const all = [...drafts, ...published, ...archived];
+    const all = [...drafts, ...published];
     const uniqueById = new Map<number, (typeof all)[number]>();
     all.forEach((quiz) => {
       uniqueById.set(quiz.id, quiz);
     });
-    return Array.from(uniqueById.values()).map(mapQuizDtoToAdminListItem);
+    const archivedById = new Map<number, (typeof archived)[number]>();
+    archived.forEach((quiz) => {
+      archivedById.set(quiz.id, quiz);
+    });
+
+    const activeQuizzes = Array.from(uniqueById.values());
+    const attemptCounts = await loadQuizAttemptCounts(activeQuizzes);
+
+    return {
+      quizzes: activeQuizzes.map((quiz) => ({
+        ...mapQuizDtoToAdminListItem(quiz),
+        attempts: attemptCounts.get(quiz.id) ?? 0,
+      })),
+      archivedCount: archivedById.size,
+    };
   } catch (error) {
     if (error instanceof ServerFetchError && error.status === 401) {
-      return [];
+      return { quizzes: [], archivedCount: 0 };
     }
     throw error;
   }

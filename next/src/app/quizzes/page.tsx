@@ -2,7 +2,9 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { QuizBrowser } from "@/components/quizzes/QuizBrowser";
+import { loadQuizAttemptCounts } from "@/lib/admin-quiz-attempt-counts";
 import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
+import { getSessionUser } from "@/lib/serverAuth";
 import { serverFetchJson } from "@/lib/serverFetch";
 import type { QuizListItem, QuizListResponse } from "@/lib/types";
 
@@ -14,6 +16,15 @@ export default async function QuizzesPage() {
       "/api/quizzes?limit=20&offset=0"
     );
     quizzes = data.quizzes.map(mapQuizDtoToListItem);
+
+    const user = await getSessionUser();
+    if (user?.isAdmin) {
+      const attemptCounts = await loadQuizAttemptCounts(data.quizzes);
+      quizzes = quizzes.map((quiz) => ({
+        ...quiz,
+        plays: String(attemptCounts.get(quiz.id) ?? 0),
+      }));
+    }
   } catch (error) {
     console.error("Failed to load quizzes:", error);
   }

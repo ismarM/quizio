@@ -30,7 +30,7 @@ export function mapQuizDtoToListItem(quiz: QuizDTO): QuizListItem {
     category: quiz.category_name ?? "General",
     questionCount: quiz.question_count ?? 0,
     timeLimitMinutes,
-    plays: "0",
+    plays: String(quiz.attempt_count ?? 0),
     status: quiz.is_archived ? "draft" : "published",
     opensAt: formatQuizDate(quiz.publish_date ?? quiz.created_at),
     image: quiz.image_url ?? "",
