@@ -75,7 +75,7 @@ export default async function AdminPage() {
             <p className="mt-4 max-w-2xl q-body text-[#211F20]">
               Create quizzes, publish content, review attempts and manage the
               quiz platform from one place.
-            </p> 
+            </p>
           </div>
 
         </div>
@@ -85,7 +85,7 @@ export default async function AdminPage() {
             <section className="border-2 border-[#211F20] bg-[#EBE4D8] p-5 shadow-[8px_8px_0_#211F20] md:p-6">
               <div className="flex items-start gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] text-[#006E5A]">
-                  <LayoutDashboard className="h-8 w-8"/>
+                  <LayoutDashboard className="h-8 w-8" />
                 </div>
 
                 <div className="min-w-0">
@@ -106,7 +106,7 @@ export default async function AdminPage() {
                   className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
                 >
                   <FilePlus2 className="h-4 w-4" />
-                  Create quiz
+                  <span className="pt-[3px] pl-1">Create quiz</span>
                 </Link>
 
                 <Link
@@ -114,7 +114,7 @@ export default async function AdminPage() {
                   className="q-button q-button-secondary"
                 >
                   <Archive className="h-4 w-4" />
-                  Archived quizzes ({archivedCount})
+                  <span className="pt-[3px] pl-1">Archived quizzes ({archivedCount})</span>
                 </Link>
               </div>
             </section>
@@ -141,10 +141,10 @@ export default async function AdminPage() {
                   stat.label === "Active quizzes"
                     ? String(totalCount)
                     : stat.label === "Drafts"
-                    ? String(draftCount)
-                    : stat.label === "Scheduled"
-                    ? String(scheduledCount)
-                    : String(publishedCount);
+                      ? String(draftCount)
+                      : stat.label === "Scheduled"
+                        ? String(scheduledCount)
+                        : String(publishedCount);
 
                 return (
                   <article

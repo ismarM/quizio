@@ -151,11 +151,11 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       current.map((question) =>
         question.id === questionId
           ? {
-              ...question,
-              answers: question.answers.map((answer) =>
-                answer.id === answerId ? { ...answer, ...updates } : answer
-              ),
-            }
+            ...question,
+            answers: question.answers.map((answer) =>
+              answer.id === answerId ? { ...answer, ...updates } : answer
+            ),
+          }
           : question
       )
     );
@@ -186,12 +186,12 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       current.map((question) =>
         question.id === questionId
           ? {
-              ...question,
-              answers: question.answers.map((answer) => ({
-                ...answer,
-                isCorrect: answer.id === answerId,
-              })),
-            }
+            ...question,
+            answers: question.answers.map((answer) => ({
+              ...answer,
+              isCorrect: answer.id === answerId,
+            })),
+          }
           : question
       )
     );
@@ -424,8 +424,8 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                     !isDraftEditable ? "pointer-events-none opacity-50" : "",
                   ].join(" ")}
                 >
-                  <ImagePlus className="h-4 w-4" />
-                  {uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}
+                  <ImagePlus className="h-4 w-4 mr-1" />
+                  <span className="pt-1">{uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}</span>
                   <input
                     className="sr-only"
                     accept="image/*"
@@ -459,8 +459,8 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                   className="q-button q-button-secondary border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
                   disabled={!isDraftEditable || questions.length < 2}
                 >
-                  <Shuffle className="h-4 w-4" />
-                  Shuffle
+                  <Shuffle className="h-4 w-4 mr-1" />
+                  <span className="pl-1 pt-0.5">Shuffle</span>
                 </button>
 
                 <button
@@ -470,7 +470,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                   disabled={!isDraftEditable}
                 >
                   <FilePlus2 className="h-4 w-4" />
-                  Add question
+                  <span className="pl-1 pt-0.5">Add question</span>
                 </button>
               </div>
             </div>
@@ -494,7 +494,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable || index === 0}
                       >
                         <ArrowUp className="h-4 w-4" />
-                        Up
+                        <span className="pl-0.5 pt-1 pr-1">Up</span>
                       </button>
 
                       <button
@@ -504,7 +504,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable || index === questions.length - 1}
                       >
                         <ArrowDown className="h-4 w-4" />
-                        Down
+                        <span className="pl-0.5 pt-1 pr-1">Down</span>
                       </button>
 
                       <button
@@ -514,7 +514,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable || questions.length <= 1}
                       >
                         <Trash2 className="h-4 w-4" />
-                        Remove
+                        <span className="pl-0.5 pt-1 pr-1">Remove</span>
                       </button>
                     </div>
                   </div>
@@ -596,9 +596,9 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                               ].join(" ")}
                             >
                               <ImagePlus className="h-4 w-4" />
-                              {uploadingTarget === `${question.id}:${answer.id}`
+                              <span className="pl-1 pt-0.5">{uploadingTarget === `${question.id}:${answer.id}`
                                 ? "Uploading..."
-                                : "Use image"}
+                                : "Use image"}</span>
                               <input
                                 className="sr-only"
                                 accept="image/*"
@@ -623,7 +623,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                             disabled={!isDraftEditable || question.answers.length <= 2}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Remove
+                            <span className="pl-1 pt-0.5">Remove</span>
                           </button>
                         </div>
                       ))}
@@ -635,7 +635,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable}
                       >
                         <FilePlus2 className="h-4 w-4" />
-                        Add answer
+                        <span className="pl-1 pt-1">Add answer</span>
                       </button>
                     </div>
                   </div>
@@ -656,12 +656,12 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
               disabled={!isDraftEditable || !isValid || isSubmitting}
             >
               <Save className="h-4 w-4" />
-              {isSubmitting ? "Saving..." : "Save changes"}
+              <span className="pl-1 pt-0.5">{isSubmitting ? "Saving..." : "Save changes"}</span>
             </button>
 
             <Link href={routes.quizDetail(quiz.id)} className="q-button q-button-secondary">
               <Eye className="h-4 w-4" />
-              Preview
+              <span className="pl-1 pt-0.5">Preview</span>
             </Link>
           </div>
 
@@ -737,8 +737,8 @@ function StatusBadge({ status }: { status: AdminQuizDetail["status"] }) {
     status === "published"
       ? "published"
       : status === "archived"
-      ? "archived"
-      : "draft";
+        ? "archived"
+        : "draft";
   const classes = {
     draft: "bg-[#EBE4D8] text-[#211F20]",
     published: "bg-[#006E5A] text-[#FFFAF2]",

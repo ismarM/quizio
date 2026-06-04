@@ -115,7 +115,7 @@ export function QuizCard({ quiz, viewMode = "grid" }: QuizCardProps) {
             value={`${quiz.timeLimitMinutes} min`}
           />
           <QuizMetaItem
-            className="hidden md:grid"
+            className="hidden md:grid md:col-span-2"
             icon={<CalendarDays className="h-4 w-4" />}
             label="Opens"
             value={quiz.opensAt}

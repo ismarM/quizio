@@ -96,9 +96,9 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       current.map((question) =>
         question.id === questionId
           ? {
-              ...question,
-              answers: [...question.answers, createAnswer(false)],
-            }
+            ...question,
+            answers: [...question.answers, createAnswer(false)],
+          }
           : question
       )
     );
@@ -157,12 +157,12 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       current.map((question) =>
         question.id === questionId
           ? {
-              ...question,
-              answers: question.answers.map((answer) => ({
-                ...answer,
-                isCorrect: answer.id === answerId,
-              })),
-            }
+            ...question,
+            answers: question.answers.map((answer) => ({
+              ...answer,
+              isCorrect: answer.id === answerId,
+            })),
+          }
           : question
       )
     );
@@ -338,8 +338,8 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                 />
 
                 <label className="q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]">
-                  <ImagePlus className="h-4 w-4" />
-                  {uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}
+                  <ImagePlus className="h-4 w-4 mr-1" />
+                  <span className="pt-1">{uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}</span>
                   <input
                     className="sr-only"
                     accept="image/*"
@@ -371,8 +371,8 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                 className="q-button q-button-secondary border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
                 disabled={questions.length < 2}
               >
-                <Shuffle className="h-4 w-4" />
-                Shuffle
+                <Shuffle className="h-4 w-4 mr-1" />
+                <span className="pl-1 pt-0.5">Shuffle</span>
               </button>
 
               <button
@@ -381,7 +381,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                 className="q-button q-button-primary border-[#006E5A] bg-[#006E5A]"
               >
                 <FilePlus2 className="h-4 w-4" />
-                Add question
+                <span className="pl-1 pt-0.5">Add question</span>
               </button>
             </div>
 
@@ -404,7 +404,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         disabled={index === 0}
                       >
                         <ArrowUp className="h-4 w-4" />
-                        Up
+                        <span className="pl-0.5 pt-1 pr-1">Up</span>
                       </button>
 
                       <button
@@ -414,7 +414,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         disabled={index === questions.length - 1}
                       >
                         <ArrowDown className="h-4 w-4" />
-                        Down
+                        <span className="pl-0.5 pt-1 pr-1">Down</span>
                       </button>
 
                       <button
@@ -424,7 +424,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         disabled={questions.length <= 1}
                       >
                         <Trash2 className="h-4 w-4" />
-                        Remove
+                        <span className="pl-0.5 pt-1 pr-1">Remove</span>
                       </button>
                     </div>
                   </div>
@@ -500,9 +500,9 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
 
                             <label className="q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]">
                               <ImagePlus className="h-4 w-4" />
-                              {uploadingTarget === `${question.id}:${answer.id}`
+                              <span className="pl-1 pt-0.5">{uploadingTarget === `${question.id}:${answer.id}`
                                 ? "Uploading..."
-                                : "Use image"}
+                                : "Use image"}</span>
                               <input
                                 className="sr-only"
                                 accept="image/*"
@@ -526,7 +526,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                             disabled={question.answers.length <= 2}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Remove
+                            <span className="pl-1 pt-0.5">Remove</span>
                           </button>
                         </div>
                       ))}
@@ -537,7 +537,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         className="q-button q-button-primary w-fit border-[#211F20] bg-[#211F20]"
                       >
                         <FilePlus2 className="h-4 w-4" />
-                        Add answer
+                        <span className="pl-1 pt-1">Add answer</span>
                       </button>
                     </div>
                   </div>
@@ -556,7 +556,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               disabled={!isValid || isSubmitting}
             >
               <Save className="h-4 w-4" />
-              {isSubmitting ? "Saving..." : "Save draft"}
+              <span className="pl-1 pt-0.5">{isSubmitting ? "Saving..." : "Save draft"}</span>
             </button>
 
             <Link href={routes.adminQuizzes} className="q-button q-button-secondary">

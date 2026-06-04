@@ -76,7 +76,7 @@ function AdminQuizBrowserInner({
   const [status, setStatus] = useState<StatusFilter>(
     () => (searchParams.get("status") as StatusFilter) || "all"
   );
-  
+
   const statusOptions = archivedView ? archivedStatuses : activeStatuses;
 
   useEffect(() => {
@@ -91,13 +91,13 @@ function AdminQuizBrowserInner({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(Array.from(searchParams.entries()));
-      
+
       if (query) params.set("query", query);
       else params.delete("query");
-      
+
       if (status !== "all") params.set("status", status);
       else params.delete("status");
-      
+
       const newSearch = params.toString();
       if (newSearch !== searchParams.toString()) {
         router.replace(`${pathname}?${newSearch}`, { scroll: false });
@@ -250,7 +250,7 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
 
         <p className="max-w-3xl q-body text-[#211F20]">{quiz.description}</p>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-2">
           <MetaItem
             icon={<ListChecks className="h-4 w-4" />}
             label="Questions"
@@ -266,11 +266,11 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
             label="Created"
             value={quiz.createdAt}
           />
-          <MetaItem
+          {/*<MetaItem
             icon={<CalendarClock className="h-4 w-4" />}
             label="Release"
             value={getPublishMetaText(quiz)}
-          />
+          />*/}
         </div>
       </div>
 
@@ -408,11 +408,11 @@ function AdminQuizActions({ quiz }: { quiz: AdminQuizListItem }) {
       </div>
 
       {isDraft || isScheduled ? (
-        <div className="grid gap-2 border-2 border-[#EBE4D8] bg-[#FFFAF2] p-3">
-          <label className="grid gap-2">
+        <div className="grid gap-1 border-2 border-[#EBE4D8] bg-[#FFFAF2] p-3">
+          <label className="grid gap-1">
             <span className="q-mini text-[#211F20]">Exact release time</span>
             <Input
-              className="q-input h-11"
+              className="justify-center q-input h-10"
               disabled={isPending}
               min={minPublishAt}
               type="datetime-local"
@@ -433,8 +433,8 @@ function AdminQuizActions({ quiz }: { quiz: AdminQuizListItem }) {
               {pendingAction === "schedule"
                 ? "Saving..."
                 : isScheduled
-                ? "Update time"
-                : "Schedule"}
+                  ? "Update time"
+                  : "Schedule"}
             </Button>
 
             <Button
@@ -527,7 +527,7 @@ function MetaItem({
     <div className="grid min-h-[64px] grid-cols-[auto_1fr] items-center gap-x-2 border border-[#EBE4D8] bg-[#FFFDF8] px-3 py-2">
       <span className="row-span-2 text-[#006E5A]">{icon}</span>
       <span className="q-mini text-[#8F8F8F]">{label}</span>
-      <span className="truncate text-[15px] font-semibold leading-5 text-[#211F20]">
+      <span className="text-[15px] font-semibold leading-5 text-[#211F20]">
         {value}
       </span>
     </div>

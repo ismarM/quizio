@@ -40,12 +40,12 @@ export default async function AdminQuizResultsPage({
         <div className="mb-6 flex">
           <Button
             asChild
-            className="q-button q-button-secondary rounded-none border-[#211F20] bg-[#FFFAF2] text-[#211F20] shadow-[4px_4px_0_#211F20] hover:bg-[#EBE4D8]"
+            className="q-button q-button-secondary rounded-none border-[#211F20] bg-[#FFFAF2] text-[#211F20] shadow-[4px_4px_0_#211F20] hover:bg-black"
             variant="outline"
           >
             <Link href={routes.admin}>
               <ArrowLeft data-icon="inline-start" />
-              Back to admin
+              <span className="pt-[3px] pl-1">Back to admin</span>
             </Link>
           </Button>
         </div>

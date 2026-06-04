@@ -204,11 +204,11 @@ function AdminQuizAttemptRow({
       </div>
 
       <Link
-        className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38] md:justify-center"
+        className="q-button q-button-primary flex items-center justify-center gap-1 border-[#FF3C38] bg-[#FF3C38]"
         href={routes.adminQuizAttempt(quizId, attempt.userId)}
       >
         <Eye className="h-4 w-4" />
-        Review
+        <span className="pt-[3px]">Review</span>
       </Link>
     </article>
   );
