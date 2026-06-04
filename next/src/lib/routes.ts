@@ -15,6 +15,9 @@ export const routes = {
     adminArchivedQuizzes: "/admin/quizzes/archived",
     adminQuizNew: "/admin/quizzes/new",
     adminQuizDetail: (id: string | number) => `/admin/quizzes/${id}`,
+    adminQuizResults: (id: string | number) => `/admin/quizzes/${id}/results`,
+    adminQuizAttempt: (quizId: string | number, userId: string | number) =>
+        `/admin/quizzes/${quizId}/attempts/${userId}`,
 
     leaderboard: "/leaderboard",
 };

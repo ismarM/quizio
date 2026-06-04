@@ -81,8 +81,12 @@ function AdminQuizBrowserInner({
   const statusOptions = archivedView ? archivedStatuses : activeStatuses;
 
   useEffect(() => {
-    setQuery(searchParams.get("query") || "");
-    setStatus((searchParams.get("status") as StatusFilter) || "all");
+    const timeoutId = window.setTimeout(() => {
+      setQuery(searchParams.get("query") || "");
+      setStatus((searchParams.get("status") as StatusFilter) || "all");
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [searchParams]);
 
   useEffect(() => {
@@ -396,6 +400,17 @@ function AdminQuizActions({ quiz }: { quiz: AdminQuizListItem }) {
             Preview
           </Button>
         )}
+
+        <Button
+          asChild
+          className="q-button q-button-secondary rounded-none border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
+          variant="outline"
+        >
+          <Link href={routes.adminQuizResults(quiz.id)}>
+            <Users data-icon="inline-start" />
+            Results
+          </Link>
+        </Button>
       </div>
 
       {isDraft || isScheduled ? (
