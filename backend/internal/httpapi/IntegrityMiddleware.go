@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ismarM/quizio/internal/httpapi/shared"
 )
 
 var hmacMaxSkew = 10 * time.Second
@@ -25,38 +27,38 @@ func IntegrityMiddleware(secret string) func(http.Handler) http.Handler {
 			}
 
 			if trimmedSecret == "" {
-				writeError(w, http.StatusInternalServerError, "server_error", "missing HMAC secret")
+				shared.WriteError(w, http.StatusInternalServerError, "server_error", "missing HMAC secret")
 				return
 			}
 
 			timestampValue := strings.TrimSpace(r.Header.Get("X-Timestamp"))
 			if timestampValue == "" {
-				writeError(w, http.StatusUnauthorized, "unauthorized", "missing X-Timestamp header")
+				shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "missing X-Timestamp header")
 				return
 			}
 
 			signatureValue := strings.TrimSpace(r.Header.Get("X-Signature"))
 			if signatureValue == "" {
-				writeError(w, http.StatusUnauthorized, "unauthorized", "missing X-Signature header")
+				shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "missing X-Signature header")
 				return
 			}
 
 			timestampMillis, err := strconv.ParseInt(timestampValue, 10, 64)
 			if err != nil {
-				writeError(w, http.StatusUnauthorized, "unauthorized", "invalid X-Timestamp header")
+				shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "invalid X-Timestamp header")
 				return
 			}
 
 			nowMillis := time.Now().UnixMilli()
 			maxSkewMillis := int64(hmacMaxSkew / time.Millisecond)
 			if nowMillis-timestampMillis > maxSkewMillis || timestampMillis-nowMillis > maxSkewMillis {
-				writeError(w, http.StatusUnauthorized, "unauthorized", "stale X-Timestamp header")
+				shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "stale X-Timestamp header")
 				return
 			}
 
 			bodyBytes, err := io.ReadAll(r.Body)
 			if err != nil {
-				writeError(w, http.StatusBadRequest, "bad_request", "unable to read request body")
+				shared.WriteError(w, http.StatusBadRequest, "bad_request", "unable to read request body")
 				return
 			}
 			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
@@ -74,12 +76,12 @@ func IntegrityMiddleware(secret string) func(http.Handler) http.Handler {
 
 			provided, err := hex.DecodeString(signatureValue)
 			if err != nil {
-				writeError(w, http.StatusUnauthorized, "unauthorized", "invalid X-Signature header")
+				shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "invalid X-Signature header")
 				return
 			}
 
 			if !hmac.Equal(provided, expected) {
-				writeError(w, http.StatusUnauthorized, "unauthorized", "invalid X-Signature header")
+				shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "invalid X-Signature header")
 				return
 			}
 

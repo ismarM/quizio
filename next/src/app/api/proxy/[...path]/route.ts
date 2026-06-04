@@ -19,6 +19,8 @@ const adminRules: AdminRule[] = [
   { methods: ["POST"], pattern: /^\/api\/quizzes\/[^/]+\/questions\/?$/ },
   { methods: ["POST"], pattern: /^\/api\/quizzes\/?$/ },
   { methods: ["GET", "PUT", "DELETE"], pattern: /^\/api\/quizzes\/[^/]+\/?$/ },
+  { methods: ["GET"], pattern: /^\/api\/quizzes\/[^/]+\/attempts\/admin\/?$/ },
+  { methods: ["GET"], pattern: /^\/api\/quizzes\/[^/]+\/attempt\/[^/]+\/?$/ },
   { methods: ["PATCH"], pattern: /^\/api\/quizzes\/[^/]+\/(archive|publish)\/?$/ },
 ];
 

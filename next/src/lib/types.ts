@@ -133,3 +133,16 @@ export type LeaderboardResponse = {
   quiz_id: number;
   entries: LeaderboardEntryDTO[];
 };
+
+export type QuizAttemptDTO = {
+  id_attempt: number;
+  user_id: number;
+  user_email: string;
+  start_time: string;
+  time_taken_seconds?: number;
+  score_achieved: number;
+};
+
+export type QuizAttemptsResponse = {
+  attempts: QuizAttemptDTO[];
+};

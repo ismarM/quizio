@@ -1,25 +1,11 @@
 package httpapi
 
 import (
-	"context"
 	"net/http"
 	"strconv"
+
+	"github.com/ismarM/quizio/internal/httpapi/shared"
 )
-
-type contextKey string
-
-var userClaimsKey contextKey = "userClaims"
-
-type UserClaims struct {
-	ID      int32
-	Email   string
-	IsAdmin bool
-}
-
-func UserFromContext(ctx context.Context) (UserClaims, bool) {
-	claims, ok := ctx.Value(userClaimsKey).(UserClaims)
-	return claims, ok
-}
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,18 +21,18 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		isAdminStr := r.Header.Get("X-User-IsAdmin")
 
 		if userEmail == "" {
-			writeError(w, http.StatusUnauthorized, "unauthorized", "missing X-User-Email header")
+			shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "missing X-User-Email header")
 			return
 		}
 
 		if userIDStr == "" {
-			writeError(w, http.StatusUnauthorized, "unauthorized", "missing X-User-Id header")
+			shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "missing X-User-Id header")
 			return
 		}
 
 		userID, err := strconv.ParseInt(userIDStr, 10, 32)
 		if err != nil {
-			writeError(w, http.StatusUnauthorized, "unauthorized", "invalid X-User-Id header")
+			shared.WriteError(w, http.StatusUnauthorized, "unauthorized", "invalid X-User-Id header")
 			return
 		}
 
@@ -55,13 +41,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			isAdmin = true
 		}
 
-		claims := UserClaims{
+		claims := shared.UserClaims{
 			ID:      int32(userID),
 			Email:   userEmail,
 			IsAdmin: isAdmin,
 		}
 
-		ctx := context.WithValue(r.Context(), userClaimsKey, claims)
+		ctx := shared.WithUser(r.Context(), claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
