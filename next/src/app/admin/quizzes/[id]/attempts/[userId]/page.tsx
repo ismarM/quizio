@@ -3,9 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { AdminAttemptReview } from "@/components/admin/AdminAttemptReview";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { loadAdminQuizAttemptReview } from "@/lib/admin-quiz-results";
-import { ServerFetchError } from "@/lib/serverFetch";
-import { requireAuth } from "@/lib/serverAuth";
+import { loadAdminQuizAttemptReview } from "@/components/admin/data/quiz-results.server";
+import { ServerFetchError } from "@/lib/api/server-fetch";
+import { requireAuth } from "@/lib/auth/server-auth";
 
 export const dynamic = "force-dynamic";
 

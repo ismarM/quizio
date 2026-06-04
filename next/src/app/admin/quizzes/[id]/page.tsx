@@ -3,10 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { AdminQuizEditor } from "@/components/admin/AdminQuizEditor";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { loadQuizAttemptCount } from "@/lib/admin-quiz-attempt-counts";
-import { mapFullQuizToAdminDetail } from "@/lib/admin-quiz-mappers";
-import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
-import { requireAuth } from "@/lib/serverAuth";
+import { mapFullQuizToAdminDetail } from "@/components/admin/data/quiz-mappers";
+import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
+import { requireAuth } from "@/lib/auth/server-auth";
 import type { CategoryListResponse, QuizFullResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -31,15 +30,11 @@ export default async function AdminQuizDetailPage({
   let categories;
 
   try {
-    const [data, categoryData, attemptCount] = await Promise.all([
+    const [data, categoryData] = await Promise.all([
       serverFetchJson<QuizFullResponse>(`/api/quizzes/${id}`),
       serverFetchJson<CategoryListResponse>("/api/categories"),
-      loadQuizAttemptCount(id),
     ]);
-    quiz = {
-      ...mapFullQuizToAdminDetail(data.quiz, data.questions),
-      attempts: attemptCount,
-    };
+    quiz = mapFullQuizToAdminDetail(data.quiz, data.questions);
     categories = categoryData.categories;
   } catch (error) {
     if (error instanceof ServerFetchError && error.status === 404) {

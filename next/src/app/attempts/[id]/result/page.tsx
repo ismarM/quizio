@@ -1,8 +1,8 @@
 import { AttemptResult } from "@/components/attempts/AttemptResult";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
-import { requireAuth } from "@/lib/serverAuth";
+import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
+import { requireAuth } from "@/lib/auth/server-auth";
 import type { AttemptResultResponse } from "@/lib/types";
 import { notFound } from "next/navigation";
 

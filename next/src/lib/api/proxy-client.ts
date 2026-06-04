@@ -58,7 +58,10 @@ export async function proxyFetch(path: string, options: ProxyFetchOptions = {}) 
   });
 }
 
-export async function proxyFetchJson<T>(path: string, options: ProxyFetchOptions = {}) {
+export async function proxyFetchJson<T>(
+  path: string,
+  options: ProxyFetchOptions = {}
+) {
   const response = await proxyFetch(path, options);
   if (!response.ok) {
     const payload = await response.json().catch(() => null);

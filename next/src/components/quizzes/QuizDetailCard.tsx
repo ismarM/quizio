@@ -5,12 +5,11 @@ import {
   Clock3,
   ListChecks,
   Play,
-  Users,
 } from "lucide-react";
 
 import type { QuizListItem } from "@/lib/types";
-import { routes } from "@/lib/routes";
-import { isImageUrl } from "@/lib/admin-quiz-assets";
+import { routes } from "@/lib/navigation/routes";
+import { isImageUrl } from "@/lib/uploads/images";
 
 type QuizDetailCardProps = {
   quiz: QuizListItem;
@@ -27,7 +26,6 @@ export function QuizDetailCard({
 
   return (
     <section className="border-2 border-[#211F20] bg-[#FFFAF2]">
-      {/* COVER IMAGE / HERO VISUAL */}
       <div className="relative border-b-2 border-[#211F20] bg-[#EBE4D8] p-5 md:p-7">
         <Link
           href={routes.quizzes}
@@ -66,7 +64,6 @@ export function QuizDetailCard({
         )}
       </div>
 
-      {/* CONTENT */}
       <div className="grid gap-6 p-5 md:grid-cols-[1.15fr_0.85fr] md:p-7">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -101,12 +98,6 @@ export function QuizDetailCard({
               suffix="minutes"
             />
             <InfoBox
-              icon={<Users className="h-5 w-5" />}
-              label="Players"
-              value={quiz.plays}
-              suffix="attempts"
-            />
-            <InfoBox
               icon={<CalendarDays className="h-5 w-5" />}
               label="Opens"
               value={quiz.opensAt}
@@ -115,7 +106,6 @@ export function QuizDetailCard({
           </div>
         </div>
 
-        {/* SIDE PANEL */}
         <aside className="grid content-center gap-4">
           {hasResult ? (
             <div className="border-2 border-[#006E5A] bg-[#DDECE8] p-4">

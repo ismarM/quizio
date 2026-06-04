@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { routes } from "@/lib/routes";
-import { getSessionUser } from "@/lib/serverAuth";
+import { routes } from "@/lib/navigation/routes";
+import { getSessionUser } from "@/lib/auth/server-auth";
 
 export async function MobileBottomNav() {
   const user = await getSessionUser();

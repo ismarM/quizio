@@ -15,9 +15,9 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { isImageUrl, uploadImageFile } from "@/lib/admin-quiz-assets";
-import { proxyFetchJson } from "@/lib/proxyClient";
-import { routes } from "@/lib/routes";
+import { isImageUrl, uploadImageFile } from "@/lib/uploads/images";
+import { proxyFetchJson } from "@/lib/api/proxy-client";
+import { routes } from "@/lib/navigation/routes";
 import type { CategoryDTO, QuizFullResponse } from "@/lib/types";
 
 type AdminQuizFormProps = {

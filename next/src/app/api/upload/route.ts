@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getSessionUser } from "@/lib/serverAuth";
-import { supabase } from "@/lib/supabase";
+import { getSessionUser } from "@/lib/auth/server-auth";
+import { supabase } from "@/lib/clients/supabase";
 
 export async function POST(request: Request) {
   const user = await getSessionUser();

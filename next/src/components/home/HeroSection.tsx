@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Check, Clock3 } from "lucide-react";
 
-import { routes } from "@/lib/routes";
+import { routes } from "@/lib/navigation/routes";
 
 const answerOptions = [
   { label: "Earth", selected: false },

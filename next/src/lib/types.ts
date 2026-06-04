@@ -8,7 +8,6 @@ export type QuizDTO = {
   is_archived?: boolean;
   time_limit_seconds?: number;
   question_count?: number;
-  attempt_count?: number;
   category_id?: number;
   category_name?: string;
   image_url?: string;
@@ -61,7 +60,6 @@ export type QuizListItem = {
   category: string;
   questionCount: number;
   timeLimitMinutes: number;
-  plays: string;
   status: "published" | "draft";
   opensAt: string;
   image: string;

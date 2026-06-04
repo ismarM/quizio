@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 
-import { routes } from "@/lib/routes";
-import { useLeaderboard } from "@/lib/useLeaderboard";
-import { formatScore, getDisplayName } from "@/lib/leaderboard-utils";
+import { routes } from "@/lib/navigation/routes";
+import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
+import type { LeaderboardEntryDTO } from "@/lib/types";
 
 type QuizLeaderboardMiniProps = {
   quizId: number;
@@ -116,4 +116,12 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
       </div>
     </section>
   );
+}
+
+function formatScore(achieved: number, max: number): string {
+  return `${Math.round(achieved)}/${Math.round(max)} pts`;
+}
+
+function getDisplayName(entry: LeaderboardEntryDTO): string {
+  return entry.display_name || entry.email.split("@")[0];
 }

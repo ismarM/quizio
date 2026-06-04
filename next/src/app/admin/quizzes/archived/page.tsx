@@ -5,11 +5,10 @@ import { redirect } from "next/navigation";
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { loadQuizAttemptCounts } from "@/lib/admin-quiz-attempt-counts";
-import { mapQuizDtoToAdminListItem } from "@/lib/admin-quiz-mappers";
-import { routes } from "@/lib/routes";
-import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
-import { requireAuth } from "@/lib/serverAuth";
+import { mapQuizDtoToAdminListItem } from "@/components/admin/data/quiz-mappers";
+import { routes } from "@/lib/navigation/routes";
+import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
+import { requireAuth } from "@/lib/auth/server-auth";
 import type { QuizListResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -84,12 +83,8 @@ async function loadArchivedQuizzes() {
     const data = await serverFetchJson<QuizListResponse>(
       "/api/quizzes?scope=archived&limit=100&offset=0"
     );
-    const attemptCounts = await loadQuizAttemptCounts(data.quizzes);
 
-    return data.quizzes.map((quiz) => ({
-      ...mapQuizDtoToAdminListItem(quiz),
-      attempts: attemptCounts.get(quiz.id) ?? 0,
-    }));
+    return data.quizzes.map(mapQuizDtoToAdminListItem);
   } catch (error) {
     if (error instanceof ServerFetchError && error.status === 401) {
       return [];

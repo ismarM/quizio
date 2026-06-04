@@ -6,8 +6,8 @@ import {
     X,
 } from "lucide-react";
 
-import { isImageUrl } from "@/lib/admin-quiz-assets";
-import { routes } from "@/lib/routes";
+import { isImageUrl } from "@/lib/uploads/images";
+import { routes } from "@/lib/navigation/routes";
 import type { AttemptResultResponse } from "@/lib/types";
 
 type AttemptResultProps = {

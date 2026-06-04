@@ -10,10 +10,10 @@ import {
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { mapQuizDtoToListItem } from "@/lib/quiz-mappers";
-import { routes } from "@/lib/routes";
-import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
-import { requireAuth } from "@/lib/serverAuth";
+import { mapQuizDtoToListItem } from "@/lib/mappers/quiz";
+import { routes } from "@/lib/navigation/routes";
+import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
+import { requireAuth } from "@/lib/auth/server-auth";
 import type { OpenSessionsResponse, QuizResponse, SubmissionsResponse, SubmissionSummary } from "@/lib/types";
 
 export const dynamic = "force-dynamic";

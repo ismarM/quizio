@@ -18,16 +18,10 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { isImageUrl, uploadImageFile } from "@/lib/admin-quiz-assets";
-import type { AdminQuizDetail } from "@/lib/admin-quiz-mappers";
-import {
-  replaceLockedQuiz,
-  type QuizCreatePayload,
-  type QuizMetadataPayload,
-  type QuizPublishPayload,
-} from "@/lib/admin-quiz-replacement";
-import { proxyFetchJson } from "@/lib/proxyClient";
-import { routes } from "@/lib/routes";
+import { isImageUrl, uploadImageFile } from "@/lib/uploads/images";
+import type { AdminQuizDetail } from "@/components/admin/data/quiz-mappers";
+import { proxyFetchJson } from "@/lib/api/proxy-client";
+import { routes } from "@/lib/navigation/routes";
 import type { CategoryDTO, QuestionDTO, QuizResponse } from "@/lib/types";
 
 type AdminQuizEditorProps = {
@@ -48,6 +42,14 @@ type EditableQuestion = {
   title: string;
   points: string;
   answers: EditableAnswer[];
+};
+
+type QuizMetadataPayload = {
+  title: string;
+  description?: string;
+  category_id?: number;
+  image_url?: string;
+  time_limit_seconds: number;
 };
 
 export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
@@ -269,19 +271,6 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
     setIsSubmitting(true);
     const createdQuestionIds: number[] = [];
     try {
-      if (quiz.status === "scheduled") {
-        const replacement = await replaceLockedQuiz(
-          quiz.id,
-          buildCreatePayload(payload, questions),
-          getScheduledPublishBody(quiz)
-        );
-
-        setStatusMessage("Changes saved.");
-        router.replace(routes.adminQuizDetail(replacement.quiz.id));
-        router.refresh();
-        return;
-      }
-
       await proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}`, {
         method: "PUT",
         body: payload,
@@ -702,7 +691,6 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
 
           <div className="grid gap-3">
             <SummaryItem label="Questions" value={`${questions.length}`} />
-            <SummaryItem label="Attempts" value={`${quiz.attempts}`} />
             <SummaryItem label="Time limit" value={`${timeLimit} min`} />
             <SummaryItem label="Created" value={quiz.createdAt} />
             <SummaryItem label="Release time" value={quiz.publishAtLabel} />
@@ -876,16 +864,6 @@ function buildUpdatePayload({
   };
 }
 
-function buildCreatePayload(
-  metadata: QuizMetadataPayload,
-  questions: EditableQuestion[]
-): QuizCreatePayload {
-  return {
-    ...metadata,
-    questions: questions.map(buildQuestionPayload),
-  };
-}
-
 function buildQuestionPayload(question: EditableQuestion) {
   return {
     title: question.title.trim(),
@@ -895,20 +873,4 @@ function buildQuestionPayload(question: EditableQuestion) {
       is_correct: answer.isCorrect,
     })),
   };
-}
-
-function getScheduledPublishBody(quiz: AdminQuizDetail): QuizPublishPayload {
-  const publishDate = quiz.publishAt ? new Date(quiz.publishAt) : null;
-
-  if (!publishDate || Number.isNaN(publishDate.getTime())) {
-    return {};
-  }
-
-  if (publishDate.getTime() <= Date.now()) {
-    throw new Error(
-      "This quiz has reached its publish time. Refresh before editing."
-    );
-  }
-
-  return { publish_date: publishDate.toISOString() };
 }

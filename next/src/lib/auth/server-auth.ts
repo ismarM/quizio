@@ -3,7 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { adminAuth } from "@/lib/firebaseAdmin";
+import { adminAuth } from "@/lib/clients/firebase-admin";
 
 export const SESSION_COOKIE_NAME = "session";
 
@@ -25,7 +25,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   try {
     const decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
-    // const userRecord = await adminAuth.getUser(decoded.uid); - baje ne rabimo
     const postgresId = Number((decoded as { postgresId?: unknown }).postgresId);
     const isAdmin = Boolean((decoded as { isAdmin?: unknown }).isAdmin);
 
@@ -36,7 +35,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return {
       uid: decoded.uid,
       email: decoded.email ?? null,
-      displayName: decoded.name ?? null, //ce ne deluje potem more bit dispalyName
+      displayName: decoded.name ?? null,
       postgresId,
       isAdmin,
     };
@@ -54,17 +53,3 @@ export async function requireAuth(): Promise<SessionUser> {
 
   return user;
 }
-
-/*export async function requireEmail(
-  expectedEmail: string
-): Promise<SessionUser> {
-  const user = await requireAuth();
-  const normalizedExpected = expectedEmail.trim().toLowerCase();
-  const normalizedActual = user.email?.trim().toLowerCase() ?? "";
-
-  if (!normalizedActual || normalizedActual !== normalizedExpected) {
-    redirect("/login?reason=unauthorized");
-  }
-
-  return user;
-}*/

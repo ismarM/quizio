@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { requireAuth } from "@/lib/serverAuth";
+import { requireAuth } from "@/lib/auth/server-auth";
 import { AdminQuizForm } from "@/components/admin/AdminQuizForm";
-import { serverFetchJson } from "@/lib/serverFetch";
+import { serverFetchJson } from "@/lib/api/server-fetch";
 import type { CategoryListResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";

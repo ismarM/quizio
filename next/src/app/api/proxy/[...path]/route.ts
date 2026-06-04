@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getSessionUser } from "@/lib/serverAuth";
-import { serverFetch } from "@/lib/serverFetch";
+import { getSessionUser } from "@/lib/auth/server-auth";
+import { serverFetch } from "@/lib/api/server-fetch";
 
 export const runtime = "nodejs";
 

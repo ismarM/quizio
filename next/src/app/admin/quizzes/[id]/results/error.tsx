@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, RotateCcw } from "lucide-react";
 
-import { routes } from "@/lib/routes";
+import { routes } from "@/lib/navigation/routes";
 
 export default function AdminQuizResultsError({
   reset,

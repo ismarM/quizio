@@ -2,8 +2,8 @@ import { UserRound } from "lucide-react";
 import Link from "next/link";
 
 import LogoutButton from "@/components/auth/LogoutButton";
-import { routes } from "@/lib/routes";
-import { getSessionUser } from "@/lib/serverAuth";
+import { routes } from "@/lib/navigation/routes";
+import { getSessionUser } from "@/lib/auth/server-auth";
 
 function getInitials(email?: string | null, displayName?: string | null) {
   const source = displayName || email || "U";

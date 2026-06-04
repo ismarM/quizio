@@ -5,8 +5,8 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { routes } from "@/lib/routes";
-import { getSessionUser } from "@/lib/serverAuth";
+import { routes } from "@/lib/navigation/routes";
+import { getSessionUser } from "@/lib/auth/server-auth";
 
 export const dynamic = "force-dynamic";
 

@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Clock3, Flag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { buildProxyUrl, proxyFetchJson } from "@/lib/proxyClient";
-import { isImageUrl } from "@/lib/admin-quiz-assets";
-import { routes } from "@/lib/routes";
+import { buildProxyUrl, proxyFetchJson } from "@/lib/api/proxy-client";
+import { isImageUrl } from "@/lib/uploads/images";
+import { routes } from "@/lib/navigation/routes";
 import type {
   AttemptQuestionDTO,
   QuestionDTO,

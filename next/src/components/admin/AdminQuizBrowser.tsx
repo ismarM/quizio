@@ -20,16 +20,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { AdminQuizListItem } from "@/lib/admin-quiz-mappers";
-import {
-  buildCreateQuizPayloadFromFullQuiz,
-  replaceLockedQuiz,
-  type QuizPublishPayload,
-} from "@/lib/admin-quiz-replacement";
+import type { AdminQuizListItem } from "@/components/admin/data/quiz-mappers";
 import { cn } from "@/lib/utils";
-import { proxyFetchJson } from "@/lib/proxyClient";
-import { routes } from "@/lib/routes";
-import type { QuizFullResponse, QuizResponse } from "@/lib/types";
+import { proxyFetchJson } from "@/lib/api/proxy-client";
+import { routes } from "@/lib/navigation/routes";
+import type { QuizResponse } from "@/lib/types";
+
+type QuizPublishPayload = {
+  publish_date?: string;
+};
 
 type StatusFilter = "all" | AdminQuizListItem["status"];
 
@@ -261,11 +260,6 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
             icon={<Clock3 className="h-4 w-4" />}
             label="Time"
             value={`${quiz.timeLimitMinutes} min`}
-          />
-          <MetaItem
-            icon={<Users className="h-4 w-4" />}
-            label="Attempts"
-            value={formatAttemptCount(quiz.attempts)}
           />
           <MetaItem
             icon={<Archive className="h-4 w-4" />}
@@ -540,18 +534,10 @@ function MetaItem({
   );
 }
 
-function formatAttemptCount(value: number) {
-  return `${value} ${value === 1 ? "attempt" : "attempts"}`;
-}
-
 async function publishQuizNow(quiz: AdminQuizListItem) {
   const body: QuizPublishPayload = {
     publish_date: new Date(Date.now() - 1000).toISOString(),
   };
-
-  if (quiz.status === "scheduled") {
-    return replaceScheduledQuiz(quiz, body);
-  }
 
   return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
     method: "PATCH",
@@ -565,26 +551,10 @@ async function scheduleQuizRelease(
 ) {
   const body: QuizPublishPayload = { publish_date: publishDate };
 
-  if (quiz.status === "scheduled") {
-    return replaceScheduledQuiz(quiz, body);
-  }
-
   return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
     method: "PATCH",
     body,
   });
-}
-
-async function replaceScheduledQuiz(
-  quiz: AdminQuizListItem,
-  publishBody: QuizPublishPayload
-) {
-  const current = await proxyFetchJson<QuizFullResponse>(`/quizzes/${quiz.id}`);
-  return replaceLockedQuiz(
-    quiz.id,
-    buildCreateQuizPayloadFromFullQuiz(current),
-    publishBody
-  );
 }
 
 function parseDatetimeLocalValue(value: string) {

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
+import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
 import type {
   AttemptResultResponse,
   QuestionDTO,
@@ -12,7 +12,7 @@ import type {
   AdminAttemptQuestionReview,
   AdminAttemptReview,
   AdminAttemptStatus,
-} from "@/lib/admin-quiz-result-types";
+} from "@/components/admin/data/quiz-result-types";
 
 export const adminQuizResultEndpoints = {
   attempts: (quizId: string | number) => `/api/quizzes/${quizId}/attempts/admin`,

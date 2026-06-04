@@ -16,9 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   loadAdminQuizAttemptReviews,
-} from "@/lib/admin-quiz-results";
-import type { AdminAttemptListItem } from "@/lib/admin-quiz-result-types";
-import { routes } from "@/lib/routes";
+} from "@/components/admin/data/quiz-results.server";
+import type { AdminAttemptListItem } from "@/components/admin/data/quiz-result-types";
+import { routes } from "@/lib/navigation/routes";
 
 type AdminQuizAttemptsSectionProps = {
   quizId: string | number;

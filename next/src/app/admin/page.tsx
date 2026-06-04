@@ -13,11 +13,10 @@ import { redirect } from "next/navigation";
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { loadQuizAttemptCounts } from "@/lib/admin-quiz-attempt-counts";
-import { mapQuizDtoToAdminListItem } from "@/lib/admin-quiz-mappers";
-import { routes } from "@/lib/routes";
-import { ServerFetchError, serverFetchJson } from "@/lib/serverFetch";
-import { requireAuth } from "@/lib/serverAuth";
+import { mapQuizDtoToAdminListItem } from "@/components/admin/data/quiz-mappers";
+import { routes } from "@/lib/navigation/routes";
+import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
+import { requireAuth } from "@/lib/auth/server-auth";
 import type { QuizListResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -212,13 +211,9 @@ async function loadAdminQuizzes() {
     });
 
     const activeQuizzes = Array.from(uniqueById.values());
-    const attemptCounts = await loadQuizAttemptCounts(activeQuizzes);
 
     return {
-      quizzes: activeQuizzes.map((quiz) => ({
-        ...mapQuizDtoToAdminListItem(quiz),
-        attempts: attemptCounts.get(quiz.id) ?? 0,
-      })),
+      quizzes: activeQuizzes.map(mapQuizDtoToAdminListItem),
       archivedCount: archivedById.size,
     };
   } catch (error) {

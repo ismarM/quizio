@@ -14,12 +14,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { isImageUrl } from "@/lib/admin-quiz-assets";
+import { isImageUrl } from "@/lib/uploads/images";
 import type {
   AdminAttemptQuestionReview,
   AdminAttemptReview as AdminAttemptReviewModel,
-} from "@/lib/admin-quiz-result-types";
-import { routes } from "@/lib/routes";
+} from "@/components/admin/data/quiz-result-types";
+import { routes } from "@/lib/navigation/routes";
 
 type AdminAttemptReviewProps = {
   review: AdminAttemptReviewModel;

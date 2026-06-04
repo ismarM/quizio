@@ -4,7 +4,7 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { auth } from "@/lib/firebaseClient";
+import { auth } from "@/lib/clients/firebase-client";
 
 type LogoutButtonProps = {
   className?: string;

@@ -13,12 +13,11 @@ import {
   CalendarDays,
   Clock3,
   ListChecks,
-  Users,
 } from "lucide-react";
 
 import type { QuizListItem } from "@/lib/types";
-import { routes } from "@/lib/routes";
-import { isImageUrl } from "@/lib/admin-quiz-assets";
+import { routes } from "@/lib/navigation/routes";
+import { isImageUrl } from "@/lib/uploads/images";
 
 type QuizCardProps = {
   quiz: QuizListItem;
@@ -116,11 +115,6 @@ export function QuizCard({ quiz, viewMode = "grid" }: QuizCardProps) {
             value={`${quiz.timeLimitMinutes} min`}
           />
           <QuizMetaItem
-            icon={<Users className="h-4 w-4" />}
-            label="Attempts"
-            value={formatAttemptCount(quiz.plays)}
-          />
-          <QuizMetaItem
             className="hidden md:grid"
             icon={<CalendarDays className="h-4 w-4" />}
             label="Opens"
@@ -163,8 +157,4 @@ function QuizMetaItem({
       </span>
     </div>
   );
-}
-
-function formatAttemptCount(value: string) {
-  return `${value} ${value === "1" ? "attempt" : "attempts"}`;
 }

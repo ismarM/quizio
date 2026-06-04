@@ -10,8 +10,8 @@ import {
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { Button } from "@/components/ui/button";
-import { routes } from "@/lib/routes";
-import { requireAuth } from "@/lib/serverAuth";
+import { routes } from "@/lib/navigation/routes";
+import { requireAuth } from "@/lib/auth/server-auth";
 
 export const dynamic = "force-dynamic";
 

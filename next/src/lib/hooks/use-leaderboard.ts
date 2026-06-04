@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { LeaderboardEntryDTO, LeaderboardResponse } from "@/lib/types";
+import { useEffect, useRef, useState } from "react";
+
+import type { LeaderboardEntryDTO, LeaderboardResponse } from "@/lib/types";
 
 export function useLeaderboard(quizId: number) {
   const [entries, setEntries] = useState<LeaderboardEntryDTO[]>([]);
@@ -17,9 +18,13 @@ export function useLeaderboard(quizId: number) {
     let isMounted = true;
 
     function connect() {
-      if (!isMounted) return;
+      if (!isMounted) {
+        return;
+      }
 
-      eventSource = new EventSource(`/api/proxy/quizzes/${quizId}/leaderboard/stream`);
+      eventSource = new EventSource(
+        `/api/proxy/quizzes/${quizId}/leaderboard/stream`
+      );
 
       eventSource.onopen = () => {
         setIsConnected(true);
@@ -41,7 +46,6 @@ export function useLeaderboard(quizId: number) {
         setError("Connection lost");
         eventSource?.close();
 
-        // Retry logic
         if (isMounted) {
           retryTimeoutRef.current = setTimeout(() => {
             backoffRef.current = Math.min(backoffRef.current * 2, maxBackoff);
@@ -55,8 +59,12 @@ export function useLeaderboard(quizId: number) {
 
     return () => {
       isMounted = false;
-      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
-      if (eventSource) eventSource.close();
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, [quizId]);
 

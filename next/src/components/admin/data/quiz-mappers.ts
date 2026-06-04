@@ -12,7 +12,6 @@ export type AdminQuizListItem = {
   imageUrl: string;
   questionCount: number;
   timeLimitMinutes: number;
-  attempts: number;
   createdAt: string;
   publishAt?: string;
   publishAtLabel: string;
@@ -112,7 +111,6 @@ export function mapQuizDtoToAdminListItem(quiz: QuizDTO): AdminQuizListItem {
     imageUrl: quiz.image_url ?? "",
     questionCount: quiz.question_count ?? 0,
     timeLimitMinutes: mapTimeLimitMinutes(quiz),
-    attempts: 0,
     createdAt: formatAdminDate(quiz.created_at),
     publishAt: quiz.publish_date,
     publishAtLabel: formatAdminDateTime(quiz.publish_date),

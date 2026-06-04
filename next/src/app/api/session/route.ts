@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { adminAuth } from "@/lib/firebaseAdmin";
-import { applyHmacHeaders } from "@/lib/requestIntegrity";
-import { SESSION_COOKIE_NAME } from "@/lib/serverAuth";
+import { adminAuth } from "@/lib/clients/firebase-admin";
+import { applyHmacHeaders } from "@/lib/api/request-integrity";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/server-auth";
 
 export const runtime = "nodejs";
 

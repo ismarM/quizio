@@ -1,8 +1,8 @@
 import "server-only";
 
-import type { SignableBody } from "@/lib/requestIntegrity";
-import { getSessionUser } from "@/lib/serverAuth";
-import { applyHmacHeaders } from "@/lib/requestIntegrity";
+import { getSessionUser } from "@/lib/auth/server-auth";
+import { applyHmacHeaders } from "@/lib/api/request-integrity";
+import type { SignableBody } from "@/lib/api/request-integrity";
 
 function getRequiredEnv(key: string) {
   const value = process.env[key];
@@ -57,7 +57,12 @@ export async function serverFetch(path: string, init: RequestInit = {}) {
     headers.set("X-User-IsAdmin", user.isAdmin ? "true" : "false");
   }
 
-  applyHmacHeaders(headers, url.pathname + url.search, getSignableBody(body), HMAC_SECRET);
+  applyHmacHeaders(
+    headers,
+    url.pathname + url.search,
+    getSignableBody(body),
+    HMAC_SECRET
+  );
 
   return fetch(url, {
     ...init,

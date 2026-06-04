@@ -12,8 +12,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import { auth, googleProvider } from "@/lib/firebaseClient";
-import { routes } from "@/lib/routes";
+import { auth, googleProvider } from "@/lib/clients/firebase-client";
+import { routes } from "@/lib/navigation/routes";
 import { unauthorized } from "next/navigation";
 
 type LoginFormProps = {
