@@ -4,15 +4,14 @@ import {
   BarChart3,
   CalendarClock,
   FilePlus2,
-  LayoutDashboard,
-  ListChecks,
-  LockKeyhole,
+  Home,
+  Plus,
+  UserRound,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { Button } from "@/components/ui/button";
 import { mapQuizDtoToAdminListItem } from "@/components/admin/data/quiz-mappers";
 import { routes } from "@/lib/navigation/routes";
 import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
@@ -23,22 +22,34 @@ export const dynamic = "force-dynamic";
 
 const adminStats = [
   {
-    label: "Active quizzes",
-    icon: ListChecks,
-  },
-  {
     label: "Drafts",
+    shortLabel: "Drafts",
     icon: FilePlus2,
+    tone: "sand",
+    metric: "drafts",
   },
   {
     label: "Scheduled",
+    shortLabel: "Scheduled",
     icon: CalendarClock,
+    tone: "sand",
+    metric: "scheduled",
   },
   {
     label: "Published",
+    shortLabel: "Published",
     icon: BarChart3,
+    tone: "green",
+    metric: "published",
   },
-];
+  {
+    label: "Archived / Locked",
+    shortLabel: "Archived",
+    icon: Archive,
+    tone: "sand",
+    metric: "archived",
+  },
+] as const;
 
 export default async function AdminPage() {
   const user = await requireAuth();
@@ -48,7 +59,6 @@ export default async function AdminPage() {
   }
 
   const { quizzes, archivedCount } = await loadAdminQuizzes();
-  const totalCount = quizzes.length;
   const draftCount = quizzes.filter((quiz) => quiz.status === "draft").length;
   const scheduledCount = quizzes.filter(
     (quiz) => quiz.status === "scheduled"
@@ -56,140 +66,174 @@ export default async function AdminPage() {
   const publishedCount = quizzes.filter(
     (quiz) => quiz.status === "published"
   ).length;
+  const statValues = {
+    drafts: draftCount,
+    scheduled: scheduledCount,
+    published: publishedCount,
+    archived: archivedCount,
+  };
+  const stats = adminStats.map((stat) => ({
+    ...stat,
+    value: statValues[stat.metric],
+  }));
 
   return (
-    <main className="q-page min-h-screen pb-20 md:pb-0">
-      <SiteHeader />
+    <main className="q-page min-h-screen bg-[#FFFAF2] text-[#211F20]">
+      <div className="min-h-screen w-full bg-[#FFFAF2]">
+        <section className="min-w-0 pb-24 lg:pb-0">
+          <AdminMobileHeader />
 
-      <section className="q-container pb-12 pt-6 md:pb-20 md:pt-10">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="mb-3 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Admin panel
-            </p>
+          <div className="q-container animate-in fade-in slide-in-from-bottom-4 pb-7 pt-5 duration-500 lg:py-9">
+            <div className="mb-5 hidden items-center justify-end lg:flex">
+              <Button
+                asChild
+                className="q-button q-button-secondary h-11 rounded-none px-5 transition duration-200 hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+                variant="outline"
+              >
+                <Link href={routes.home}>
+                  <Home className="h-4 w-4" />
+                  Back to homepage
+                </Link>
+              </Button>
+            </div>
 
-            <h1 className="font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
-              Manage Quizio.
-            </h1>
+            <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
+              <div>
+                <p className="mb-3 q-mini font-bold tracking-[0.18em] text-[#006E5A]">
+                  ADMIN DASHBOARD
+                </p>
 
-            <p className="mt-4 max-w-2xl q-body text-[#211F20]">
-              Create quizzes, publish content, review attempts and manage the
-              quiz platform from one place.
-            </p>
-          </div>
+                <h1 className="font-display text-[46px] leading-[0.84] text-[#211F20] md:text-[72px] lg:text-[88px]">
+                  MANAGE QUIZZES
+                </h1>
 
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-[0.85fr_1.15fr]">
-          <aside className="grid content-start gap-6">
-            <section className="border-2 border-[#211F20] bg-[#EBE4D8] p-5 shadow-[8px_8px_0_#211F20] md:p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] text-[#006E5A]">
-                  <LayoutDashboard className="h-8 w-8" />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="font-display text-4xl leading-none text-[#211F20]">
-                    Admin access
-                  </p>
-                  <p className="mt-2 break-all q-body text-[#211F20]">
-                    {user.email ?? "unknown email"}
-                  </p>
-                </div>
+                <p className="mt-4 max-w-[470px] text-[15px] leading-6 text-[#211F20]">
+                  Create quizzes, publish content, review attempts and manage
+                  your quiz platform in one place.
+                </p>
               </div>
 
-              <div className="my-5 h-[2px] bg-[#211F20]" />
-
-              <div className="grid gap-3">
-                <Link
-                  href={routes.adminQuizNew}
-                  className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
-                >
-                  <FilePlus2 className="h-4 w-4" />
-                  <span className="pt-[3px] pl-1">Create quiz</span>
+              <Button
+                asChild
+                className="q-button q-button-primary h-12 rounded-none border-[#FF3C38] bg-[#FF3C38] px-7 text-xl shadow-[4px_4px_0_#211F20] transition duration-200 hover:-translate-y-0.5 hover:bg-[#D92F2B] hover:shadow-[6px_6px_0_#211F20] lg:h-14"
+              >
+                <Link href={routes.adminQuizNew}>
+                  <Plus className="h-5 w-5" />
+                  Create quiz
                 </Link>
+              </Button>
+            </div>
 
-                <Link
-                  href={routes.adminArchivedQuizzes}
-                  className="q-button q-button-secondary"
-                >
-                  <Archive className="h-4 w-4" />
-                  <span className="pt-[3px] pl-1">Archived quizzes ({archivedCount})</span>
-                </Link>
-              </div>
-            </section>
-
-            <section className="border-2 border-[#211F20] bg-[#006E5A] p-5 text-[#FFFAF2] md:p-6">
-              <LockKeyhole className="mb-5 h-10 w-10" />
-
-              <p className="font-display text-[42px] leading-[0.9]">
-                Published quizzes are locked.
-              </p>
-
-              <p className="mt-4 q-body">
-                Once a quiz is published, questions and answers should not be
-                changed. Create a duplicate if a new version is needed.
-              </p>
-            </section>
-          </aside>
-
-          <div className="grid gap-6">
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {adminStats.map((stat) => {
+            <section className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-5">
+              {stats.map((stat) => {
                 const Icon = stat.icon;
-                const value =
-                  stat.label === "Active quizzes"
-                    ? String(totalCount)
-                    : stat.label === "Drafts"
-                      ? String(draftCount)
-                      : stat.label === "Scheduled"
-                        ? String(scheduledCount)
-                        : String(publishedCount);
 
                 return (
                   <article
+                    className="grid min-h-[74px] grid-cols-[44px_1fr] items-center gap-3 border-2 border-[#211F20] bg-[#FFFDF8] p-3 transition duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_#EBE4D8] lg:min-h-[104px] lg:grid-cols-[56px_1fr] lg:p-5"
                     key={stat.label}
-                    className="border-2 border-[#211F20] bg-[#FFFAF2] p-4"
                   >
-                    <div className="mb-4 flex h-10 w-10 items-center justify-center bg-[#DDECE8] text-[#006E5A]">
-                      <Icon className="h-5 w-5" />
+                    <div
+                      className={[
+                        "flex h-10 w-10 items-center justify-center border-2 border-[#211F20] lg:h-12 lg:w-12",
+                        stat.tone === "green"
+                          ? "bg-[#006E5A] text-[#FFFAF2]"
+                          : "bg-[#EBE4D8] text-[#211F20]",
+                      ].join(" ")}
+                    >
+                      <Icon className="h-5 w-5" strokeWidth={1.8} />
                     </div>
 
-                    <p className="q-mini text-[#8F8F8F]">{stat.label}</p>
-                    <p className="mt-1 font-display text-[42px] leading-none text-[#211F20]">
-                      {value}
-                    </p>
+                    <div>
+                      <p className="font-display text-[32px] leading-none text-[#211F20] lg:text-[40px]">
+                        {stat.value}
+                      </p>
+                      <p className="mt-1 text-[12px] leading-4 text-[#211F20]">
+                        <span className="lg:hidden">{stat.shortLabel}</span>
+                        <span className="hidden lg:inline">{stat.label}</span>
+                      </p>
+                    </div>
                   </article>
                 );
               })}
             </section>
 
-            <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
-              <div className="mb-4 flex items-end justify-between gap-4">
-                <div>
-                  <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                    All quizzes
-                  </p>
-
-                  <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                    Active quiz list
-                  </h2>
-                </div>
-              </div>
-
-              <div className="h-[2px] bg-[#211F20]" />
-
-              <div className="mt-4">
-                <AdminQuizBrowser quizzes={quizzes} />
-              </div>
-            </section>
+            <AdminQuizBrowser quizzes={quizzes} />
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      <MobileBottomNav />
+      <AdminMobileBottomNav />
     </main>
-  )
+  );
+}
+
+function AdminMobileHeader() {
+  return (
+    <header className="flex h-16 items-center justify-between border-b-2 border-[#211F20] px-5 lg:hidden">
+      <Link
+        aria-label="Back to homepage"
+        className="flex h-10 w-10 items-center justify-center text-[#211F20]"
+        href={routes.home}
+      >
+        <Home className="h-5 w-5" />
+      </Link>
+      <Link
+        className="font-display text-2xl leading-none text-[#006E5A]"
+        href={routes.admin}
+      >
+        QUIZIO
+      </Link>
+
+      <span aria-hidden="true" className="h-10 w-10" />
+    </header>
+  );
+}
+
+function AdminMobileBottomNav() {
+  const items = [
+    { label: "Overview", href: routes.admin, icon: Home },
+    { label: "Drafts", href: `${routes.admin}?status=draft`, icon: FilePlus2 },
+    { label: "Archived", href: routes.adminArchivedQuizzes, icon: Archive },
+    { label: "Profile", href: routes.dashboard, icon: UserRound },
+  ];
+
+  return (
+    <nav className="fixed bottom-0 left-0 z-50 grid h-20 w-full grid-cols-[1fr_1fr_72px_1fr_1fr] border-t border-[#D7D0C4] bg-[#FFFAF2] lg:hidden">
+      {items.slice(0, 2).map((item) => (
+        <MobileNavItem item={item} key={item.label} />
+      ))}
+
+      <Link
+        className="-mt-5 flex h-16 w-16 items-center justify-center justify-self-center rounded-full border-2 border-[#211F20] bg-[#006E5A] text-[#FFFAF2] shadow-[0_8px_22px_rgba(0,0,0,0.18)] transition hover:-translate-y-1"
+        href={routes.adminQuizNew}
+      >
+        <Plus className="h-8 w-8" />
+      </Link>
+
+      {items.slice(2).map((item) => (
+        <MobileNavItem item={item} key={item.label} />
+      ))}
+    </nav>
+  );
+}
+
+function MobileNavItem({
+  item,
+}: {
+  item: { label: string; href: string; icon: typeof Home };
+}) {
+  const Icon = item.icon;
+
+  return (
+    <Link
+      className="flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#211F20] first:text-[#006E5A]"
+      href={item.href}
+    >
+      <Icon className="h-5 w-5" strokeWidth={1.8} />
+      {item.label}
+    </Link>
+  );
 }
 
 async function loadAdminQuizzes() {

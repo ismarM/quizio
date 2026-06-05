@@ -6,14 +6,16 @@ import { useEffect, useMemo, useState, Suspense, type ReactNode } from "react";
 import {
   Archive,
   CalendarClock,
+  ChevronRight,
   Clock3,
   Eye,
-  FilePlus2,
+  GripVertical,
   ListChecks,
+  Lock,
+  MoreVertical,
   Pencil,
   Search,
   Send,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 
@@ -76,13 +78,21 @@ function AdminQuizBrowserInner({
   const [status, setStatus] = useState<StatusFilter>(
     () => (searchParams.get("status") as StatusFilter) || "all"
   );
+  const [category, setCategory] = useState(
+    () => searchParams.get("category") || "all"
+  );
 
   const statusOptions = archivedView ? archivedStatuses : activeStatuses;
+  const categoryOptions = useMemo(() => {
+    const unique = new Set(quizzes.map((quiz) => quiz.category));
+    return ["all", ...Array.from(unique).sort()];
+  }, [quizzes]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setQuery(searchParams.get("query") || "");
       setStatus((searchParams.get("status") as StatusFilter) || "all");
+      setCategory(searchParams.get("category") || "all");
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
@@ -98,6 +108,9 @@ function AdminQuizBrowserInner({
       if (status !== "all") params.set("status", status);
       else params.delete("status");
 
+      if (category !== "all") params.set("category", category);
+      else params.delete("category");
+
       const newSearch = params.toString();
       if (newSearch !== searchParams.toString()) {
         router.replace(`${pathname}?${newSearch}`, { scroll: false });
@@ -105,7 +118,7 @@ function AdminQuizBrowserInner({
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [query, status, pathname, router, searchParams]);
+  }, [category, query, status, pathname, router, searchParams]);
 
   const filteredQuizzes = useMemo(() => {
     return quizzes.filter((quiz) => {
@@ -118,170 +131,259 @@ function AdminQuizBrowserInner({
         quiz.publishAtLabel.toLowerCase().includes(search);
 
       const matchesStatus = status === "all" || quiz.status === status;
+      const matchesCategory = category === "all" || quiz.category === category;
 
-      return matchesQuery && matchesStatus;
+      return matchesQuery && matchesStatus && matchesCategory;
     });
-  }, [quizzes, query, status]);
+  }, [category, quizzes, query, status]);
+  const visibleRange =
+    filteredQuizzes.length === 0 ? "0" : `1-${filteredQuizzes.length}`;
 
   return (
-    <div className="grid gap-5">
-      <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-        <label className="relative block">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8F8F8F]" />
-          <Input
-            className="q-input h-12 pl-12"
-            placeholder={
-              archivedView
-                ? "Search archived quizzes..."
-                : "Search admin quizzes..."
-            }
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
+    <section className="relative overflow-visible border-2 border-[#211F20] bg-[#FFFDF8] shadow-[6px_6px_0_#EBE4D8]">
+      <div className="p-4 lg:p-6">
+        <h2 className="font-display text-[28px] leading-none text-[#211F20] lg:text-[34px]">
+          {archivedView ? "ARCHIVED QUIZZES" : "ALL QUIZZES"}
+        </h2>
 
-        {archivedView ? (
-          <Button
-            asChild
-            className="q-button q-button-secondary h-12 rounded-none"
-            variant="outline"
+        <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(220px,1fr)_170px_170px_auto] lg:items-center">
+          <label className="relative block">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F8F8F]" />
+            <Input
+              className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] pl-11 text-[13px] shadow-none transition placeholder:text-[#8F8F8F] focus-visible:border-[#006E5A] focus-visible:ring-0"
+              placeholder="Search quizzes by title or keyword..."
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+
+          <SelectFilter
+            label="Status"
+            value={status}
+            onChange={(value) => setStatus(value as StatusFilter)}
           >
-            <Link href={routes.admin}>
-              <ListChecks data-icon="inline-start" />
-              Active quizzes
-            </Link>
-          </Button>
-        ) : (
-          <div className="grid gap-2 sm:grid-cols-2">
+            {statusOptions.map((item) => (
+              <option key={item} value={item}>
+                {item === "all" ? "All statuses" : statusLabels[item]}
+              </option>
+            ))}
+          </SelectFilter>
+
+          <SelectFilter
+            label="Category"
+            value={category}
+            onChange={setCategory}
+          >
+            {categoryOptions.map((item) => (
+              <option key={item} value={item}>
+                {item === "all" ? "All categories" : item}
+              </option>
+            ))}
+          </SelectFilter>
+
+          {archivedView ? (
             <Button
               asChild
-              className="q-button q-button-secondary h-12 rounded-none"
+              className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+              variant="outline"
+            >
+              <Link href={routes.admin}>
+                <ListChecks className="h-4 w-4" />
+                All quizzes
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              asChild
+              className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
               variant="outline"
             >
               <Link href={routes.adminArchivedQuizzes}>
-                <Archive data-icon="inline-start" />
-                Archived
+                <Lock className="h-4 w-4" />
+                Archived / Locked
               </Link>
             </Button>
-
-            <Button
-              asChild
-              className="q-button q-button-primary h-12 rounded-none border-[#FF3C38] bg-[#FF3C38]"
-            >
-              <Link href={routes.adminQuizNew}>
-                <FilePlus2 data-icon="inline-start" />
-                Create quiz
-              </Link>
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {statusOptions.map((item) => (
-          <Button
-            key={item}
-            type="button"
-            onClick={() => setStatus(item)}
-            className={cn(
-              "q-button shrink-0 rounded-none",
-              status === item
-                ? "q-button-primary border-[#006E5A] bg-[#006E5A]"
-                : "q-button-secondary"
-            )}
-            variant={status === item ? "default" : "outline"}
-          >
-            {statusLabels[item]}
-          </Button>
-        ))}
+      <div className="hidden border-y-2 border-[#211F20] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8F8F8F] lg:grid lg:grid-cols-[34px_minmax(220px,1.35fr)_minmax(210px,250px)_minmax(130px,150px)_minmax(220px,250px)] lg:items-center">
+        <span className="col-start-2 px-6">Quiz</span>
+        <span className="text-center">Details</span>
+        <span className="text-center">Status</span>
+        <span className="text-center">Actions</span>
       </div>
 
-      <div className="flex items-center justify-between border-y-2 border-[#211F20] py-3">
-        <p className="q-body">
-          Showing{" "}
-          <strong className="text-[#006E5A]">{filteredQuizzes.length}</strong>{" "}
-          {archivedView ? "archived quizzes" : "quizzes"}
-        </p>
-
-        <p className="q-mini text-[#8F8F8F]">
-          {archivedView ? "Archived content" : "Admin content management"}
-        </p>
-      </div>
-
-      <div className="grid gap-4">
+      <div className="grid gap-2 p-4 lg:gap-3 lg:p-6 lg:pt-5">
         {filteredQuizzes.length > 0 ? (
           filteredQuizzes.map((quiz) => (
             <AdminQuizCard key={quiz.id} quiz={quiz} />
           ))
         ) : (
-          <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-5">
+          <div className="border-2 border-[#211F20] bg-[#FFFAF2] p-5">
             <p className="font-display text-3xl leading-none text-[#211F20]">
               No quizzes found
             </p>
-            <p className="mt-2 q-body text-[#211F20]">
+            <p className="mt-2 text-[14px] leading-6 text-[#211F20]">
               Adjust the search or status filter to see more results.
             </p>
           </div>
         )}
       </div>
-    </div>
+
+      <div className="hidden border-t-2 border-[#211F20] px-6 py-4 text-[13px] text-[#211F20] lg:block">
+        <span>
+          Showing {visibleRange} of {filteredQuizzes.length} quizzes
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function SelectFilter({
+  children,
+  label,
+  value,
+  onChange,
+}: {
+  children: ReactNode;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="relative block">
+      <span className="sr-only">{label}</span>
+      <select
+        className="h-10 w-full appearance-none rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 pr-9 text-[13px] font-semibold text-[#211F20] outline-none transition focus:border-[#006E5A]"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {children}
+      </select>
+      <ChevronRight className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-[#211F20]" />
+    </label>
   );
 }
 
 function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
+  const statusTone = getStatusTone(quiz.status);
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+
   return (
-    <article className="grid gap-5 border-2 border-[#211F20] bg-[#FFFAF2] p-5 transition hover:shadow-[6px_6px_0_#EBE4D8] xl:grid-cols-[minmax(0,1fr)_300px]">
-      <div>
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <h2 className="font-display text-[34px] leading-none text-[#211F20]">
-            {quiz.title}
-          </h2>
-
-          <StatusBadge status={quiz.status} />
-
-          <Badge
-            className="rounded-none border-0 bg-[#DDECE8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]"
-            variant="secondary"
-          >
-            {quiz.category}
-          </Badge>
+    <article
+      className={cn(
+        "relative overflow-visible border-2 border-[#D7D0C4] bg-[#FFFAF2] transition duration-200 hover:-translate-y-0.5 hover:border-[#211F20] hover:shadow-[4px_4px_0_#EBE4D8]",
+        isActionMenuOpen
+          ? "z-[200] shadow-[4px_4px_0_#EBE4D8]"
+          : "z-0 hover:z-20"
+      )}
+    >
+      <div className="hidden min-h-[118px] grid-cols-[34px_minmax(220px,1.35fr)_minmax(210px,250px)_minmax(130px,150px)_minmax(220px,250px)] overflow-visible lg:grid">
+        <div
+          className={[
+            "flex items-center justify-center text-[#FFFAF2]",
+            statusTone.side,
+          ].join(" ")}
+        >
+          <GripVertical className="h-5 w-5" strokeWidth={1.8} />
         </div>
 
-        <p className="max-w-3xl q-body text-[#211F20]">{quiz.description}</p>
+        <div className="min-w-0 px-6 py-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-display text-[30px] leading-none text-[#211F20]">
+              {quiz.title}
+            </h3>
+          </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-2">
-          <MetaItem
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <StatusBadge status={quiz.status} />
+            <CategoryBadge category={quiz.category} />
+          </div>
+
+          <p className="mt-3 line-clamp-2 text-[14px] leading-5 text-[#211F20]">
+            {quiz.description}
+          </p>
+        </div>
+
+        <div className="grid content-center gap-2 border-l-2 border-[#EBE4D8] px-6 py-4">
+          <DetailLine
             icon={<ListChecks className="h-4 w-4" />}
-            label="Questions"
-            value={`${quiz.questionCount}`}
+            text={`${quiz.questionCount} ${quiz.questionCount === 1 ? "question" : "questions"}`}
           />
-          <MetaItem
+          <DetailLine
             icon={<Clock3 className="h-4 w-4" />}
-            label="Time"
-            value={`${quiz.timeLimitMinutes} min`}
+            text={`${quiz.timeLimitMinutes} min`}
           />
-          <MetaItem
-            icon={<Archive className="h-4 w-4" />}
-            label="Created"
-            value={quiz.createdAt}
-          />
-          {/*<MetaItem
+          <DetailLine
             icon={<CalendarClock className="h-4 w-4" />}
-            label="Release"
-            value={getPublishMetaText(quiz)}
-          />*/}
+            text={getPublishMetaText(quiz)}
+          />
         </div>
+
+        <div className="flex items-center justify-center border-l-2 border-[#EBE4D8] px-6">
+          <StatusMarker status={quiz.status} />
+        </div>
+
+        <AdminQuizActions quiz={quiz} onMenuToggle={setIsActionMenuOpen} />
       </div>
 
-      <AdminQuizActions quiz={quiz} />
+      <div className="grid grid-cols-[24px_minmax(0,1fr)_40px] lg:hidden">
+        <div
+          className={[
+            "flex items-center justify-center text-[#FFFAF2]",
+            statusTone.side,
+          ].join(" ")}
+        >
+          <GripVertical className="h-4 w-4" strokeWidth={1.8} />
+        </div>
+
+        <div className="min-w-0 px-4 py-3">
+          <h3 className="font-display text-[22px] leading-none text-[#211F20]">
+            {quiz.title}
+          </h3>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <StatusBadge status={quiz.status} />
+            <CategoryBadge category={quiz.category} />
+          </div>
+
+          <p className="mt-2 text-[12px] leading-4 text-[#211F20]">
+            {quiz.questionCount} questions · {quiz.timeLimitMinutes} min
+          </p>
+        </div>
+
+        <Link
+          className="flex items-center justify-center border-l-2 border-[#EBE4D8] transition hover:bg-[#EBE4D8]"
+          href={
+            quiz.status === "draft" || quiz.status === "scheduled"
+              ? routes.adminQuizDetail(quiz.id)
+              : routes.adminQuizResults(quiz.id)
+          }
+        >
+          {quiz.status === "published" ? (
+            <span className="h-2.5 w-2.5 rounded-full bg-[#12A05C]" />
+          ) : quiz.status === "archived" ? (
+            <Lock className="h-4 w-4 text-[#211F20]" />
+          ) : (
+            <ChevronRight className="h-5 w-5 text-[#211F20]" />
+          )}
+        </Link>
+      </div>
     </article>
   );
 }
 
 type PendingAction = "publish-now" | "schedule" | "archive";
 
-function AdminQuizActions({ quiz }: { quiz: AdminQuizListItem }) {
+function AdminQuizActions({
+  quiz,
+  onMenuToggle,
+}: {
+  quiz: AdminQuizListItem;
+  onMenuToggle?: (open: boolean) => void;
+}) {
   const router = useRouter();
   const [scheduledAt, setScheduledAt] = useState(() =>
     quiz.publishAt ? toDatetimeLocalValue(new Date(quiz.publishAt)) : ""
@@ -350,139 +452,165 @@ function AdminQuizActions({ quiz }: { quiz: AdminQuizListItem }) {
   }
 
   return (
-    <div className="grid content-start gap-3 xl:w-[300px]">
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {canEdit ? (
-          <Button
-            asChild
-            className="q-button q-button-primary rounded-none border-[#211F20] bg-[#211F20]"
-          >
-            <Link href={routes.adminQuizDetail(quiz.id)}>
-              <Pencil data-icon="inline-start" />
-              Edit
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            className="q-button q-button-disabled rounded-none"
-            disabled
-            type="button"
-          >
-            <ShieldCheck data-icon="inline-start" />
-            {isArchived ? "Archived" : "Locked"}
-          </Button>
-        )}
+    <div className="relative flex items-center justify-center gap-3 border-l-2 border-[#EBE4D8] px-4">
+      {isPublished ? (
+        <ActionLink href={routes.quizDetail(quiz.id)} label="Preview">
+          <Eye className="h-5 w-5" />
+        </ActionLink>
+      ) : (
+        <ActionButton disabled label="Preview">
+          <Eye className="h-5 w-5" />
+        </ActionButton>
+      )}
 
-        {isPublished ? (
-          <Button
-            asChild
-            className="q-button q-button-secondary rounded-none"
-            variant="outline"
-          >
-            <Link href={routes.quizDetail(quiz.id)}>
-              <Eye data-icon="inline-start" />
-              Preview
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            className="q-button q-button-disabled rounded-none"
-            disabled
-            type="button"
-          >
-            <Eye data-icon="inline-start" />
-            Preview
-          </Button>
-        )}
+      <ActionLink href={routes.adminQuizResults(quiz.id)} label="Results">
+        <Users className="h-5 w-5" />
+      </ActionLink>
 
-        <Button
-          asChild
-          className="q-button q-button-secondary rounded-none border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
-          variant="outline"
-        >
-          <Link href={routes.adminQuizResults(quiz.id)}>
-            <Users data-icon="inline-start" />
-            Results
-          </Link>
-        </Button>
-      </div>
+      {canEdit ? (
+        <ActionLink href={routes.adminQuizDetail(quiz.id)} label="Edit">
+          <Pencil className="h-5 w-5" />
+        </ActionLink>
+      ) : (
+        <ActionButton disabled label={isArchived ? "Archived" : "Locked"}>
+          <Pencil className="h-5 w-5" />
+        </ActionButton>
+      )}
 
-      {isDraft || isScheduled ? (
-        <div className="grid gap-1 border-2 border-[#EBE4D8] bg-[#FFFAF2] p-3">
-          <label className="grid gap-1">
-            <span className="q-mini text-[#211F20]">Exact release time</span>
-            <Input
-              className="justify-center q-input h-10"
-              disabled={isPending}
-              min={minPublishAt}
-              type="datetime-local"
-              value={scheduledAt}
-              onChange={(event) => setScheduledAt(event.target.value)}
-            />
-          </label>
+      <details
+        className="group relative z-[60] open:z-[250]"
+        onToggle={(event) => onMenuToggle?.(event.currentTarget.open)}
+      >
+        <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8] [&::-webkit-details-marker]:hidden">
+          <MoreVertical className="h-5 w-5" />
+        </summary>
 
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="absolute right-0 top-12 z-[260] grid w-[292px] gap-3 border-2 border-[#211F20] bg-[#FFFDF8] p-3 shadow-[8px_8px_0_#EBE4D8]">
+          {isDraft || isScheduled ? (
+            <>
+              <label className="grid gap-2">
+                <span className="q-mini text-[#211F20]">
+                  Exact release time
+                </span>
+                <Input
+                  className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[13px] shadow-none focus-visible:border-[#006E5A] focus-visible:ring-0"
+                  disabled={isPending}
+                  min={minPublishAt}
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(event) => setScheduledAt(event.target.value)}
+                />
+              </label>
+
+              <Button
+                className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+                disabled={isPending}
+                onClick={handleSchedulePublish}
+                type="button"
+                variant="outline"
+              >
+                <CalendarClock className="h-4 w-4" />
+                {pendingAction === "schedule"
+                  ? "Saving..."
+                  : isScheduled
+                    ? "Update time"
+                    : "Schedule"}
+              </Button>
+
+              <Button
+                className="q-button q-button-primary h-10 rounded-none border-[#006E5A] bg-[#006E5A] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
+                disabled={isPending}
+                onClick={handlePublishNow}
+                type="button"
+              >
+                <Send className="h-4 w-4" />
+                {pendingAction === "publish-now"
+                  ? "Publishing..."
+                  : "Publish now"}
+              </Button>
+            </>
+          ) : (
+            <div className="border-2 border-[#D7D0C4] bg-[#EBE4D8] p-3">
+              <p className="q-mini text-[#006E5A]">
+                {isPublished ? "Published" : "Locked"}
+              </p>
+              <p className="mt-1 text-[13px] leading-5 text-[#211F20]">
+                {quiz.publishAtLabel}
+              </p>
+            </div>
+          )}
+
+          {!isArchived ? (
             <Button
-              className="q-button q-button-secondary rounded-none"
+              className="q-button q-button-secondary h-10 rounded-none border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:border-[#FF3C38] hover:text-[#FF3C38]"
               disabled={isPending}
-              onClick={handleSchedulePublish}
+              onClick={handleArchive}
               type="button"
               variant="outline"
             >
-              <CalendarClock data-icon="inline-start" />
-              {pendingAction === "schedule"
-                ? "Saving..."
-                : isScheduled
-                  ? "Update time"
-                  : "Schedule"}
+              <Archive className="h-4 w-4" />
+              {pendingAction === "archive" ? "Archiving..." : "Archive"}
             </Button>
+          ) : null}
 
-            <Button
-              className="q-button q-button-primary rounded-none border-[#006E5A] bg-[#006E5A]"
-              disabled={isPending}
-              onClick={handlePublishNow}
-              type="button"
-            >
-              <Send data-icon="inline-start" />
-              {pendingAction === "publish-now" ? "Publishing..." : "Publish now"}
-            </Button>
-          </div>
+          {actionError ? (
+            <p className="q-mini text-[#FF3C38]">{actionError}</p>
+          ) : null}
         </div>
-      ) : null}
-
-      {isPublished ? (
-        <div className="border-2 border-[#DDECE8] bg-[#DDECE8] p-3">
-          <p className="q-mini text-[#006E5A]">Published</p>
-          <p className="mt-1 q-body text-[#211F20]">{quiz.publishAtLabel}</p>
-        </div>
-      ) : null}
-
-      {!isArchived ? (
-        <Button
-          className="q-button q-button-secondary rounded-none"
-          disabled={isPending}
-          onClick={handleArchive}
-          type="button"
-          variant="outline"
-        >
-          <Archive data-icon="inline-start" />
-          {pendingAction === "archive" ? "Archiving..." : "Archive"}
-        </Button>
-      ) : null}
-
-      {actionError ? (
-        <p className="q-mini text-[#FF3C38]">{actionError}</p>
-      ) : null}
+      </details>
     </div>
+  );
+}
+
+function ActionLink({
+  children,
+  href,
+  label,
+}: {
+  children: ReactNode;
+  href: string;
+  label: string;
+}) {
+  return (
+    <Link
+      aria-label={label}
+      className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition duration-200 hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8]"
+      href={href}
+      title={label}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function ActionButton({
+  children,
+  disabled,
+  label,
+}: {
+  children: ReactNode;
+  disabled?: boolean;
+  label: string;
+}) {
+  return (
+    <button
+      aria-label={label}
+      className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#8F8F8F] disabled:cursor-not-allowed disabled:opacity-55"
+      disabled={disabled}
+      title={label}
+      type="button"
+    >
+      {children}
+    </button>
   );
 }
 
 function StatusBadge({ status }: { status: AdminQuizListItem["status"] }) {
   const classes: Record<AdminQuizListItem["status"], string> = {
     draft: "bg-[#EBE4D8] text-[#211F20]",
-    scheduled: "bg-[#DDECE8] text-[#006E5A]",
+    scheduled: "bg-[#EFE4CE] text-[#996A13]",
     published: "bg-[#006E5A] text-[#FFFAF2]",
-    archived: "bg-[#8F8F8F] text-[#FFFAF2]",
+    archived: "bg-[#EBE4D8] text-[#006E5A]",
   };
 
   return (
@@ -496,6 +624,73 @@ function StatusBadge({ status }: { status: AdminQuizListItem["status"] }) {
       {status}
     </Badge>
   );
+}
+
+function CategoryBadge({ category }: { category: string }) {
+  return (
+    <Badge
+      className="rounded-none border-0 bg-[#DDECE8] px-2 py-1 text-[11px] leading-4 text-[#006E5A]"
+      variant="secondary"
+    >
+      {category}
+    </Badge>
+  );
+}
+
+function DetailLine({ icon, text }: { icon: ReactNode; text: string }) {
+  return (
+    <div className="grid grid-cols-[18px_1fr] items-center gap-3 text-[14px] leading-5 text-[#211F20]">
+      <span className="text-[#5F5B55]">{icon}</span>
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function StatusMarker({ status }: { status: AdminQuizListItem["status"] }) {
+  const tone = getStatusTone(status);
+
+  return (
+    <div className="flex items-center gap-3">
+      {status === "archived" ? (
+        <Lock className="h-4 w-4 text-[#006E5A]" />
+      ) : (
+        <span className={["h-2.5 w-2.5 rounded-full", tone.dot].join(" ")} />
+      )}
+      <span className={["q-mini", tone.text].join(" ")}>
+        {status === "archived" ? "Locked" : status}
+      </span>
+    </div>
+  );
+}
+
+function getStatusTone(status: AdminQuizListItem["status"]) {
+  const tones = {
+    draft: {
+      side: "bg-[#9B9994]",
+      dot: "bg-[#BDB6AA]",
+      text: "text-[#8F8F8F]",
+    },
+    scheduled: {
+      side: "bg-[#A06900]",
+      dot: "bg-[#A06900]",
+      text: "text-[#A06900]",
+    },
+    published: {
+      side: "bg-[#006E5A]",
+      dot: "bg-[#12A05C]",
+      text: "text-[#006E5A]",
+    },
+    archived: {
+      side: "bg-[#6F6758]",
+      dot: "bg-[#006E5A]",
+      text: "text-[#006E5A]",
+    },
+  } satisfies Record<
+    AdminQuizListItem["status"],
+    { side: string; dot: string; text: string }
+  >;
+
+  return tones[status];
 }
 
 function getPublishMetaText(quiz: AdminQuizListItem) {
@@ -512,26 +707,6 @@ function getPublishMetaText(quiz: AdminQuizListItem) {
   }
 
   return quiz.publishAt ? `Published ${quiz.publishAtLabel}` : "Not scheduled";
-}
-
-function MetaItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="grid min-h-[64px] grid-cols-[auto_1fr] items-center gap-x-2 border border-[#EBE4D8] bg-[#FFFDF8] px-3 py-2">
-      <span className="row-span-2 text-[#006E5A]">{icon}</span>
-      <span className="q-mini text-[#8F8F8F]">{label}</span>
-      <span className="text-[15px] font-semibold leading-5 text-[#211F20]">
-        {value}
-      </span>
-    </div>
-  );
 }
 
 async function publishQuizNow(quiz: AdminQuizListItem) {
