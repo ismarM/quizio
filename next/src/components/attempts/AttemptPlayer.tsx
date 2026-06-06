@@ -249,10 +249,8 @@ export function AttemptPlayer({
                   goPrevious();
                 }
               }}
-              className={[
-                "q-button q-button-secondary",
-                currentIndex === 0 ? "pointer-events-none opacity-40" : "",
-              ].join(" ")}
+              className="q-button q-button-secondary"
+              disabled={currentIndex === 0}
             >
               <ChevronLeft className="h-4 w-4" />
               {t("previous")}

@@ -432,7 +432,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                 <label
                   className={[
                     "q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]",
-                    !isDraftEditable ? "pointer-events-none opacity-50" : "",
+                    !isDraftEditable ? "cursor-not-allowed opacity-50" : "",
                   ].join(" ")}
                 >
                   <ImagePlus className="h-4 w-4 mr-1" />
@@ -611,7 +611,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                               className={[
                                 "q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]",
                                 !isDraftEditable
-                                  ? "pointer-events-none opacity-50"
+                                  ? "cursor-not-allowed opacity-50"
                                   : "",
                               ].join(" ")}
                             >
@@ -670,7 +670,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
               className={[
                 "q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]",
                 !isDraftEditable || !isValid || isSubmitting
-                  ? "pointer-events-none opacity-50"
+                  ? "cursor-not-allowed opacity-50"
                   : "",
               ].join(" ")}
               disabled={!isDraftEditable || !isValid || isSubmitting}

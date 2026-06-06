@@ -25,6 +25,8 @@ type AdminQuizFormProps = {
   categories: CategoryDTO[];
 };
 
+type QuestionAnimation = "insert" | "reorder";
+
 export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const t = useTranslations("admin.form");
   const router = useRouter();
@@ -42,6 +44,9 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+  const [questionAnimations, setQuestionAnimations] = useState<
+    Record<string, QuestionAnimation>
+  >({});
 
   const validationErrors = getValidationErrors({
     labels: createValidationLabels(t),
@@ -51,8 +56,61 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   });
   const isValid = validationErrors.length === 0;
 
+  function highlightQuestions(ids: string[], animation: QuestionAnimation) {
+    if (ids.length === 0) {
+      return;
+    }
+
+    setQuestionAnimations((current) => {
+      const next = { ...current };
+      ids.forEach((id) => {
+        delete next[id];
+      });
+      return next;
+    });
+
+    window.requestAnimationFrame(() => {
+      setQuestionAnimations((current) => ({
+        ...current,
+        ...Object.fromEntries(ids.map((id) => [id, animation])),
+      }));
+
+      window.setTimeout(() => {
+        setQuestionAnimations((current) => {
+          const next = { ...current };
+          ids.forEach((id) => {
+            if (next[id] === animation) {
+              delete next[id];
+            }
+          });
+          return next;
+        });
+      }, 560);
+    });
+  }
+
   function addQuestion() {
-    setQuestions((current) => [...current, createQuestion()]);
+    const question = createQuestion();
+    setQuestions((current) => [...current, question]);
+    highlightQuestions([question.id], "insert");
+  }
+
+  function insertQuestionAfter(id: string) {
+    const question = createQuestion();
+
+    setQuestions((current) => {
+      const index = current.findIndex((item) => item.id === id);
+
+      if (index < 0) {
+        return [...current, question];
+      }
+
+      const next = [...current];
+      next.splice(index + 1, 0, question);
+      return next;
+    });
+
+    highlightQuestions([question.id], "insert");
   }
 
   function updateQuestion(id: string, updates: Partial<DraftQuestion>) {
@@ -68,22 +126,39 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   }
 
   function moveQuestion(id: string, direction: -1 | 1) {
-    setQuestions((current) => {
-      const index = current.findIndex((question) => question.id === id);
-      const nextIndex = index + direction;
+    const index = questions.findIndex((question) => question.id === id);
+    const nextIndex = index + direction;
 
-      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) {
+    if (index < 0 || nextIndex < 0 || nextIndex >= questions.length) {
+      return;
+    }
+
+    const animatedIds = [id, questions[nextIndex]?.id].filter(Boolean);
+
+    setQuestions((current) => {
+      const currentIndex = current.findIndex((question) => question.id === id);
+      const currentNextIndex = currentIndex + direction;
+
+      if (
+        currentIndex < 0 ||
+        currentNextIndex < 0 ||
+        currentNextIndex >= current.length
+      ) {
         return current;
       }
 
       const next = [...current];
-      const [item] = next.splice(index, 1);
-      next.splice(nextIndex, 0, item);
+      const [item] = next.splice(currentIndex, 1);
+      next.splice(currentNextIndex, 0, item);
       return next;
     });
+
+    highlightQuestions(animatedIds, "reorder");
   }
 
   function shuffleQuestions() {
+    const animatedIds = questions.map((question) => question.id);
+
     setQuestions((current) => {
       const next = [...current];
       for (let index = next.length - 1; index > 0; index -= 1) {
@@ -92,6 +167,8 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       }
       return next;
     });
+
+    highlightQuestions(animatedIds, "reorder");
   }
 
   function addAnswer(questionId: string) {
@@ -397,7 +474,15 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               {questions.map((question, index) => (
                 <article
                   key={question.id}
-                  className="border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 shadow-[3px_3px_0_#EBE4D8]"
+                  className={[
+                    "q-question-motion border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 shadow-[3px_3px_0_#EBE4D8]",
+                    questionAnimations[question.id] === "insert"
+                      ? "q-question-insert"
+                      : "",
+                    questionAnimations[question.id] === "reorder"
+                      ? "q-question-reorder"
+                      : "",
+                  ].join(" ")}
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="font-display text-2xl text-[#211F20]">
@@ -554,6 +639,17 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                       </button>
                     </div>
                   </div>
+
+                  <div className="mt-4 flex justify-center border-t border-[#EBE4D8] pt-4">
+                    <button
+                      type="button"
+                      onClick={() => insertQuestionAfter(question.id)}
+                      className="q-button q-button-secondary border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
+                    >
+                      <FilePlus2 className="h-4 w-4" />
+                      <span className="pl-1 pt-0.5">{t("addQuestion")}</span>
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -564,7 +660,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               type="submit"
               className={[
                 "q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]",
-                !isValid || isSubmitting ? "pointer-events-none opacity-50" : "",
+                !isValid || isSubmitting ? "cursor-not-allowed opacity-50" : "",
               ].join(" ")}
               disabled={!isValid || isSubmitting}
             >
