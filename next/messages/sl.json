@@ -12,18 +12,71 @@
     "navigate": "Navigacija",
     "info": "Informacije",
     "connect": "Kontakt",
-    "newsletter": "Novice",
-    "newsletterSubtitle": "Prejemaj nasvete in novosti.",
-    "emailPlaceholder": "Vnesi e-pošto",
     "copyright": "© 2026 Quizio. Vse pravice pridržane.",
     "links": {
       "exploreQuizzes": "Prebrskaj kvize",
-      "howItWorks": "Kako deluje",
-      "leaderboard": "Lestvica",
       "about": "O nas",
-      "help": "Pomoč",
       "terms": "Pogoji uporabe",
       "privacy": "Zasebnost"
+    }
+  },
+  "staticPages": {
+    "about": {
+      "eyebrow": "O Quizio",
+      "title": "O nas",
+      "intro": "Quizio je osredotočena platforma za ustvarjanje, objavljanje in reševanje časovno omejenih kvizov brez nepotrebnega balasta.",
+      "sections": {
+        "focus": {
+          "title": "Zgrajen okoli kvizov",
+          "body": "Izdelek sledi jasnemu toku: administrator ustvari kviz, ga objavi, uporabniki pa ga rešijo v mirni in pregledni izkušnji."
+        },
+        "creators": {
+          "title": "Za ustvarjalce",
+          "body": "Ustvarjalci kvizov dobijo praktična orodja za vprašanja, odgovore, slike, točke, urnike in rezultate, zato je upravljanje kviza jasno in predvidljivo."
+        },
+        "learners": {
+          "title": "Za reševalce",
+          "body": "Uporabniki se lahko osredotočijo na vprašanje, časovnik in napredek, nato pa pregledajo rezultate in primerjajo dosežke na lestvicah."
+        }
+      }
+    },
+    "terms": {
+      "eyebrow": "Mock pravna stran",
+      "title": "Pogoji uporabe",
+      "intro": "Ti vzorčni pogoji opisujejo pričakovano uporabo Quizia. Besedilo je začasna vsebina za projekt in ni formalni pravni nasvet.",
+      "sections": {
+        "accounts": {
+          "title": "Računi",
+          "body": "Uporabniki naj svoje prijavne podatke hranijo zasebno in uporabljajo svoj račun pri reševanju kvizov ali upravljanju administratorske vsebine."
+        },
+        "content": {
+          "title": "Vsebina kvizov",
+          "body": "Ustvarjalci so odgovorni za vprašanja, odgovore, slike in opise, ki jih objavijo. Vsebina naj bo spoštljiva, točna in primerna za ciljno občinstvo."
+        },
+        "availability": {
+          "title": "Razpoložljivost",
+          "body": "Quizio lahko spreminja funkcije, odpravlja napake ali začasno ustavi dele storitve med izboljševanjem platforme."
+        }
+      }
+    },
+    "privacy": {
+      "eyebrow": "Mock pravna stran",
+      "title": "Politika zasebnosti",
+      "intro": "Ta vzorčna politika zasebnosti opisuje podatke, ki jih lahko uporablja kvizna platforma, kot je Quizio. Besedilo je začasna projektna vsebina.",
+      "sections": {
+        "data": {
+          "title": "Podatki, ki jih uporabljamo",
+          "body": "Quizio lahko uporablja podatke računa, poskuse kvizov, rezultate in osnovno aktivnost, da uporabnikom omogoči reševanje kvizov in pregled zgodovine."
+        },
+        "use": {
+          "title": "Kako pomagajo",
+          "body": "Podatki podpirajo osnovne funkcije, kot so prijava, nadzorne plošče, rezultati, lestvice in administratorski pregled."
+        },
+        "control": {
+          "title": "Tvoj nadzor",
+          "body": "Uporabniki se lahko glede vprašanj o računu ali podatkih obrnejo na ekipo Quizio prek e-pošte, navedene v footerju."
+        }
+      }
     }
   },
   "mobileNav": {

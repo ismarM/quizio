@@ -20,4 +20,8 @@ export const routes = {
     `/admin/quizzes/${quizId}/attempts/${userId}`,
 
   leaderboard: "/leaderboard",
+
+  about: "/about",
+  terms: "/terms",
+  privacy: "/privacy",
 };

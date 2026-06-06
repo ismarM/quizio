@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, Code2, MessageCircle, Mail, Play } from "lucide-react";
+import { Code2, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/navigation/routes";
+
+const contactEmail = "guiziomaster@gmail.com";
+const githubUrl = "https://github.com/ismarM/quizio";
 
 export function SiteFooter() {
   const t = useTranslations("footer");
 
   return (
     <footer className="border-t border-[#D7D0C4] bg-[#F4EFE6]">
-      <div className="q-container grid gap-8 py-8 md:grid-cols-[1.3fr_0.8fr_0.8fr_0.8fr_1.2fr] md:py-10">
+      <div className="q-container grid gap-8 py-8 md:grid-cols-[1.4fr_0.8fr_0.9fr_0.9fr] md:py-10">
         <div>
           <Link
             href={routes.home}
@@ -27,54 +30,29 @@ export function SiteFooter() {
           title={t("navigate")}
           links={[
             { label: t("links.exploreQuizzes"), href: routes.quizzes },
-            { label: t("links.howItWorks"), href: "/#how-it-works" },
-            { label: t("links.leaderboard"), href: routes.leaderboard },
           ]}
         />
 
         <FooterColumn
           title={t("info")}
           links={[
-            { label: t("links.about"), href: "/about" },
-            { label: t("links.help"), href: "/help" },
-            { label: t("links.terms"), href: "/terms" },
-            { label: t("links.privacy"), href: "/privacy" },
+            { label: t("links.about"), href: routes.about },
+            { label: t("links.terms"), href: routes.terms },
+            { label: t("links.privacy"), href: routes.privacy },
           ]}
         />
 
         <div>
           <h3 className="font-display text-2xl text-[#211F20]">{t("connect")}</h3>
-          <p className="mt-2 q-body">hello@quizio.com</p>
+          <p className="mt-2 q-body">{contactEmail}</p>
 
           <div className="mt-4 flex gap-2">
-            <FooterIcon href="#" label="Code">
+            <FooterIcon href={githubUrl} label="GitHub">
               <Code2 className="h-4 w-4" />
             </FooterIcon>
-            <FooterIcon href="mailto:hello@quizio.com" label="Email">
+            <FooterIcon href={`mailto:${contactEmail}`} label="Email">
               <Mail className="h-4 w-4" />
             </FooterIcon>
-            <FooterIcon href="#" label="Instagram">
-              <MessageCircle className="h-4 w-4" />
-            </FooterIcon>
-            <FooterIcon href="#" label="YouTube">
-              <Play className="h-4 w-4" />
-            </FooterIcon>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="font-display text-2xl text-[#211F20]">{t("newsletter")}</h3>
-          <p className="mt-2 q-body">{t("newsletterSubtitle")}</p>
-
-          <div className="mt-4 grid grid-cols-[1fr_44px]">
-            <input
-              type="email"
-              placeholder={t("emailPlaceholder")}
-              className="q-input h-11 border-r-0 bg-[#FFFAF2]"
-            />
-            <button className="flex h-11 items-center justify-center bg-[#006E5A] text-[#FFFAF2]">
-              <ArrowRight className="h-5 w-5" />
-            </button>
           </div>
         </div>
       </div>
@@ -119,10 +97,14 @@ function FooterIcon({
   label: string;
   children: React.ReactNode;
 }) {
+  const isExternal = href.startsWith("http");
+
   return (
     <a
       href={href}
       aria-label={label}
+      rel={isExternal ? "noreferrer" : undefined}
+      target={isExternal ? "_blank" : undefined}
       className="flex h-9 w-9 items-center justify-center border border-[#211F20] bg-[#FFFAF2] hover:bg-[#211F20] hover:text-[#FFFAF2]"
     >
       {children}
