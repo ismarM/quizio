@@ -2,25 +2,32 @@ import Link from "next/link";
 import {
   BarChart3,
   Clock3,
+  Inbox,
   ListChecks,
   Medal,
-  Play,
-  UserRound,
 } from "lucide-react";
 
+import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { mapQuizDtoToListItem } from "@/lib/mappers/quiz";
 import { routes } from "@/lib/navigation/routes";
 import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
 import { requireAuth } from "@/lib/auth/server-auth";
-import type { OpenSessionsResponse, QuizResponse, SubmissionsResponse, SubmissionSummary } from "@/lib/types";
+import type {
+  OpenSessionsResponse,
+  QuizResponse,
+  SubmissionsResponse,
+  SubmissionSummary,
+  UserResponse,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 type OpenSessionView = {
   attemptId: number;
-  quizId: number;
   quizTitle: string;
   timeLeftSeconds: number;
   startedAt: string;
@@ -32,7 +39,7 @@ function formatTimeLeft(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function formatSessionDate(value: string) {
+function formatShortDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "Unknown";
@@ -43,38 +50,53 @@ function formatSessionDate(value: string) {
   }).format(date);
 }
 
+function formatAttemptDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function getScorePercent(submission: SubmissionSummary) {
+  if (submission.max_points <= 0) {
+    return 0;
+  }
+  return Math.round((submission.achieved_points / submission.max_points) * 100);
+}
+
 export default async function DashboardPage() {
   const user = await requireAuth();
 
+  let profile: UserResponse["user"] | null = null;
   let openSessions: OpenSessionView[] = [];
   let submissions: SubmissionSummary[] = [];
-  let averageScore = 0;
+
+  try {
+    const profileData = await serverFetchJson<UserResponse>("/api/users/me");
+    profile = profileData.user;
+  } catch (error) {
+    console.error("Failed to load user profile:", error);
+  }
 
   try {
     const [openSessionsData, submissionsData] = await Promise.all([
       serverFetchJson<OpenSessionsResponse>("/api/users/me/open-sessions"),
-      serverFetchJson<SubmissionsResponse>("/api/users/me/submissions?limit=5&offset=0")
+      serverFetchJson<SubmissionsResponse>(
+        "/api/users/me/submissions?limit=5&offset=0"
+      ),
     ]);
 
     submissions = submissionsData.results;
-    if (submissions.length > 0) {
-      const totalAchieved = submissions.reduce((sum, s) => sum + s.achieved_points, 0);
-      const totalMax = submissions.reduce((sum, s) => sum + s.max_points, 0);
-      averageScore = totalMax > 0 ? Math.round((totalAchieved / totalMax) * 100) : 0;
-    }
 
     const openSessionViews = await Promise.all(
       openSessionsData.attempts.map(async (session) => {
-        const startTime = new Date(session.attempt.start_time);
-        const elapsedSeconds = Math.max(
-          0,
-          Math.floor((Date.now() - startTime.getTime()) / 1000)
-        );
-        const timeLeftSeconds = Math.max(
-          0,
-          session.time_limit_seconds - elapsedSeconds
-        );
-
         let quizTitle = `Quiz #${session.attempt.quiz_id}`;
 
         try {
@@ -90,201 +112,115 @@ export default async function DashboardPage() {
 
         return {
           attemptId: session.attempt.id,
-          quizId: session.attempt.quiz_id,
           quizTitle,
-          timeLeftSeconds,
-          startedAt: formatSessionDate(session.attempt.start_time),
+          timeLeftSeconds: session.time_limit_seconds,
+          startedAt: formatShortDate(session.attempt.start_time),
         } satisfies OpenSessionView;
       })
     );
 
-    openSessions = openSessionViews.filter((session) => session.timeLeftSeconds > 0);
+    openSessions = openSessionViews.filter(
+      (session) => session.timeLeftSeconds > 0
+    );
   } catch (error) {
-    console.error("Failed to load open sessions:", error);
+    console.error("Failed to load dashboard activity:", error);
   }
 
-  const displayName = user.displayName || user.email?.split("@")[0] || "User";
+  const email = profile?.email ?? user.email ?? "unknown email";
+  const displayName =
+    profile?.display_name || user.displayName || email.split("@")[0] || "User";
   const initial = displayName.slice(0, 1).toUpperCase();
+  const completedCount = submissions.length;
+  const totalAchieved = submissions.reduce(
+    (sum, submission) => sum + submission.achieved_points,
+    0
+  );
+  const totalMax = submissions.reduce(
+    (sum, submission) => sum + submission.max_points,
+    0
+  );
+  const averageScore =
+    totalMax > 0 ? Math.round((totalAchieved / totalMax) * 100) : 0;
+  const bestSubmission = submissions.reduce<SubmissionSummary | null>(
+    (best, submission) => {
+      if (!best) {
+        return submission;
+      }
+
+      const currentPercent = getScorePercent(submission);
+      const bestPercent = getScorePercent(best);
+
+      if (currentPercent > bestPercent) {
+        return submission;
+      }
+
+      if (
+        currentPercent === bestPercent &&
+        submission.achieved_points > best.achieved_points
+      ) {
+        return submission;
+      }
+
+      return best;
+    },
+    null
+  );
+  const bestScore = bestSubmission ? getScorePercent(bestSubmission) : 0;
+  const bestScoreDetail = bestSubmission
+    ? `Best on ${bestSubmission.quiz_title}`
+    : "No quiz yet";
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
       <SiteHeader />
 
-      <section className="q-container pb-12 pt-6 md:pb-20 md:pt-10">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-
-            <h1 className="font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
-              Welcome back.
-            </h1>
-
-            <p className="mt-4 max-w-xl q-body text-[#211F20]">
-              Track your quiz progress, continue attempts and discover new
-              quizzes.
-            </p>
-          </div>
+      <section className="q-container pb-12 pt-7 md:pb-20 md:pt-10">
+        <div className="mb-7">
+          <h1 className="font-display text-[62px] leading-[0.86] text-[var(--q-ink)] md:text-[104px]">
+            Welcome back.
+          </h1>
+          <p className="mt-4 max-w-2xl text-[17px] leading-7 text-[var(--q-ink)]">
+            Track your quiz progress, continue attempts and discover new
+            quizzes.
+          </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid gap-6 lg:grid-cols-[0.88fr_1.32fr]">
           <aside className="grid content-start gap-6">
-            <section className="border-2 border-[#211F20] bg-[#EBE4D8] p-5 shadow-[8px_8px_0_#211F20] md:p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] font-display text-4xl text-[#006E5A]">
-                  {initial || <UserRound className="h-8 w-8" />}
-                </div>
+            <DashboardProfileCard
+              displayName={displayName}
+              email={email}
+              initial={initial}
+              isAdmin={profile?.is_admin ?? user.isAdmin}
+              language={profile?.language ?? 0}
+              theme={profile?.theme ?? 0}
+            />
 
-                <div className="min-w-0">
-                  <p className="font-display text-4xl leading-none text-[#211F20]">
-                    {displayName}
-                  </p>
-                  <p className="mt-2 break-all q-body text-[#211F20]">
-                    {user.email ?? "unknown email"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="my-5 h-[2px] bg-[#211F20]" />
-
-              <div className="grid gap-3">
-                <Link
-                  href={routes.quizzes}
-                  className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
-                >
-                  <Play className="h-4 w-4" />
-                  Explore quizzes
-                </Link>
-
-                <Link
-                  href={routes.home}
-                  className="q-button q-button-secondary"
-                >
-                  Back home
-                </Link>
-              </div>
-            </section>
-
-            <section className="border-2 border-[#211F20] bg-[#006E5A] p-5 text-[#FFFAF2] md:p-6">
-              <p className="font-display text-[42px] leading-[0.9]">
-                Keep improving.
-              </p>
-              <p className="mt-4 q-body">
-                Your results help you see progress over time. Complete more
-                quizzes to build your profile history.
-              </p>
-            </section>
+            <ProgressCard completedCount={completedCount} />
           </aside>
 
           <div className="grid gap-6">
-            <section className="grid gap-4 sm:grid-cols-3">
+            <section className="grid gap-4 md:grid-cols-3">
               <StatCard
-                icon={<ListChecks className="h-5 w-5" />}
-                label="Completed"
-                value={submissions.length.toString()}
+                icon={<ListChecks className="h-6 w-6" />}
+                label="Completed quizzes"
+                value={completedCount.toString()}
               />
               <StatCard
-                icon={<BarChart3 className="h-5 w-5" />}
-                label="Average"
+                icon={<BarChart3 className="h-6 w-6" />}
+                label="Average score"
                 value={`${averageScore}%`}
               />
+              <StatCard
+                icon={<Medal className="h-6 w-6" />}
+                label="Best score"
+                value={`${bestScore}%`}
+                detail={bestScoreDetail}
+              />
             </section>
 
-            <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
-              <div className="mb-4 flex items-end justify-between gap-4">
-                <div>
-                  <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                    In progress
-                  </p>
-                  <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                    Open sessions
-                  </h2>
-                </div>
-              </div>
-
-              <div className="h-[2px] bg-[#211F20]" />
-
-              {openSessions.length === 0 ? (
-                <p className="mt-4 q-body text-[#211F20]">
-                  No active quiz sessions right now.
-                </p>
-              ) : (
-                <div className="mt-4 grid gap-3">
-                  {openSessions.map((session) => (
-                    <article
-                      key={session.attemptId}
-                      className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[1fr_auto]"
-                    >
-                      <div>
-                        <p className="font-display text-2xl leading-none text-[#211F20]">
-                          {session.quizTitle}
-                        </p>
-                        <p className="mt-1 q-mini text-[#8F8F8F]">
-                          Started {session.startedAt}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-4 md:justify-end">
-                        <span className="inline-flex items-center gap-2 text-[#006E5A]">
-                          <Clock3 className="h-4 w-4" />
-                          {formatTimeLeft(session.timeLeftSeconds)} left
-                        </span>
-                        <Link
-                          href={routes.attempt(session.quizId)}
-                          className="q-button q-button-secondary"
-                        >
-                          Continue
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 md:p-6">
-              <div className="mb-4 flex items-end justify-between gap-4">
-                <div>
-                  <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                    Activity
-                  </p>
-                  <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                    Recent attempts
-                  </h2>
-                </div>
-              </div>
-
-              <div className="h-[2px] bg-[#211F20]" />
-
-              {submissions.length === 0 ? (
-                <p className="mt-4 q-body text-[#211F20]">
-                  No recent attempts. Start a quiz to see your history!
-                </p>
-              ) : (
-                <div className="mt-4 grid gap-3">
-                  {submissions.map((submission) => (
-                    <article
-                      key={submission.quiz_id + submission.start_time}
-                      className="grid gap-3 border border-[#D7D0C4] p-4 md:grid-cols-[1fr_auto]"
-                    >
-                      <div>
-                        <p className="font-display text-2xl leading-none text-[#211F20]">
-                          {submission.quiz_title}
-                        </p>
-                        <p className="mt-1 q-mini text-[#8F8F8F]">
-                          {formatSessionDate(submission.start_time)} · Completed
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-3 md:justify-end">
-                        <span className="font-display text-2xl text-[#006E5A]">
-                          {submission.achieved_points}/{submission.max_points}
-                        </span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-
+            <OpenSessionsPanel sessions={openSessions} />
+            <RecentAttemptsPanel submissions={submissions} />
           </div>
         </div>
       </section>
@@ -294,25 +230,231 @@ export default async function DashboardPage() {
   );
 }
 
+function ProgressCard({ completedCount }: { completedCount: number }) {
+  const milestone = Math.max(10, Math.ceil((completedCount + 1) / 10) * 10);
+  const progress = Math.min(100, Math.round((completedCount / milestone) * 100));
+
+  return (
+    <section className="overflow-hidden border-2 border-[var(--q-green)] bg-[var(--q-green)] p-6 text-[var(--q-on-accent)] shadow-[6px_6px_0_var(--q-shadow)]">
+      <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--q-green-soft)] text-[var(--q-green)]">
+        <BarChart3 className="h-7 w-7" />
+      </div>
+
+      <h2 className="font-display text-[44px] leading-[0.9] md:text-[52px]">
+        Keep improving.
+      </h2>
+      <p className="mt-5 max-w-sm text-[17px] leading-7">
+        Your results help you see progress over time. Complete more quizzes to
+        build your profile history.
+      </p>
+
+      <div className="mt-8 border border-[var(--q-green-soft)] p-4">
+        <div className="mb-3 flex items-center justify-between gap-3 text-[15px]">
+          <span>You&apos;re on a roll!</span>
+          <span>{completedCount} completed</span>
+        </div>
+        <div className="h-3 overflow-hidden rounded-full bg-[var(--q-green-soft)]">
+          <div
+            className="h-full rounded-full bg-[var(--q-on-accent)]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="mt-3 text-[15px]">Next milestone: {milestone} quizzes</p>
+      </div>
+    </section>
+  );
+}
+
 function StatCard({
+  detail,
   icon,
   label,
   value,
 }: {
+  detail?: string;
   icon: React.ReactNode;
   label: string;
   value: string;
 }) {
   return (
-    <article className="border-2 border-[#211F20] bg-[#FFFAF2] p-4">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center bg-[#DDECE8] text-[#006E5A]">
+    <article className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--q-border)] hover:shadow-[4px_4px_0_var(--q-shadow)]">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center bg-[var(--q-green-soft)] text-[var(--q-green)]">
         {icon}
       </div>
-
-      <p className="q-mini text-[#8F8F8F]">{label}</p>
-      <p className="mt-1 font-display text-[42px] leading-none text-[#211F20]">
+      <p className="text-[15px] leading-6 text-[var(--q-ink)]">{label}</p>
+      <p className="mt-1 font-display text-[44px] leading-none text-[var(--q-ink)]">
         {value}
       </p>
+      {detail ? (
+        <p className="mt-2 line-clamp-1 text-[13px] leading-5 text-[var(--q-ink-soft)]">
+          {detail}
+        </p>
+      ) : null}
     </article>
+  );
+}
+
+function SectionTitle({
+  eyebrow,
+  title,
+}: {
+  eyebrow: string;
+  title: string;
+}) {
+  return (
+    <div>
+      <span className="inline-flex bg-[var(--q-green-soft)] px-3 py-1 q-mini font-bold uppercase text-[var(--q-green)]">
+        {eyebrow}
+      </span>
+      <h2 className="mt-3 font-display text-[38px] leading-none text-[var(--q-ink)] md:text-[44px]">
+        {title}
+      </h2>
+    </div>
+  );
+}
+
+function OpenSessionsPanel({ sessions }: { sessions: OpenSessionView[] }) {
+  return (
+    <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
+      <SectionTitle eyebrow="In progress" title="Open sessions" />
+      <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
+
+      {sessions.length === 0 ? (
+        <EmptyState
+          icon={<Inbox className="h-8 w-8" />}
+          title="No active quiz sessions right now."
+          description="Start a quiz to see it here."
+        />
+      ) : (
+        <div className="grid gap-3">
+          {sessions.map((session) => (
+            <article
+              key={session.attemptId}
+              className="grid gap-4 border border-[var(--q-muted-strong)] bg-[var(--q-surface-alt)] p-4 md:grid-cols-[1fr_auto] md:items-center"
+            >
+              <div>
+                <p className="font-display text-2xl leading-none text-[var(--q-ink)]">
+                  {session.quizTitle}
+                </p>
+                <p className="mt-1 q-mini text-[var(--q-ink-muted)]">
+                  Started {session.startedAt}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 md:justify-end">
+                <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--q-green)]">
+                  <Clock3 className="h-4 w-4" />
+                  {formatTimeLeft(session.timeLeftSeconds)} limit
+                </span>
+                <Link
+                  href={routes.attempt(session.attemptId)}
+                  className="q-button q-button-secondary"
+                >
+                  Continue
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function RecentAttemptsPanel({
+  submissions,
+}: {
+  submissions: SubmissionSummary[];
+}) {
+  return (
+    <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
+      <SectionTitle eyebrow="Activity" title="Recent attempts" />
+      <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
+
+      {submissions.length === 0 ? (
+        <EmptyState
+          icon={<ListChecks className="h-8 w-8" />}
+          title="No recent attempts yet."
+          description="Start a quiz to build your history."
+        />
+      ) : (
+        <div className="overflow-hidden border border-[var(--q-muted-strong)]">
+          <div className="hidden grid-cols-[minmax(0,1.2fr)_180px_130px_90px] border-b border-[var(--q-muted-strong)] bg-[var(--q-surface-alt)] px-4 py-3 q-mini font-bold uppercase text-[var(--q-ink)] md:grid">
+            <span>Quiz</span>
+            <span>Date</span>
+            <span>Status</span>
+            <span className="text-right">Score</span>
+          </div>
+
+          {submissions.map((submission) => {
+            const scorePercent = getScorePercent(submission);
+
+            return (
+              <article
+                key={`${submission.quiz_id}-${submission.start_time}`}
+                className="grid gap-3 border-b border-[var(--q-muted-strong)] bg-[var(--q-surface-alt)] px-4 py-3 last:border-b-0 md:grid-cols-[minmax(0,1.2fr)_180px_130px_90px] md:items-center"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-display text-[22px] leading-none text-[var(--q-ink)]">
+                    {submission.quiz_title}
+                  </p>
+                  <p className="mt-1 q-mini text-[var(--q-ink-muted)] md:hidden">
+                    {formatAttemptDate(submission.start_time)}
+                  </p>
+                </div>
+
+                <p className="hidden text-[13px] leading-5 text-[var(--q-ink-soft)] md:block">
+                  {formatAttemptDate(submission.start_time)}
+                </p>
+
+                <Badge
+                  className="w-fit rounded-none border-0 bg-[var(--q-green-soft)] px-2 py-1 q-mini font-bold uppercase text-[var(--q-green)]"
+                  variant="secondary"
+                >
+                  Completed
+                </Badge>
+
+                <div className="flex items-center justify-between gap-3 md:justify-end">
+                  <span
+                    className={[
+                      "font-display text-[24px] leading-none",
+                      scorePercent === 0 ? "text-[var(--q-red)]" : "text-[var(--q-green)]",
+                    ].join(" ")}
+                  >
+                    {submission.achieved_points}/{submission.max_points}
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function EmptyState({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-8 text-center md:flex-row md:text-left">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--q-green-soft)] text-[var(--q-green)]">
+        {icon}
+      </div>
+      <div>
+        <p className="text-[17px] font-semibold leading-6 text-[var(--q-ink)]">
+          {title}
+        </p>
+        <p className="mt-1 text-[15px] leading-6 text-[var(--q-ink)]">
+          {description}
+        </p>
+      </div>
+    </div>
   );
 }

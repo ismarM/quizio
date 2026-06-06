@@ -14,24 +14,26 @@ export async function SiteHeader() {
   const user = await getSessionUser();
 
   const isLoggedIn = Boolean(user);
-  const isAdmin = user?.isAdmin
+  const isAdmin = user?.isAdmin;
 
   return (
     <header className="q-container flex items-center justify-between border-b-2 border-transparent py-5 md:py-7">
       <Link
         href={routes.home}
-        className="font-display text-5xl leading-none text-[#006E5A]"
+        className="font-display text-5xl leading-none text-[var(--q-green)]"
       >
         Quizio
       </Link>
 
-      <nav className="hidden items-center gap-8 text-[15px] leading-6 md:flex">
-        <Link href={routes.quizzes} className="hover:text-[#FF3C38]">
+      <nav className="hidden items-center gap-8 text-[15px] leading-6 text-[var(--q-ink)] md:flex">
+        <Link href={routes.quizzes} className="hover:text-[var(--q-red)]">
           Explore quizzes
         </Link>
-        <Link href="/#how-it-works" className="hover:text-[#FF3C38]">
-          How it works
-        </Link>
+        {!isLoggedIn ? (
+          <Link href="/#how-it-works" className="hover:text-[var(--q-red)]">
+            How it works
+          </Link>
+        ) : null}
       </nav>
 
       <div className="hidden items-center gap-3 md:flex">
@@ -54,7 +56,7 @@ export async function SiteHeader() {
 
             <Link
               href={routes.dashboard}
-              className="flex h-9 w-9 items-center justify-center border-2 border-[#211F20] bg-[#EBE4D8] font-display text-xl text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
+              className="flex h-9 w-9 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)] hover:bg-[var(--q-green)] hover:text-[var(--q-on-accent)]"
               title={user?.email ?? "Profile"}
             >
               {user ? (
@@ -73,7 +75,7 @@ export async function SiteHeader() {
         {isLoggedIn ? (
           <Link
             href={routes.dashboard}
-            className="flex h-9 w-9 items-center justify-center border-2 border-[#211F20] bg-[#EBE4D8] font-display text-xl text-[#006E5A]"
+            className="flex h-9 w-9 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)]"
             title={user?.email ?? "Profile"}
           >
             {getInitials(user?.email, user?.displayName)}

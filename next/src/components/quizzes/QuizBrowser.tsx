@@ -3,7 +3,6 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, Suspense } from "react";
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Filter,
@@ -17,22 +16,69 @@ import {
 import type { QuizListItem } from "@/lib/types";
 import { QuizCard } from "@/components/quizzes/QuizCard";
 
-const categories = [
-  "All",
-  "Science",
-  "Geography",
-  "History",
-  "Math",
-  "Technology",
-  "Literature",
-  "Arts",
-];
-
 const pageSize = 8;
 
 type QuizBrowserProps = {
   quizzes: QuizListItem[];
 };
+
+type DurationFilter = "any" | "short" | "medium" | "long";
+type SortFilter =
+  | "newest"
+  | "oldest"
+  | "title-asc"
+  | "duration-asc"
+  | "duration-desc"
+  | "questions-desc";
+
+const durationOptions: { value: DurationFilter; label: string }[] = [
+  { value: "any", label: "Any duration" },
+  { value: "short", label: "10 min or less" },
+  { value: "medium", label: "11-20 min" },
+  { value: "long", label: "21+ min" },
+];
+
+const sortOptions: { value: SortFilter; label: string }[] = [
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "title-asc", label: "Title A-Z" },
+  { value: "duration-asc", label: "Shortest" },
+  { value: "duration-desc", label: "Longest" },
+  { value: "questions-desc", label: "Most questions" },
+];
+
+function parsePage(value: string | null) {
+  const page = Number.parseInt(value || "1", 10);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function parseDurationFilter(value: string | null): DurationFilter {
+  return durationOptions.some((option) => option.value === value)
+    ? (value as DurationFilter)
+    : "any";
+}
+
+function parseSortFilter(value: string | null): SortFilter {
+  return sortOptions.some((option) => option.value === value)
+    ? (value as SortFilter)
+    : "newest";
+}
+
+function matchesDurationFilter(quiz: QuizListItem, duration: DurationFilter) {
+  if (duration === "any") {
+    return true;
+  }
+
+  if (duration === "short") {
+    return quiz.timeLimitMinutes <= 10;
+  }
+
+  if (duration === "medium") {
+    return quiz.timeLimitMinutes > 10 && quiz.timeLimitMinutes <= 20;
+  }
+
+  return quiz.timeLimitMinutes > 20;
+}
 
 export function QuizBrowser({ quizzes }: QuizBrowserProps) {
   return (
@@ -47,48 +93,32 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const categoryOptions = useMemo(() => {
+    const unique = new Set(
+      quizzes.map((quiz) => quiz.category).filter((item) => item.trim())
+    );
+    return ["All", ...Array.from(unique).sort((a, b) => a.localeCompare(b))];
+  }, [quizzes]);
+
   const [query, setQuery] = useState(() => searchParams.get("query") || "");
-  const [category, setCategory] = useState(() => searchParams.get("category") || "All");
+  const [category, setCategory] = useState(() => {
+    const initialCategory = searchParams.get("category") || "All";
+    return categoryOptions.includes(initialCategory) ? initialCategory : "All";
+  });
+  const [duration, setDuration] = useState<DurationFilter>(() =>
+    parseDurationFilter(searchParams.get("duration"))
+  );
+  const [sortBy, setSortBy] = useState<SortFilter>(() =>
+    parseSortFilter(searchParams.get("sort"))
+  );
   const [filtersOpen, setFiltersOpen] = useState(true);
-  const [page, setPage] = useState(() => parseInt(searchParams.get("page") || "1", 10));
+  const [page, setPage] = useState(() => parsePage(searchParams.get("page")));
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (searchParams.get("view") as "grid" | "list") || "grid"
   );
 
-  useEffect(() => {
-    setQuery(searchParams.get("query") || "");
-    setCategory(searchParams.get("category") || "All");
-    setPage(parseInt(searchParams.get("page") || "1", 10));
-    setViewMode((searchParams.get("view") as "grid" | "list") || "grid");
-  }, [searchParams]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const params = new URLSearchParams(Array.from(searchParams.entries()));
-      
-      if (query) params.set("query", query);
-      else params.delete("query");
-      
-      if (category !== "All") params.set("category", category);
-      else params.delete("category");
-      
-      if (page > 1) params.set("page", page.toString());
-      else params.delete("page");
-      
-      if (viewMode !== "grid") params.set("view", viewMode);
-      else params.delete("view");
-      
-      const newSearch = params.toString();
-      if (newSearch !== searchParams.toString()) {
-        router.replace(`${pathname}?${newSearch}`, { scroll: false });
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [query, category, page, viewMode, pathname, router, searchParams]);
-
   const filteredQuizzes = useMemo(() => {
-    return quizzes.filter((quiz) => {
+    const filtered = quizzes.filter((quiz) => {
       const search = query.toLowerCase();
 
       const matchesQuery =
@@ -97,10 +127,38 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         quiz.category.toLowerCase().includes(search);
 
       const matchesCategory = category === "All" || quiz.category === category;
+      const matchesDuration = matchesDurationFilter(quiz, duration);
 
-      return matchesQuery && matchesCategory;
+      return matchesQuery && matchesCategory && matchesDuration;
     });
-  }, [quizzes, query, category]);
+
+    return filtered
+      .map((quiz, index) => ({ quiz, index }))
+      .sort((a, b) => {
+        if (sortBy === "oldest") {
+          return b.index - a.index;
+        }
+
+        if (sortBy === "title-asc") {
+          return a.quiz.title.localeCompare(b.quiz.title);
+        }
+
+        if (sortBy === "duration-asc") {
+          return a.quiz.timeLimitMinutes - b.quiz.timeLimitMinutes;
+        }
+
+        if (sortBy === "duration-desc") {
+          return b.quiz.timeLimitMinutes - a.quiz.timeLimitMinutes;
+        }
+
+        if (sortBy === "questions-desc") {
+          return b.quiz.questionCount - a.quiz.questionCount;
+        }
+
+        return a.index - b.index;
+      })
+      .map((item) => item.quiz);
+  }, [quizzes, query, category, duration, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredQuizzes.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -109,6 +167,49 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+
+      if (query) params.set("query", query);
+      else params.delete("query");
+
+      if (category !== "All") params.set("category", category);
+      else params.delete("category");
+
+      if (duration !== "any") params.set("duration", duration);
+      else params.delete("duration");
+
+      if (sortBy !== "newest") params.set("sort", sortBy);
+      else params.delete("sort");
+
+      if (currentPage > 1) params.set("page", currentPage.toString());
+      else params.delete("page");
+
+      if (viewMode !== "grid") params.set("view", viewMode);
+      else params.delete("view");
+
+      const newSearch = params.toString();
+      if (newSearch !== searchParams.toString()) {
+        router.replace(newSearch ? `${pathname}?${newSearch}` : pathname, {
+          scroll: false,
+        });
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    query,
+    category,
+    duration,
+    sortBy,
+    currentPage,
+    viewMode,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   function setNextCategory(value: string) {
     setCategory(value);
@@ -120,11 +221,36 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     setPage(1);
   }
 
+  function setNextDuration(value: string) {
+    setDuration(parseDurationFilter(value));
+    setPage(1);
+  }
+
+  function setNextSort(value: string) {
+    setSortBy(parseSortFilter(value));
+    setPage(1);
+  }
+
+  function clearFilters() {
+    setCategory("All");
+    setDuration("any");
+    setSortBy("newest");
+    setQuery("");
+    setPage(1);
+  }
+
+  const activeFilterCount = [
+    query.trim().length > 0,
+    category !== "All",
+    duration !== "any",
+    sortBy !== "newest",
+  ].filter(Boolean).length;
+
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       <div className="grid gap-3 md:grid-cols-[1fr_auto]">
         <label className="relative block">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8F8F8F]" />
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--q-ink-muted)]" />
           <input
             className="q-input h-12 pl-12"
             placeholder="Search quizzes, topics or keywords..."
@@ -141,49 +267,40 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         >
           <Filter className="h-4 w-4" />
           Filters
-          <span className="flex h-6 w-6 items-center justify-center bg-[#006E5A] q-mini text-[#FFFAF2]">
-            2
+          <span className="flex h-6 w-6 items-center justify-center bg-[var(--q-green)] q-mini text-[var(--q-on-accent)]">
+            {activeFilterCount}
           </span>
         </button>
       </div>
 
-      {/*<div className="flex gap-2 overflow-x-auto pb-1">
-        {categories.map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setNextCategory(item)}
-            className={[
-              "q-button shrink-0",
-              category === item
-                ? "q-button-primary border-[#FF3C38] bg-[#FF3C38]"
-                : "q-button-secondary bg-[#FFFAF2]",
-            ].join(" ")}
-          >
-            {item}
-          </button>
-        ))}
-
-        <button className="q-button q-button-secondary shrink-0 gap-1">
-          More
-          <ChevronDown className="h-4 w-4" />
-        </button>
-      </div> */}
-
       {filtersOpen ? (
-        <div className="grid gap-4 border border-[#D7D0C4] bg-[#F4EFE6] p-4 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
-          <FilterSelect label="Category" value="All categories" />
-          <FilterSelect label="Duration" value="Any" />
-          <FilterSelect label="Sort by" value="Newest" />
+        <div className="grid gap-4 border border-[var(--q-muted-strong)] bg-[var(--q-muted)] p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+          <FilterSelect
+            label="Category"
+            options={categoryOptions.map((item) => ({
+              value: item,
+              label: item === "All" ? "All categories" : item,
+            }))}
+            value={category}
+            onChange={setNextCategory}
+          />
+          <FilterSelect
+            label="Duration"
+            options={durationOptions}
+            value={duration}
+            onChange={setNextDuration}
+          />
+          <FilterSelect
+            label="Sort by"
+            options={sortOptions}
+            value={sortBy}
+            onChange={setNextSort}
+          />
 
           <button
             type="button"
-            onClick={() => {
-              setCategory("All");
-              setQuery("");
-              setPage(1);
-            }}
-            className="mt-6 flex items-center gap-2 q-body font-medium text-[#211F20] hover:text-[#FF3C38]"
+            onClick={clearFilters}
+            className="flex h-10 items-center justify-center gap-2 q-body font-medium text-[var(--q-ink)] hover:text-[var(--q-red)] md:justify-start"
           >
             <X className="h-4 w-4" />
             Clear all
@@ -191,59 +308,78 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="q-body">
-          Showing <strong className="text-[#006E5A]">{visibleQuizzes.length}</strong>{" "}
-          of <strong className="text-[#006E5A]">{filteredQuizzes.length}</strong>{" "}
+          Showing{" "}
+          <strong className="text-[var(--q-green)]">
+            {visibleQuizzes.length}
+          </strong>{" "}
+          of{" "}
+          <strong className="text-[var(--q-green)]">
+            {filteredQuizzes.length}
+          </strong>{" "}
           quizzes
         </p>
 
         <div className="hidden gap-1 md:flex">
-            <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                aria-label="Grid view"
-                className={[
-                "flex h-9 w-9 items-center justify-center border border-[#D7D0C4]",
-                viewMode === "grid"
-                    ? "bg-[#006E5A] text-[#FFFAF2]"
-                    : "bg-[#FFFAF2] text-[#211F20] hover:border-[#211F20]",
-                ].join(" ")}
-            >
-                <Grid2X2 className="h-4 w-4" />
-            </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("grid")}
+            aria-label="Grid view"
+            className={[
+              "flex h-9 w-9 items-center justify-center border border-[var(--q-muted-strong)]",
+              viewMode === "grid"
+                ? "bg-[var(--q-green)] text-[var(--q-on-accent)]"
+                : "bg-[var(--q-surface)] text-[var(--q-ink)] hover:border-[var(--q-border)]",
+            ].join(" ")}
+          >
+            <Grid2X2 className="h-4 w-4" />
+          </button>
 
-            <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                aria-label="List view"
-                className={[
-                "flex h-9 w-9 items-center justify-center border border-[#D7D0C4]",
-                viewMode === "list"
-                    ? "bg-[#006E5A] text-[#FFFAF2]"
-                    : "bg-[#FFFAF2] text-[#211F20] hover:border-[#211F20]",
-                ].join(" ")}
-            >
-                <List className="h-4 w-4" />
-            </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            aria-label="List view"
+            className={[
+              "flex h-9 w-9 items-center justify-center border border-[var(--q-muted-strong)]",
+              viewMode === "list"
+                ? "bg-[var(--q-green)] text-[var(--q-on-accent)]"
+                : "bg-[var(--q-surface)] text-[var(--q-ink)] hover:border-[var(--q-border)]",
+            ].join(" ")}
+          >
+            <List className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-    <div
+      <div
         className={[
-            "grid gap-4",
-            viewMode === "grid" ? "md:grid-cols-3 xl:md:grid-cols-4" : "md:grid-cols-1",
+          "grid gap-4",
+          viewMode === "grid"
+            ? "md:grid-cols-3 xl:grid-cols-4"
+            : "md:grid-cols-1",
         ].join(" ")}
-        >
-        {visibleQuizzes.map((quiz) => (
+      >
+        {visibleQuizzes.length > 0 ? (
+          visibleQuizzes.map((quiz) => (
             <QuizCard key={quiz.id} quiz={quiz} viewMode={viewMode} />
-        ))}
-    </div>
+          ))
+        ) : (
+          <div className="border-2 border-[var(--q-border)] bg-[var(--q-surface)] p-5 md:col-span-3 xl:col-span-4">
+            <p className="font-display text-3xl leading-none text-[var(--q-ink)]">
+              No quizzes found
+            </p>
+            <p className="mt-2 q-body text-[var(--q-ink)]">
+              Adjust the search or filters to see more quizzes.
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center justify-center gap-2 pt-4">
         <button
           type="button"
-          className="q-button q-button-secondary px-3"
+          className="q-button q-button-secondary px-3 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={currentPage === 1}
           onClick={() => setPage((value) => Math.max(1, value - 1))}
         >
@@ -261,7 +397,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
               className={[
                 "q-button px-4",
                 currentPage === pageNumber
-                  ? "q-button-primary border-[#FF3C38] bg-[#FF3C38]"
+                  ? "q-button-primary border-[var(--q-red)] bg-[var(--q-red)]"
                   : "q-button-secondary",
               ].join(" ")}
             >
@@ -272,7 +408,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
 
         <button
           type="button"
-          className="q-button q-button-secondary px-3"
+          className="q-button q-button-secondary px-3 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={currentPage === totalPages}
           onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
         >
@@ -283,16 +419,34 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
   );
 }
 
-function FilterSelect({ label, value }: { label: string; value: string }) {
+function FilterSelect({
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  value: string;
+}) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center gap-2 q-mini text-[#211F20]">
-        <SlidersHorizontal className="h-4 w-4 text-[#006E5A]" />
+      <span className="mb-2 flex items-center gap-2 q-mini text-[var(--q-ink)]">
+        <SlidersHorizontal className="h-4 w-4 text-[var(--q-green)]" />
         {label}
       </span>
 
-      <select className="q-input h-10 bg-[#FFFAF2] q-mini">
-        <option>{value}</option>
+      <select
+        className="q-input h-10 bg-[var(--q-surface)] q-mini"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
       </select>
     </label>
   );

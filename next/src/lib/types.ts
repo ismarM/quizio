@@ -53,6 +53,20 @@ export type OpenSessionsResponse = {
   attempts: AttemptSessionDTO[];
 };
 
+export type UserDTO = {
+  id: number;
+  email: string;
+  is_admin: boolean;
+  display_name?: string;
+  language: number;
+  theme: number;
+  profile_picture?: string;
+};
+
+export type UserResponse = {
+  user: UserDTO;
+};
+
 export type QuizListItem = {
   id: number;
   title: string;
