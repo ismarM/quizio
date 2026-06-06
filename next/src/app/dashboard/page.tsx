@@ -28,6 +28,9 @@ import type {
 
 export const dynamic = "force-dynamic";
 
+const DASHBOARD_SUBMISSIONS_LIMIT = 100;
+const RECENT_ATTEMPTS_LIMIT = 5;
+
 type OpenSessionView = {
   attemptId: number;
   quizTitle: string;
@@ -97,7 +100,7 @@ export default async function DashboardPage() {
     const [openSessionsData, submissionsData] = await Promise.all([
       serverFetchJson<OpenSessionsResponse>("/api/users/me/open-sessions"),
       serverFetchJson<SubmissionsResponse>(
-        "/api/users/me/submissions?limit=5&offset=0"
+        `/api/users/me/submissions?limit=${DASHBOARD_SUBMISSIONS_LIMIT}&offset=0`
       ),
     ]);
 
@@ -233,7 +236,7 @@ export default async function DashboardPage() {
             <OpenSessionsPanel sessions={openSessions} />
             <RecentAttemptsPanel
               locale={locale}
-              submissions={submissions}
+              submissions={submissions.slice(0, RECENT_ATTEMPTS_LIMIT)}
               unknown={t("unknown")}
             />
           </div>
