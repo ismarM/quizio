@@ -1,4 +1,5 @@
 import { UserRound } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import LogoutButton from "@/components/auth/LogoutButton";
@@ -11,6 +12,7 @@ function getInitials(email?: string | null, displayName?: string | null) {
 }
 
 export async function SiteHeader() {
+  const t = await getTranslations("nav");
   const user = await getSessionUser();
 
   const isLoggedIn = Boolean(user);
@@ -27,11 +29,11 @@ export async function SiteHeader() {
 
       <nav className="hidden items-center gap-8 text-[15px] leading-6 text-[var(--q-ink)] md:flex">
         <Link href={routes.quizzes} className="hover:text-[var(--q-red)]">
-          Explore quizzes
+          {t("exploreQuizzes")}
         </Link>
         {!isLoggedIn ? (
           <Link href="/#how-it-works" className="hover:text-[var(--q-red)]">
-            How it works
+            {t("howItWorks")}
           </Link>
         ) : null}
       </nav>
@@ -40,24 +42,24 @@ export async function SiteHeader() {
         {!isLoggedIn ? (
           <>
             <Link href={routes.login} className="q-button q-button-secondary">
-              Log in
+              {t("logIn")}
             </Link>
             <Link href={routes.login} className="q-button q-button-primary">
-              Get started
+              {t("getStarted")}
             </Link>
           </>
         ) : (
           <>
             {isAdmin ? (
               <Link href={routes.admin} className="q-button q-button-secondary">
-                Admin
+                {t("admin")}
               </Link>
             ) : null}
 
             <Link
               href={routes.dashboard}
               className="flex h-9 w-9 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)] hover:bg-[var(--q-green)] hover:text-[var(--q-on-accent)]"
-              title={user?.email ?? "Profile"}
+              title={user?.email ?? t("profile")}
             >
               {user ? (
                 getInitials(user.email, user.displayName)
@@ -76,13 +78,13 @@ export async function SiteHeader() {
           <Link
             href={routes.dashboard}
             className="flex h-9 w-9 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)]"
-            title={user?.email ?? "Profile"}
+            title={user?.email ?? t("profile")}
           >
             {getInitials(user?.email, user?.displayName)}
           </Link>
         ) : (
           <Link href={routes.login} className="q-button q-button-secondary">
-            Log in
+            {t("logIn")}
           </Link>
         )}
       </div>

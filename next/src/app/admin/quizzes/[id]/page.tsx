@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { AdminQuizEditor } from "@/components/admin/AdminQuizEditor";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -19,6 +20,7 @@ type AdminQuizDetailPageProps = {
 export default async function AdminQuizDetailPage({
   params,
 }: AdminQuizDetailPageProps) {
+  const t = await getTranslations("admin");
   const user = await requireAuth();
 
   if (!user.isAdmin) {
@@ -50,15 +52,15 @@ export default async function AdminQuizDetailPage({
       <section className="q-container pb-12 pt-6 md:pb-20 md:pt-10">
         <div className="mb-7">
           <p className="mb-3 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-            Admin
+            {t("admin")}
           </p>
 
           <h1 className="font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
-            Edit quiz
+            {t("editQuiz")}
           </h1>
 
           <p className="mt-4 max-w-2xl q-body text-[#211F20]">
-            Manage quiz settings, questions, publishing state and preview.
+            {t("editQuizSubtitle")}
           </p>
         </div>
 

@@ -1,15 +1,10 @@
 import LoginForm from "./LoginForm";
 
 type LoginPageProps = {
-  searchParams?: 
-    | Promise<{
-        reason?: string;
-        next?: string;
-      }> 
-    | {
-        reason?: string;
-        next?: string;
-      };
+  searchParams?: Promise<{
+    reason?: string;
+    next?: string;
+  }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {

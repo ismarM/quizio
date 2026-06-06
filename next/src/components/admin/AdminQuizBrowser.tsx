@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, Suspense, type ReactNode } from "react";
 import {
@@ -42,14 +43,6 @@ const activeStatuses: StatusFilter[] = [
 ];
 const archivedStatuses: StatusFilter[] = ["all", "archived"];
 
-const statusLabels: Record<StatusFilter, string> = {
-  all: "All",
-  draft: "Draft",
-  scheduled: "Scheduled",
-  published: "Published",
-  archived: "Archived",
-};
-
 type AdminQuizBrowserProps = {
   quizzes: AdminQuizListItem[];
   archivedView?: boolean;
@@ -70,6 +63,7 @@ function AdminQuizBrowserInner({
   quizzes,
   archivedView = false,
 }: AdminQuizBrowserProps) {
+  const t = useTranslations("admin");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -138,12 +132,19 @@ function AdminQuizBrowserInner({
   }, [category, quizzes, query, status]);
   const visibleRange =
     filteredQuizzes.length === 0 ? "0" : `1-${filteredQuizzes.length}`;
+  const statusLabels: Record<StatusFilter, string> = {
+    all: t("all"),
+    draft: t("draft"),
+    scheduled: t("scheduled"),
+    published: t("published"),
+    archived: t("archived"),
+  };
 
   return (
     <section className="relative overflow-visible border-2 border-[#211F20] bg-[#FFFDF8] shadow-[6px_6px_0_#EBE4D8]">
       <div className="p-4 lg:p-6">
         <h2 className="font-display text-[28px] leading-none text-[#211F20] lg:text-[34px]">
-          {archivedView ? "ARCHIVED QUIZZES" : "ALL QUIZZES"}
+          {archivedView ? t("archivedQuizzes") : t("allQuizzes")}
         </h2>
 
         <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(220px,1fr)_170px_170px_auto] lg:items-center">
@@ -151,7 +152,7 @@ function AdminQuizBrowserInner({
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F8F8F]" />
             <Input
               className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] pl-11 text-[13px] shadow-none transition placeholder:text-[#8F8F8F] focus-visible:border-[#006E5A] focus-visible:ring-0"
-              placeholder="Search quizzes by title or keyword..."
+              placeholder={t("searchPlaceholder")}
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -159,25 +160,25 @@ function AdminQuizBrowserInner({
           </label>
 
           <SelectFilter
-            label="Status"
+            label={t("status")}
             value={status}
             onChange={(value) => setStatus(value as StatusFilter)}
           >
             {statusOptions.map((item) => (
               <option key={item} value={item}>
-                {item === "all" ? "All statuses" : statusLabels[item]}
+                {item === "all" ? t("allStatuses") : statusLabels[item]}
               </option>
             ))}
           </SelectFilter>
 
           <SelectFilter
-            label="Category"
+            label={t("category")}
             value={category}
             onChange={setCategory}
           >
             {categoryOptions.map((item) => (
               <option key={item} value={item}>
-                {item === "all" ? "All categories" : item}
+                {item === "all" ? t("allCategories") : item}
               </option>
             ))}
           </SelectFilter>
@@ -190,7 +191,7 @@ function AdminQuizBrowserInner({
             >
               <Link href={routes.admin}>
                 <ListChecks className="h-4 w-4" />
-                All quizzes
+                {t("allQuizzes")}
               </Link>
             </Button>
           ) : (
@@ -201,7 +202,7 @@ function AdminQuizBrowserInner({
             >
               <Link href={routes.adminArchivedQuizzes}>
                 <Lock className="h-4 w-4" />
-                Archived / Locked
+                {t("archivedLocked")}
               </Link>
             </Button>
           )}
@@ -209,10 +210,10 @@ function AdminQuizBrowserInner({
       </div>
 
       <div className="hidden border-y-2 border-[#211F20] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8F8F8F] lg:grid lg:grid-cols-[34px_minmax(220px,1.35fr)_minmax(210px,250px)_minmax(130px,150px)_minmax(220px,250px)] lg:items-center">
-        <span className="col-start-2 px-6">Quiz</span>
-        <span className="text-center">Details</span>
-        <span className="text-center">Status</span>
-        <span className="text-center">Actions</span>
+        <span className="col-start-2 px-6">{t("quiz")}</span>
+        <span className="text-center">{t("details")}</span>
+        <span className="text-center">{t("status")}</span>
+        <span className="text-center">{t("actions")}</span>
       </div>
 
       <div className="grid gap-2 p-4 lg:gap-3 lg:p-6 lg:pt-5">
@@ -223,10 +224,10 @@ function AdminQuizBrowserInner({
         ) : (
           <div className="border-2 border-[#211F20] bg-[#FFFAF2] p-5">
             <p className="font-display text-3xl leading-none text-[#211F20]">
-              No quizzes found
+              {t("noQuizzesFound")}
             </p>
             <p className="mt-2 text-[14px] leading-6 text-[#211F20]">
-              Adjust the search or status filter to see more results.
+              {t("adjustFilters")}
             </p>
           </div>
         )}
@@ -234,7 +235,10 @@ function AdminQuizBrowserInner({
 
       <div className="hidden border-t-2 border-[#211F20] px-6 py-4 text-[13px] text-[#211F20] lg:block">
         <span>
-          Showing {visibleRange} of {filteredQuizzes.length} quizzes
+          {t("showing", {
+            count: filteredQuizzes.length,
+            range: visibleRange,
+          })}
         </span>
       </div>
     </section>
@@ -268,6 +272,7 @@ function SelectFilter({
 }
 
 function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
+  const t = useTranslations("admin");
   const statusTone = getStatusTone(quiz.status);
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
@@ -310,7 +315,7 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
         <div className="grid content-center gap-2 border-l-2 border-[#EBE4D8] px-6 py-4">
           <DetailLine
             icon={<ListChecks className="h-4 w-4" />}
-            text={`${quiz.questionCount} ${quiz.questionCount === 1 ? "question" : "questions"}`}
+            text={t("questionCount", { count: quiz.questionCount })}
           />
           <DetailLine
             icon={<Clock3 className="h-4 w-4" />}
@@ -318,7 +323,11 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
           />
           <DetailLine
             icon={<CalendarClock className="h-4 w-4" />}
-            text={getPublishMetaText(quiz)}
+            text={getPublishMetaText(quiz, {
+              notScheduled: t("notScheduled"),
+              publishedAt: (date) => t("publishedAt", { date }),
+              publishes: (date) => t("publishes", { date }),
+            })}
           />
         </div>
 
@@ -350,7 +359,8 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
           </div>
 
           <p className="mt-2 text-[12px] leading-4 text-[#211F20]">
-            {quiz.questionCount} questions · {quiz.timeLimitMinutes} min
+            {t("questionCount", { count: quiz.questionCount })} ·{" "}
+            {quiz.timeLimitMinutes} min
           </p>
         </div>
 
@@ -384,6 +394,7 @@ function AdminQuizActions({
   quiz: AdminQuizListItem;
   onMenuToggle?: (open: boolean) => void;
 }) {
+  const t = useTranslations("admin");
   const router = useRouter();
   const [scheduledAt, setScheduledAt] = useState(() =>
     quiz.publishAt ? toDatetimeLocalValue(new Date(quiz.publishAt)) : ""
@@ -413,7 +424,7 @@ function AdminQuizActions({
       router.refresh();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Action failed.";
+        error instanceof Error ? error.message : t("actionFailed");
       setActionError(message);
     } finally {
       setPendingAction(null);
@@ -428,12 +439,12 @@ function AdminQuizActions({
     const publishDate = parseDatetimeLocalValue(scheduledAt);
 
     if (!publishDate) {
-      setActionError("Choose an exact publish time first.");
+      setActionError(t("choosePublishTime"));
       return;
     }
 
     if (publishDate.getTime() <= Date.now()) {
-      setActionError("Choose a future time or use Publish now.");
+      setActionError(t("chooseFutureTime"));
       return;
     }
 
@@ -454,25 +465,28 @@ function AdminQuizActions({
   return (
     <div className="relative flex items-center justify-center gap-3 border-l-2 border-[#EBE4D8] px-4">
       {isPublished ? (
-        <ActionLink href={routes.quizDetail(quiz.id)} label="Preview">
+        <ActionLink href={routes.quizDetail(quiz.id)} label={t("preview")}>
           <Eye className="h-5 w-5" />
         </ActionLink>
       ) : (
-        <ActionButton disabled label="Preview">
+        <ActionButton disabled label={t("preview")}>
           <Eye className="h-5 w-5" />
         </ActionButton>
       )}
 
-      <ActionLink href={routes.adminQuizResults(quiz.id)} label="Results">
+      <ActionLink href={routes.adminQuizResults(quiz.id)} label={t("results")}>
         <Users className="h-5 w-5" />
       </ActionLink>
 
       {canEdit ? (
-        <ActionLink href={routes.adminQuizDetail(quiz.id)} label="Edit">
+        <ActionLink href={routes.adminQuizDetail(quiz.id)} label={t("edit")}>
           <Pencil className="h-5 w-5" />
         </ActionLink>
       ) : (
-        <ActionButton disabled label={isArchived ? "Archived" : "Locked"}>
+        <ActionButton
+          disabled
+          label={isArchived ? t("archived") : t("locked")}
+        >
           <Pencil className="h-5 w-5" />
         </ActionButton>
       )}
@@ -490,7 +504,7 @@ function AdminQuizActions({
             <>
               <label className="grid gap-2">
                 <span className="q-mini text-[#211F20]">
-                  Exact release time
+                  {t("exactReleaseTime")}
                 </span>
                 <Input
                   className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[13px] shadow-none focus-visible:border-[#006E5A] focus-visible:ring-0"
@@ -511,10 +525,10 @@ function AdminQuizActions({
               >
                 <CalendarClock className="h-4 w-4" />
                 {pendingAction === "schedule"
-                  ? "Saving..."
+                  ? t("saving")
                   : isScheduled
-                    ? "Update time"
-                    : "Schedule"}
+                    ? t("updateTime")
+                    : t("schedule")}
               </Button>
 
               <Button
@@ -525,14 +539,14 @@ function AdminQuizActions({
               >
                 <Send className="h-4 w-4" />
                 {pendingAction === "publish-now"
-                  ? "Publishing..."
-                  : "Publish now"}
+                  ? t("publishing")
+                  : t("publishNow")}
               </Button>
             </>
           ) : (
             <div className="border-2 border-[#D7D0C4] bg-[#EBE4D8] p-3">
               <p className="q-mini text-[#006E5A]">
-                {isPublished ? "Published" : "Locked"}
+                {isPublished ? t("published") : t("locked")}
               </p>
               <p className="mt-1 text-[13px] leading-5 text-[#211F20]">
                 {quiz.publishAtLabel}
@@ -549,7 +563,7 @@ function AdminQuizActions({
               variant="outline"
             >
               <Archive className="h-4 w-4" />
-              {pendingAction === "archive" ? "Archiving..." : "Archive"}
+              {pendingAction === "archive" ? t("archiving") : t("archive")}
             </Button>
           ) : null}
 
@@ -606,6 +620,7 @@ function ActionButton({
 }
 
 function StatusBadge({ status }: { status: AdminQuizListItem["status"] }) {
+  const t = useTranslations("admin");
   const classes: Record<AdminQuizListItem["status"], string> = {
     draft: "bg-[#EBE4D8] text-[#211F20]",
     scheduled: "bg-[#EFE4CE] text-[#996A13]",
@@ -621,7 +636,7 @@ function StatusBadge({ status }: { status: AdminQuizListItem["status"] }) {
       )}
       variant="secondary"
     >
-      {status}
+      {getStatusLabel(status, t)}
     </Badge>
   );
 }
@@ -647,6 +662,7 @@ function DetailLine({ icon, text }: { icon: ReactNode; text: string }) {
 }
 
 function StatusMarker({ status }: { status: AdminQuizListItem["status"] }) {
+  const t = useTranslations("admin");
   const tone = getStatusTone(status);
 
   return (
@@ -657,7 +673,7 @@ function StatusMarker({ status }: { status: AdminQuizListItem["status"] }) {
         <span className={["h-2.5 w-2.5 rounded-full", tone.dot].join(" ")} />
       )}
       <span className={["q-mini", tone.text].join(" ")}>
-        {status === "archived" ? "Locked" : status}
+        {status === "archived" ? t("locked") : getStatusLabel(status, t)}
       </span>
     </div>
   );
@@ -693,20 +709,45 @@ function getStatusTone(status: AdminQuizListItem["status"]) {
   return tones[status];
 }
 
-function getPublishMetaText(quiz: AdminQuizListItem) {
+function getStatusLabel(
+  status: AdminQuizListItem["status"],
+  t: ReturnType<typeof useTranslations<"admin">>
+) {
+  if (status === "draft") {
+    return t("draft");
+  }
+  if (status === "scheduled") {
+    return t("scheduled");
+  }
+  if (status === "published") {
+    return t("published");
+  }
+  return t("archived");
+}
+
+function getPublishMetaText(
+  quiz: AdminQuizListItem,
+  labels: {
+    notScheduled: string;
+    publishedAt: (date: string) => string;
+    publishes: (date: string) => string;
+  }
+) {
   if (quiz.status === "draft") {
-    return "Not scheduled";
+    return labels.notScheduled;
   }
 
   if (quiz.status === "scheduled") {
-    return `Publishes ${quiz.publishAtLabel}`;
+    return labels.publishes(quiz.publishAtLabel);
   }
 
   if (quiz.status === "published") {
-    return `Published ${quiz.publishAtLabel}`;
+    return labels.publishedAt(quiz.publishAtLabel);
   }
 
-  return quiz.publishAt ? `Published ${quiz.publishAtLabel}` : "Not scheduled";
+  return quiz.publishAt
+    ? labels.publishedAt(quiz.publishAtLabel)
+    : labels.notScheduled;
 }
 
 async function publishQuizNow(quiz: AdminQuizListItem) {

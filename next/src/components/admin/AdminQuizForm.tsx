@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -25,6 +26,7 @@ type AdminQuizFormProps = {
 };
 
 export function AdminQuizForm({ categories }: AdminQuizFormProps) {
+  const t = useTranslations("admin.form");
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -42,6 +44,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
   const validationErrors = getValidationErrors({
+    labels: createValidationLabels(t),
     title,
     timeLimit,
     questions,
@@ -180,7 +183,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       setThumbnailUrl(data.url);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to upload thumbnail";
+        error instanceof Error ? error.message : t("uploadThumbnailFailed");
       setUploadError(message);
     } finally {
       setUploadingTarget(null);
@@ -204,7 +207,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       updateAnswer(questionId, answerId, { text: data.url });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to upload answer image";
+        error instanceof Error ? error.message : t("uploadAnswerFailed");
       setUploadError(message);
     } finally {
       setUploadingTarget(null);
@@ -216,7 +219,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
     setSubmitError(null);
 
     if (!isValid) {
-      setSubmitError(validationErrors[0] ?? "Please complete all required fields.");
+      setSubmitError(validationErrors[0] ?? t("completeRequired"));
       return;
     }
 
@@ -230,7 +233,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
     });
 
     if (!payload) {
-      setSubmitError("Please complete all required fields.");
+      setSubmitError(t("completeRequired"));
       return;
     }
 
@@ -245,7 +248,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       router.refresh();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to create quiz";
+        error instanceof Error ? error.message : t("createFailed");
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -264,35 +267,35 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
             className="inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to quizzes
+            {t("backToQuizzes")}
           </Link>
 
           <span className="bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#211F20]">
-            Draft
+            {t("draft")}
           </span>
         </div>
 
         <div className="grid gap-5">
-          <FormField label="Quiz title" required>
+          <FormField label={t("quizTitle")} required>
             <input
               className="q-input h-12"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Example: Science Fundamentals"
+              placeholder={t("quizTitlePlaceholder")}
             />
           </FormField>
 
-          <FormField label="Description">
+          <FormField label={t("description")}>
             <textarea
               className="min-h-[140px] w-full border-2 border-[#211F20] bg-[#FFFAF2] p-3 q-body outline-none focus:border-[#FF3C38]"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Shortly explain what this quiz is about..."
+              placeholder={t("descriptionPlaceholder")}
             />
           </FormField>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <FormField label="Category">
+            <FormField label={t("category")}>
               <select
                 className="q-input h-12"
                 disabled={categories.length === 0}
@@ -307,7 +310,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               </select>
             </FormField>
 
-            <FormField label="Time limit" required>
+            <FormField label={t("timeLimit")} required>
               <div className="relative">
                 <Clock3 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F8F8F]" />
                 <input
@@ -322,10 +325,11 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
             </FormField>
           </div>
 
-          <FormField label="Thumbnail image">
+          <FormField label={t("thumbnailImage")}>
             <div className="grid gap-3 md:grid-cols-[220px_1fr]">
               <ImagePreview
-                label="Quiz thumbnail"
+                emptyLabel={t("noImageSelected")}
+                label={t("quizThumbnail")}
                 value={thumbnailUrl}
               />
 
@@ -334,12 +338,16 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                   className="q-input h-12"
                   value={thumbnailUrl}
                   onChange={(event) => setThumbnailUrl(event.target.value)}
-                  placeholder="Paste image URL or upload a file"
+                  placeholder={t("imageUrlPlaceholder")}
                 />
 
                 <label className="q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]">
                   <ImagePlus className="h-4 w-4 mr-1" />
-                  <span className="pt-1">{uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}</span>
+                  <span className="pt-1">
+                    {uploadingTarget === "thumbnail"
+                      ? t("uploading")
+                      : t("uploadImage")}
+                  </span>
                   <input
                     className="sr-only"
                     accept="image/*"
@@ -358,10 +366,10 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="inline-flex bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
-                  Questions
+                  {t("questions")}
                 </p>
                 <p className="mt-2 font-display text-3xl leading-none text-[#211F20]">
-                  Add questions now
+                  {t("addQuestionsNow")}
                 </p>
               </div>
 
@@ -372,7 +380,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                 disabled={questions.length < 2}
               >
                 <Shuffle className="h-4 w-4 mr-1" />
-                <span className="pl-1 pt-0.5">Shuffle</span>
+                <span className="pl-1 pt-0.5">{t("shuffle")}</span>
               </button>
 
               <button
@@ -381,7 +389,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                 className="q-button q-button-primary border-[#006E5A] bg-[#006E5A]"
               >
                 <FilePlus2 className="h-4 w-4" />
-                <span className="pl-1 pt-0.5">Add question</span>
+                <span className="pl-1 pt-0.5">{t("addQuestion")}</span>
               </button>
             </div>
 
@@ -393,7 +401,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="font-display text-2xl text-[#211F20]">
-                      Question {index + 1}
+                      {t("questionNumber", { number: index + 1 })}
                     </p>
 
                     <div className="flex flex-wrap gap-2">
@@ -404,7 +412,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         disabled={index === 0}
                       >
                         <ArrowUp className="h-4 w-4" />
-                        <span className="pl-0.5 pt-1 pr-1">Up</span>
+                        <span className="pl-0.5 pt-1 pr-1">{t("up")}</span>
                       </button>
 
                       <button
@@ -414,7 +422,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         disabled={index === questions.length - 1}
                       >
                         <ArrowDown className="h-4 w-4" />
-                        <span className="pl-0.5 pt-1 pr-1">Down</span>
+                        <span className="pl-0.5 pt-1 pr-1">{t("down")}</span>
                       </button>
 
                       <button
@@ -424,13 +432,13 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         disabled={questions.length <= 1}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="pl-0.5 pt-1 pr-1">Remove</span>
+                        <span className="pl-0.5 pt-1 pr-1">{t("remove")}</span>
                       </button>
                     </div>
                   </div>
 
                   <div className="grid gap-4">
-                    <FormField label="Question text" required>
+                    <FormField label={t("questionText")} required>
                       <input
                         className="q-input h-12"
                         value={question.title}
@@ -439,11 +447,11 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                             title: event.target.value,
                           })
                         }
-                        placeholder="Example: Which planet is known as the Red Planet?"
+                        placeholder={t("questionPlaceholder")}
                       />
                     </FormField>
 
-                    <FormField label="Points" required>
+                    <FormField label={t("points")} required>
                       <input
                         className="q-input h-12"
                         value={question.points}
@@ -459,7 +467,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
 
                     <div className="grid gap-3">
                       <p className="font-display text-2xl leading-none text-[#211F20]">
-                        Answers
+                        {t("answers")}
                       </p>
 
                       {question.answers.map((answer, answerIndex) => (
@@ -476,7 +484,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                                 setCorrectAnswer(question.id, answer.id)
                               }
                             />
-                            Correct
+                            {t("correct")}
                           </label>
 
                           <div className="grid gap-2">
@@ -488,12 +496,17 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                                   text: event.target.value,
                                 })
                               }
-                              placeholder={`Answer ${answerIndex + 1} text or image URL`}
+                              placeholder={t("answerPlaceholder", {
+                                number: answerIndex + 1,
+                              })}
                             />
 
                             {isImageUrl(answer.text) ? (
                               <ImagePreview
-                                label={`Answer ${answerIndex + 1}`}
+                                emptyLabel={t("noImageSelected")}
+                                label={t("answerImageLabel", {
+                                  number: answerIndex + 1,
+                                })}
                                 value={answer.text}
                               />
                             ) : null}
@@ -501,8 +514,8 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                             <label className="q-button q-button-secondary w-fit cursor-pointer border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]">
                               <ImagePlus className="h-4 w-4" />
                               <span className="pl-1 pt-0.5">{uploadingTarget === `${question.id}:${answer.id}`
-                                ? "Uploading..."
-                                : "Use image"}</span>
+                                ? t("uploading")
+                                : t("useImage")}</span>
                               <input
                                 className="sr-only"
                                 accept="image/*"
@@ -526,7 +539,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                             disabled={question.answers.length <= 2}
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="pl-1 pt-0.5">Remove</span>
+                            <span className="pl-1 pt-0.5">{t("remove")}</span>
                           </button>
                         </div>
                       ))}
@@ -537,7 +550,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                         className="q-button q-button-primary w-fit border-[#211F20] bg-[#211F20]"
                       >
                         <FilePlus2 className="h-4 w-4" />
-                        <span className="pl-1 pt-1">Add answer</span>
+                        <span className="pl-1 pt-1">{t("addAnswer")}</span>
                       </button>
                     </div>
                   </div>
@@ -556,11 +569,13 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               disabled={!isValid || isSubmitting}
             >
               <Save className="h-4 w-4" />
-              <span className="pl-1 pt-0.5">{isSubmitting ? "Saving..." : "Save draft"}</span>
+              <span className="pl-1 pt-0.5">
+                {isSubmitting ? t("saving") : t("saveDraft")}
+              </span>
             </button>
 
             <Link href={routes.adminQuizzes} className="q-button q-button-secondary">
-              Cancel
+              {t("cancel")}
             </Link>
           </div>
 
@@ -579,17 +594,17 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
           <FilePlus2 className="mb-5 h-10 w-10 text-[#006E5A]" />
 
           <p className="font-display text-[34px] leading-none text-[#211F20]">
-            Draft checklist
+            {t("draftChecklist")}
           </p>
 
           <div className="my-5 h-[2px] bg-[#211F20]" />
 
           <div className="grid gap-3 q-body text-[#211F20]">
-            <ChecklistItem done={title.trim().length > 0} text="Add title" />
-            <ChecklistItem done={description.trim().length > 0} text="Add description" />
-            <ChecklistItem done={Number(timeLimit) > 0} text="Set time limit" />
-            <ChecklistItem done={questions.length > 0} text="Add questions" />
-            <ChecklistItem done={false} text="Publish when ready" />
+            <ChecklistItem done={title.trim().length > 0} text={t("addTitle")} />
+            <ChecklistItem done={description.trim().length > 0} text={t("addDescription")} />
+            <ChecklistItem done={Number(timeLimit) > 0} text={t("setTimeLimit")} />
+            <ChecklistItem done={questions.length > 0} text={t("addQuestion")} />
+            <ChecklistItem done={false} text={t("publishWhenReady")} />
           </div>
         </section>
       </aside>
@@ -689,41 +704,43 @@ type CreateQuizPayload = {
 };
 
 function getValidationErrors({
+  labels,
   title,
   timeLimit,
   questions,
 }: {
+  labels: ValidationLabels;
   title: string;
   timeLimit: string;
   questions: DraftQuestion[];
 }) {
   const errors: string[] = [];
   if (!title.trim()) {
-    errors.push("Title is required.");
+    errors.push(labels.titleRequired);
   }
   if (Number(timeLimit) <= 0) {
-    errors.push("Time limit must be at least 1 minute.");
+    errors.push(labels.timeLimitInvalid);
   }
   if (questions.length === 0) {
-    errors.push("Add at least one question.");
+    errors.push(labels.addAtLeastOneQuestion);
   }
 
   questions.forEach((question, index) => {
-    const label = `Question ${index + 1}`;
+    const number = index + 1;
     if (!question.title.trim()) {
-      errors.push(`${label} needs a title.`);
+      errors.push(labels.questionNeedsTitle(number));
     }
     if (Number(question.points) <= 0) {
-      errors.push(`${label} needs positive points.`);
+      errors.push(labels.questionNeedsPoints(number));
     }
     if (question.answers.length < 2) {
-      errors.push(`${label} needs at least 2 answers.`);
+      errors.push(labels.questionNeedsAnswers(number));
     }
     if (!question.answers.some((answer) => answer.isCorrect)) {
-      errors.push(`${label} needs a correct answer.`);
+      errors.push(labels.questionNeedsCorrect(number));
     }
     if (question.answers.some((answer) => !answer.text.trim())) {
-      errors.push(`${label} has empty answers.`);
+      errors.push(labels.questionHasEmptyAnswers(number));
     }
   });
 
@@ -767,11 +784,44 @@ function buildCreatePayload({
   };
 }
 
-function ImagePreview({ label, value }: { label: string; value: string }) {
+type ValidationLabels = {
+  addAtLeastOneQuestion: string;
+  questionHasEmptyAnswers: (number: number) => string;
+  questionNeedsAnswers: (number: number) => string;
+  questionNeedsCorrect: (number: number) => string;
+  questionNeedsPoints: (number: number) => string;
+  questionNeedsTitle: (number: number) => string;
+  timeLimitInvalid: string;
+  titleRequired: string;
+};
+
+function createValidationLabels(t: ReturnType<typeof useTranslations<"admin.form">>): ValidationLabels {
+  return {
+    addAtLeastOneQuestion: t("addAtLeastOneQuestion"),
+    questionHasEmptyAnswers: (number) =>
+      t("questionHasEmptyAnswers", { number }),
+    questionNeedsAnswers: (number) => t("questionNeedsAnswers", { number }),
+    questionNeedsCorrect: (number) => t("questionNeedsCorrect", { number }),
+    questionNeedsPoints: (number) => t("questionNeedsPoints", { number }),
+    questionNeedsTitle: (number) => t("questionNeedsTitle", { number }),
+    timeLimitInvalid: t("timeLimitInvalid"),
+    titleRequired: t("titleRequired"),
+  };
+}
+
+function ImagePreview({
+  emptyLabel,
+  label,
+  value,
+}: {
+  emptyLabel: string;
+  label: string;
+  value: string;
+}) {
   if (!isImageUrl(value)) {
     return (
       <div className="flex min-h-[132px] items-center justify-center border-2 border-[#D7D0C4] bg-[#EBE4D8] p-4 text-center q-mini text-[#211F20]">
-        No image selected
+        {emptyLabel}
       </div>
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -53,6 +54,7 @@ type QuizMetadataPayload = {
 };
 
 export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
+  const t = useTranslations("admin.form");
   const router = useRouter();
   const isDraftEditable =
     quiz.status === "draft" || quiz.status === "scheduled";
@@ -86,7 +88,12 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
-  const validationErrors = getValidationErrors({ title, timeLimit, questions });
+  const validationErrors = getValidationErrors({
+    labels: createValidationLabels(t),
+    title,
+    timeLimit,
+    questions,
+  });
   const isValid = validationErrors.length === 0;
 
   function addQuestion() {
@@ -209,7 +216,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       setThumbnailUrl(data.url);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to upload thumbnail";
+        error instanceof Error ? error.message : t("uploadThumbnailFailed");
       setUploadError(message);
     } finally {
       setUploadingTarget(null);
@@ -233,7 +240,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       updateAnswer(questionId, answerId, { text: data.url });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to upload answer image";
+        error instanceof Error ? error.message : t("uploadAnswerFailed");
       setUploadError(message);
     } finally {
       setUploadingTarget(null);
@@ -246,12 +253,12 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
     setStatusMessage(null);
 
     if (!isDraftEditable) {
-      setSubmitError("This quiz can no longer be edited here.");
+      setSubmitError(t("cannotEdit"));
       return;
     }
 
     if (!isValid) {
-      setSubmitError(validationErrors[0] ?? "Please complete all required fields.");
+      setSubmitError(validationErrors[0] ?? t("completeRequired"));
       return;
     }
 
@@ -264,7 +271,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
     });
 
     if (!payload) {
-      setSubmitError("Please complete all required fields.");
+      setSubmitError(t("completeRequired"));
       return;
     }
 
@@ -293,7 +300,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
         });
       }
 
-      setStatusMessage("Changes saved.");
+      setStatusMessage(t("changesSaved"));
       router.refresh();
     } catch (error) {
       for (const questionId of createdQuestionIds) {
@@ -303,7 +310,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       }
 
       const message =
-        error instanceof Error ? error.message : "Failed to save changes";
+        error instanceof Error ? error.message : t("saveFailed");
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -322,7 +329,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
             className="inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to admin
+            {t("backToAdmin")}
           </Link>
 
           <StatusBadge status={quiz.status} />
@@ -334,10 +341,10 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
               <LockKeyhole className="mt-1 h-5 w-5 text-[#006E5A]" />
               <div>
                 <p className="font-display text-2xl leading-none text-[#211F20]">
-                  Quiz is locked
+                  {t("quizLockedTitle")}
                 </p>
                 <p className="mt-1 q-body text-[#211F20]">
-                  Published or archived quizzes cannot be changed.
+                  {t("quizLockedBody")}
                 </p>
               </div>
             </div>
@@ -347,16 +354,16 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
         {hasReleaseTime ? (
           <div className="mb-5 border-2 border-[#DDECE8] bg-[#F5FBF9] p-4">
             <p className="font-display text-2xl leading-none text-[#211F20]">
-              Release time is managed from the admin list
+              {t("releaseManagedTitle")}
             </p>
             <p className="mt-1 q-body text-[#211F20]">
-              Change the exact release time on the main admin page.
+              {t("releaseManagedBody")}
             </p>
           </div>
         ) : null}
 
         <div className="grid gap-5">
-          <FormField label="Quiz title" required>
+          <FormField label={t("quizTitle")} required>
             <input
               className="q-input h-12"
               disabled={!isDraftEditable}
@@ -365,7 +372,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
             />
           </FormField>
 
-          <FormField label="Description">
+          <FormField label={t("description")}>
             <textarea
               className="min-h-[140px] w-full border-2 border-[#211F20] bg-[#FFFAF2] p-3 q-body outline-none focus:border-[#FF3C38] disabled:opacity-60"
               disabled={!isDraftEditable}
@@ -375,7 +382,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
           </FormField>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <FormField label="Category">
+            <FormField label={t("category")}>
               <select
                 className="q-input h-12"
                 disabled={!isDraftEditable || categories.length === 0}
@@ -390,7 +397,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
               </select>
             </FormField>
 
-            <FormField label="Time limit" required>
+            <FormField label={t("timeLimit")} required>
               <div className="relative">
                 <Clock3 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F8F8F]" />
                 <input
@@ -405,15 +412,19 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
             </FormField>
           </div>
 
-          <FormField label="Thumbnail image">
+          <FormField label={t("thumbnailImage")}>
             <div className="grid gap-3 md:grid-cols-[220px_1fr]">
-              <ImagePreview label="Quiz thumbnail" value={thumbnailUrl} />
+              <ImagePreview
+                emptyLabel={t("noImageSelected")}
+                label={t("quizThumbnail")}
+                value={thumbnailUrl}
+              />
 
               <div className="grid content-start gap-3">
                 <input
                   className="q-input h-12"
                   disabled={!isDraftEditable}
-                  placeholder="Paste image URL or upload a file"
+                  placeholder={t("imageUrlPlaceholder")}
                   value={thumbnailUrl}
                   onChange={(event) => setThumbnailUrl(event.target.value)}
                 />
@@ -425,7 +436,11 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                   ].join(" ")}
                 >
                   <ImagePlus className="h-4 w-4 mr-1" />
-                  <span className="pt-1">{uploadingTarget === "thumbnail" ? "Uploading..." : "Upload image"}</span>
+                  <span className="pt-1">
+                    {uploadingTarget === "thumbnail"
+                      ? t("uploading")
+                      : t("uploadImage")}
+                  </span>
                   <input
                     className="sr-only"
                     accept="image/*"
@@ -445,10 +460,10 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="inline-flex bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
-                  Questions
+                  {t("questions")}
                 </p>
                 <p className="mt-2 font-display text-3xl leading-none text-[#211F20]">
-                  Edit question order
+                  {t("editQuestionOrder")}
                 </p>
               </div>
 
@@ -460,7 +475,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                   disabled={!isDraftEditable || questions.length < 2}
                 >
                   <Shuffle className="h-4 w-4 mr-1" />
-                  <span className="pl-1 pt-0.5">Shuffle</span>
+                  <span className="pl-1 pt-0.5">{t("shuffle")}</span>
                 </button>
 
                 <button
@@ -470,7 +485,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                   disabled={!isDraftEditable}
                 >
                   <FilePlus2 className="h-4 w-4" />
-                  <span className="pl-1 pt-0.5">Add question</span>
+                  <span className="pl-1 pt-0.5">{t("addQuestion")}</span>
                 </button>
               </div>
             </div>
@@ -483,7 +498,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="font-display text-2xl text-[#211F20]">
-                      Question {index + 1}
+                      {t("questionNumber", { number: index + 1 })}
                     </p>
 
                     <div className="flex flex-wrap gap-2">
@@ -494,7 +509,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable || index === 0}
                       >
                         <ArrowUp className="h-4 w-4" />
-                        <span className="pl-0.5 pt-1 pr-1">Up</span>
+                        <span className="pl-0.5 pt-1 pr-1">{t("up")}</span>
                       </button>
 
                       <button
@@ -504,7 +519,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable || index === questions.length - 1}
                       >
                         <ArrowDown className="h-4 w-4" />
-                        <span className="pl-0.5 pt-1 pr-1">Down</span>
+                        <span className="pl-0.5 pt-1 pr-1">{t("down")}</span>
                       </button>
 
                       <button
@@ -514,13 +529,13 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable || questions.length <= 1}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="pl-0.5 pt-1 pr-1">Remove</span>
+                        <span className="pl-0.5 pt-1 pr-1">{t("remove")}</span>
                       </button>
                     </div>
                   </div>
 
                   <div className="grid gap-4">
-                    <FormField label="Question text" required>
+                    <FormField label={t("questionText")} required>
                       <input
                         className="q-input h-12"
                         disabled={!isDraftEditable}
@@ -531,7 +546,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                       />
                     </FormField>
 
-                    <FormField label="Points" required>
+                    <FormField label={t("points")} required>
                       <input
                         className="q-input h-12"
                         disabled={!isDraftEditable}
@@ -546,7 +561,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
 
                     <div className="grid gap-3">
                       <p className="font-display text-2xl leading-none text-[#211F20]">
-                        Answers
+                        {t("answers")}
                       </p>
 
                       {question.answers.map((answer, answerIndex) => (
@@ -564,7 +579,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                                 setCorrectAnswer(question.id, answer.id)
                               }
                             />
-                            Correct
+                            {t("correct")}
                           </label>
 
                           <div className="grid gap-2">
@@ -577,12 +592,17 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                                   text: event.target.value,
                                 })
                               }
-                              placeholder={`Answer ${answerIndex + 1} text or image URL`}
+                              placeholder={t("answerPlaceholder", {
+                                number: answerIndex + 1,
+                              })}
                             />
 
                             {isImageUrl(answer.text) ? (
                               <ImagePreview
-                                label={`Answer ${answerIndex + 1}`}
+                                emptyLabel={t("noImageSelected")}
+                                label={t("answerImageLabel", {
+                                  number: answerIndex + 1,
+                                })}
                                 value={answer.text}
                               />
                             ) : null}
@@ -597,8 +617,8 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                             >
                               <ImagePlus className="h-4 w-4" />
                               <span className="pl-1 pt-0.5">{uploadingTarget === `${question.id}:${answer.id}`
-                                ? "Uploading..."
-                                : "Use image"}</span>
+                                ? t("uploading")
+                                : t("useImage")}</span>
                               <input
                                 className="sr-only"
                                 accept="image/*"
@@ -623,7 +643,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                             disabled={!isDraftEditable || question.answers.length <= 2}
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="pl-1 pt-0.5">Remove</span>
+                            <span className="pl-1 pt-0.5">{t("remove")}</span>
                           </button>
                         </div>
                       ))}
@@ -635,7 +655,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         disabled={!isDraftEditable}
                       >
                         <FilePlus2 className="h-4 w-4" />
-                        <span className="pl-1 pt-1">Add answer</span>
+                        <span className="pl-1 pt-1">{t("addAnswer")}</span>
                       </button>
                     </div>
                   </div>
@@ -656,12 +676,14 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
               disabled={!isDraftEditable || !isValid || isSubmitting}
             >
               <Save className="h-4 w-4" />
-              <span className="pl-1 pt-0.5">{isSubmitting ? "Saving..." : "Save changes"}</span>
+              <span className="pl-1 pt-0.5">
+                {isSubmitting ? t("saving") : t("saveChanges")}
+              </span>
             </button>
 
             <Link href={routes.quizDetail(quiz.id)} className="q-button q-button-secondary">
               <Eye className="h-4 w-4" />
-              <span className="pl-1 pt-0.5">Preview</span>
+              <span className="pl-1 pt-0.5">{t("preview")}</span>
             </Link>
           </div>
 
@@ -684,16 +706,16 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
           <ListChecks className="mb-5 h-10 w-10 text-[#006E5A]" />
 
           <p className="font-display text-[34px] leading-none text-[#211F20]">
-            Quiz summary
+            {t("quizSummary")}
           </p>
 
           <div className="my-5 h-[2px] bg-[#211F20]" />
 
           <div className="grid gap-3">
-            <SummaryItem label="Questions" value={`${questions.length}`} />
-            <SummaryItem label="Time limit" value={`${timeLimit} min`} />
-            <SummaryItem label="Created" value={quiz.createdAt} />
-            <SummaryItem label="Release time" value={quiz.publishAtLabel} />
+            <SummaryItem label={t("questions")} value={`${questions.length}`} />
+            <SummaryItem label={t("timeLimit")} value={`${timeLimit} min`} />
+            <SummaryItem label={t("created")} value={quiz.createdAt} />
+            <SummaryItem label={t("releaseTime")} value={quiz.publishAtLabel} />
           </div>
         </section>
       </aside>
@@ -733,6 +755,7 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
 }
 
 function StatusBadge({ status }: { status: AdminQuizDetail["status"] }) {
+  const t = useTranslations("admin.form");
   const label =
     status === "published"
       ? "published"
@@ -747,16 +770,24 @@ function StatusBadge({ status }: { status: AdminQuizDetail["status"] }) {
 
   return (
     <span className={`px-2 py-1 text-[12px] leading-4 ${classes[label]}`}>
-      {label}
+      {t(label)}
     </span>
   );
 }
 
-function ImagePreview({ label, value }: { label: string; value: string }) {
+function ImagePreview({
+  emptyLabel,
+  label,
+  value,
+}: {
+  emptyLabel: string;
+  label: string;
+  value: string;
+}) {
   if (!isImageUrl(value)) {
     return (
       <div className="flex min-h-[132px] items-center justify-center border-2 border-[#D7D0C4] bg-[#EBE4D8] p-4 text-center q-mini text-[#211F20]">
-        No image selected
+        {emptyLabel}
       </div>
     );
   }
@@ -795,42 +826,71 @@ function createQuestion(): EditableQuestion {
   };
 }
 
+type ValidationLabels = {
+  addAtLeastOneQuestion: string;
+  questionHasEmptyAnswers: (number: number) => string;
+  questionNeedsAnswers: (number: number) => string;
+  questionNeedsCorrect: (number: number) => string;
+  questionNeedsPoints: (number: number) => string;
+  questionNeedsTitle: (number: number) => string;
+  timeLimitInvalid: string;
+  titleRequired: string;
+};
+
+function createValidationLabels(
+  t: ReturnType<typeof useTranslations<"admin.form">>
+): ValidationLabels {
+  return {
+    addAtLeastOneQuestion: t("addAtLeastOneQuestion"),
+    questionHasEmptyAnswers: (number) =>
+      t("questionHasEmptyAnswers", { number }),
+    questionNeedsAnswers: (number) => t("questionNeedsAnswers", { number }),
+    questionNeedsCorrect: (number) => t("questionNeedsCorrect", { number }),
+    questionNeedsPoints: (number) => t("questionNeedsPoints", { number }),
+    questionNeedsTitle: (number) => t("questionNeedsTitle", { number }),
+    timeLimitInvalid: t("timeLimitInvalid"),
+    titleRequired: t("titleRequired"),
+  };
+}
+
 function getValidationErrors({
+  labels,
   title,
   timeLimit,
   questions,
 }: {
+  labels: ValidationLabels;
   title: string;
   timeLimit: string;
   questions: EditableQuestion[];
 }) {
   const errors: string[] = [];
   if (!title.trim()) {
-    errors.push("Title is required.");
+    errors.push(labels.titleRequired);
   }
   if (Number(timeLimit) <= 0) {
-    errors.push("Time limit must be at least 1 minute.");
+    errors.push(labels.timeLimitInvalid);
   }
   if (questions.length === 0) {
-    errors.push("Add at least one question.");
+    errors.push(labels.addAtLeastOneQuestion);
   }
 
   questions.forEach((question, index) => {
-    const label = `Question ${index + 1}`;
+    const number = index + 1;
     if (!question.title.trim()) {
-      errors.push(`${label} needs a title.`);
+      errors.push(labels.questionNeedsTitle(number));
     }
     if (Number(question.points) <= 0) {
-      errors.push(`${label} needs positive points.`);
+      errors.push(labels.questionNeedsPoints(number));
     }
     if (question.answers.length < 2) {
-      errors.push(`${label} needs at least 2 answers.`);
+      errors.push(labels.questionNeedsAnswers(number));
     }
     if (!question.answers.some((answer) => answer.isCorrect)) {
-      errors.push(`${label} needs a correct answer.`);
+      errors.push(labels.questionNeedsCorrect(number));
     }
     if (question.answers.some((answer) => !answer.text.trim())) {
-      errors.push(`${label} has empty answers.`);
+      errors.push(labels.questionHasEmptyAnswers(number));
     }
   });
 

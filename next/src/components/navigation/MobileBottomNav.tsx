@@ -5,12 +5,14 @@ import {
   LogIn,
   UserRound,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { routes } from "@/lib/navigation/routes";
 import { getSessionUser } from "@/lib/auth/server-auth";
 
 export async function MobileBottomNav() {
+  const t = await getTranslations("mobileNav");
   const user = await getSessionUser();
 
   const isLoggedIn = Boolean(user);
@@ -18,34 +20,34 @@ export async function MobileBottomNav() {
 
   const navItems = [
     {
-      label: "Home",
+      label: t("home"),
       href: routes.home,
       icon: Home,
     },
     {
-      label: "Quizzes",
+      label: t("quizzes"),
       href: routes.quizzes,
       icon: ListChecks,
     },
     isAdmin
       ? {
-          label: "Admin",
+          label: t("admin"),
           href: routes.admin,
           icon: LayoutDashboard,
         }
       : {
-          label: "Dashboard",
+          label: t("dashboard"),
           href: isLoggedIn ? routes.dashboard : routes.login,
           icon: LayoutDashboard,
         },
     isLoggedIn
       ? {
-          label: "Profile",
+          label: t("profile"),
           href: routes.dashboard,
           icon: UserRound,
         }
       : {
-          label: "Login",
+          label: t("login"),
           href: routes.login,
           icon: LogIn,
         },

@@ -7,25 +7,22 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
-import { ArrowRight, CheckCircle2, ChessKing, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 import { auth, googleProvider } from "@/lib/clients/firebase-client";
 import { routes } from "@/lib/navigation/routes";
-import { unauthorized } from "next/navigation";
 
 type LoginFormProps = {
   reason?: string;
   next?: string;
 };
 
-const reasonMessages: Record<string, string> = {
-  unauthorized: "Your account is not allowed to access that page.",
-};
-
 export default function LoginForm({ reason, next }: LoginFormProps) {
+  const t = useTranslations("login");
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -39,7 +36,11 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const isRegisterMode = mode === "register";
-  const errorTitle = isRegisterMode ? "Registration failed" : "Sign-in failed";
+  const errorTitle = isRegisterMode
+    ? t("registrationFailed")
+    : t("signInFailed");
+  const reasonMessage =
+    reason === "unauthorized" ? t("unauthorizedReason") : null;
 
   const startSession = async (idToken: string) => {
     const response = await fetch("/api/session", {
@@ -52,7 +53,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
 
     if (!response.ok) {
       const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error ?? "Unable to start session.");
+      throw new Error(payload?.error ?? t("unableToStartSession"));
     }
   };
 
@@ -75,7 +76,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
       await startSession(idToken);
       goAfterLogin();
     } catch (err) {
-      setError(getErrorMessage(err));
+      setError(getErrorMessage(err, t("genericError")));
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +94,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
       await startSession(idToken);
       goAfterLogin();
     } catch (err) {
-      setError(getErrorMessage(err));
+      setError(getErrorMessage(err, t("genericError")));
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +119,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
       await startSession(idToken);
       goAfterLogin();
     } catch (err) {
-      setError(getErrorMessage(err));
+      setError(getErrorMessage(err, t("genericError")));
     } finally {
       setIsLoading(false);
     }
@@ -141,42 +142,41 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
           </Link>
 
           <Link href={routes.home} className="q-button q-button-secondary">
-            Back home
+            {t("backHome")}
           </Link>
         </header>
 
         <section className="grid flex-1 gap-10 py-12 md:grid-cols-[1fr_0.92fr] md:items-center md:py-16">
           <div>
             <p className="mb-4 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Account access
+              {t("pageLabel")}
             </p>
 
             <h1 className="font-display text-[62px] leading-[0.9] text-[#211F20] md:text-[96px]">
-              Sign in.
-              <span className="block text-[#FF3C38]">Start solving.</span>
+              {t("heading1")}
+              <span className="block text-[#FF3C38]">{t("heading2")}</span>
             </h1>
 
             <p className="mt-6 max-w-xl q-body text-[#211F20]">
-              Log in to solve quizzes, save your attempts and access your
-              dashboard. Admin users get access to quiz management.
+              {t("subtitle")}
             </p>
 
             <div className="mt-8 grid gap-3 md:max-w-lg">
-              <InfoRow text="Solve published quizzes with your account." />
-              <InfoRow text="Keep your progress and results connected." />
-              <InfoRow text="Admin access appears automatically when allowed." />
+              <InfoRow text={t("info1")} />
+              <InfoRow text={t("info2")} />
+              <InfoRow text={t("info3")} />
             </div>
           </div>
 
           <div className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 shadow-[10px_10px_0_#EBE4D8] md:p-6">
             <div className="mb-5">
               <h2 className="font-display text-[42px] leading-none text-[#211F20]">
-                {isRegisterMode ? "Create account" : "Welcome back"}
+                {isRegisterMode ? t("createAccount") : t("welcomeBack")}
               </h2>
               <p className="mt-2 q-body text-[#211F20]">
                 {isRegisterMode
-                  ? "Register with email and password."
-                  : "Sign in with email or Google."}
+                  ? t("registerWithEmail")
+                  : t("signInWithEmail")}
               </p>
             </div>
 
@@ -192,7 +192,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
                     : "q-button-secondary",
                 ].join(" ")}
               >
-                Sign in
+                {t("signIn")}
               </button>
 
               <button
@@ -206,16 +206,16 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
                     : "q-button-secondary",
                 ].join(" ")}
               >
-                Register
+                {t("register")}
               </button>
             </div>
 
-            {reason && reasonMessages[reason] ? (
+            {reasonMessage ? (
               <div className="mb-5 border-2 border-[#FF3C38] bg-[#FFFAF2] p-4">
                 <p className="font-display text-2xl text-[#FF3C38]">
-                  Access restricted
+                  {t("accessRestricted")}
                 </p>
-                <p className="q-body text-[#211F20]">{reasonMessages[reason]}</p>
+                <p className="q-body text-[#211F20]">{reasonMessage}</p>
               </div>
             ) : null}
 
@@ -232,21 +232,21 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
               <form onSubmit={handleEmailRegister} className="grid gap-4">
                 <FormField
                   id="register-email"
-                  label="Email"
+                  label={t("emailLabel")}
                   type="email"
                   value={registerEmail}
                   onChange={setRegisterEmail}
-                  placeholder="you@example.com"
+                  placeholder={t("emailPlaceholder")}
                   icon="email"
                 />
 
                 <FormField
                   id="register-password"
-                  label="Password"
+                  label={t("passwordLabel")}
                   type="password"
                   value={registerPassword}
                   onChange={setRegisterPassword}
-                  placeholder="Create a password"
+                  placeholder={t("passwordPlaceholderNew")}
                   icon="password"
                 />
 
@@ -255,7 +255,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
                   className="q-button q-button-primary mt-2 w-full border-[#FF3C38] bg-[#FF3C38]"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Creating account..." : "Create account"}
+                  {isLoading ? t("creatingAccount") : t("createAccountButton")}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </form>
@@ -264,21 +264,21 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
                 <form onSubmit={handleEmailSignIn} className="grid gap-4">
                   <FormField
                     id="email"
-                    label="Email"
+                    label={t("emailLabel")}
                     type="email"
                     value={email}
                     onChange={setEmail}
-                    placeholder="you@example.com"
+                    placeholder={t("emailPlaceholder")}
                     icon="email"
                   />
 
                   <FormField
                     id="password"
-                    label="Password"
+                    label={t("passwordLabel")}
                     type="password"
                     value={password}
                     onChange={setPassword}
-                    placeholder="••••••••"
+                    placeholder={t("passwordPlaceholder")}
                     icon="password"
                   />
 
@@ -287,14 +287,14 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
                     className="q-button q-button-primary mt-2 w-full border-[#FF3C38] bg-[#FF3C38]"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Signing in..." : "Sign in with email"}
+                    {isLoading ? t("signingIn") : t("signInButton")}
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </form>
 
                 <div className="flex items-center gap-3">
                   <div className="h-[2px] flex-1 bg-[#EBE4D8]" />
-                  <span className="q-mini text-[#8F8F8F]">or</span>
+                  <span className="q-mini text-[#8F8F8F]">{t("or")}</span>
                   <div className="h-[2px] flex-1 bg-[#EBE4D8]" />
                 </div>
 
@@ -304,7 +304,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
                   className="q-button q-button-secondary w-full"
                   disabled={isLoading}
                 >
-                  Continue with Google
+                  {t("continueWithGoogle")}
                 </button>
               </div>
             )}
@@ -370,11 +370,11 @@ function FormField({
   );
 }
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) {
     return error.message;
   }
 
-  return "Something went wrong. Please try again.";
+  return fallback;
 }
 

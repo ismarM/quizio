@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Trophy } from "lucide-react";
 
 import { routes } from "@/lib/navigation/routes";
@@ -12,6 +13,7 @@ type QuizLeaderboardMiniProps = {
 };
 
 export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
+  const t = useTranslations("leaderboard");
   const { entries, isConnected } = useLeaderboard(quizId);
   const topEntries = entries.slice(0, 5);
   const isLoading = entries.length === 0 && isConnected;
@@ -22,19 +24,18 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
         <Trophy className="mb-6 h-12 w-12" strokeWidth={1.8} />
 
         <p className="font-display text-[48px] leading-[0.9]">
-          Compete on the leaderboard.
+          {t("competeHeading")}
         </p>
 
         <p className="mt-4 q-body">
-          Scores are public for this quiz. Higher score ranks first, with faster
-          completion used as a tie breaker later.
+          {t("competeBody")}
         </p>
 
         <Link
           href={routes.quizLeaderboard(quizId)}
           className="q-button mt-6 border-[#FFFAF2] bg-[#FFFAF2] text-[#211F20] hover:bg-[#FF3C38] hover:text-[#FFFAF2]"
         >
-          View full ranking
+          {t("viewFull")}
         </Link>
       </div>
 
@@ -42,14 +43,17 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Ranking
+              {t("heading")}
             </p>
             <div className="flex items-center gap-3">
               <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                Top results
+                {t("topResults")}
               </h2>
               {isConnected && (
-                <div className="h-3 w-3 animate-pulse rounded-full bg-[#006E5A]" title="Live" />
+                <div
+                  className="h-3 w-3 animate-pulse rounded-full bg-[#006E5A]"
+                  title={t("live")}
+                />
               )}
             </div>
           </div>
@@ -58,7 +62,7 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
             href={routes.quizLeaderboard(quizId)}
             className="q-button q-button-secondary hidden md:inline-flex"
           >
-            View all
+            {t("viewAll")}
           </Link>
         </div>
 
@@ -102,14 +106,14 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
                   </span>
 
                   <span className="font-display text-2xl text-[#006E5A]">
-                    {formatScore(item.achieved_points, item.max_points)}
+                    {formatScore(item.achieved_points, item.max_points, t("pts"))}
                   </span>
                 </div>
               );
             })
           ) : (
             <div className="py-8 text-center text-[#211F20] opacity-60">
-              No results yet
+              {t("noResults")}
             </div>
           )}
         </div>
@@ -118,8 +122,8 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
   );
 }
 
-function formatScore(achieved: number, max: number): string {
-  return `${Math.round(achieved)}/${Math.round(max)} pts`;
+function formatScore(achieved: number, max: number, pointsLabel: string): string {
+  return `${Math.round(achieved)}/${Math.round(max)} ${pointsLabel}`;
 }
 
 function getDisplayName(entry: LeaderboardEntryDTO): string {

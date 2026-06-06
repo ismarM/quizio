@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
@@ -24,6 +25,7 @@ type AdminQuizResultsPageProps = {
 export default async function AdminQuizResultsPage({
   params,
 }: AdminQuizResultsPageProps) {
+  const t = await getTranslations("admin");
   const user = await requireAuth();
 
   if (!user.isAdmin) {
@@ -45,7 +47,7 @@ export default async function AdminQuizResultsPage({
           >
             <Link href={routes.admin}>
               <ArrowLeft data-icon="inline-start" />
-              <span className="pt-[3px] pl-1">Back to admin</span>
+              <span className="pt-[3px] pl-1">{t("backToAdmin")}</span>
             </Link>
           </Button>
         </div>
@@ -53,15 +55,15 @@ export default async function AdminQuizResultsPage({
         <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-3 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Admin results
+              {t("adminResults")}
             </p>
 
             <h1 className="font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
-              Quiz attempts
+              {t("quizAttempts")}
             </h1>
 
             <p className="mt-4 max-w-2xl q-body text-[#211F20]">
-              Review all users who started or submitted this quiz.
+              {t("resultsSubtitle")}
             </p>
           </div>
         </div>

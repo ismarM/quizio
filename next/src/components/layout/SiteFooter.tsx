@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, Code2, MessageCircle, Mail, Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/navigation/routes";
 
 export function SiteFooter() {
+  const t = useTranslations("footer");
+
   return (
     <footer className="border-t border-[#D7D0C4] bg-[#F4EFE6]">
       <div className="q-container grid gap-8 py-8 md:grid-cols-[1.3fr_0.8fr_0.8fr_0.8fr_1.2fr] md:py-10">
@@ -16,31 +19,31 @@ export function SiteFooter() {
           </Link>
 
           <p className="mt-3 max-w-xs q-body text-[#211F20]">
-            Learn. Challenge. Grow. Quizzes for curious minds.
+            {t("tagline")}
           </p>
         </div>
 
         <FooterColumn
-          title="Navigate"
+          title={t("navigate")}
           links={[
-            { label: "Explore quizzes", href: routes.quizzes },
-            { label: "How it works", href: "/#how-it-works" },
-            { label: "Leaderboard", href: routes.leaderboard },
+            { label: t("links.exploreQuizzes"), href: routes.quizzes },
+            { label: t("links.howItWorks"), href: "/#how-it-works" },
+            { label: t("links.leaderboard"), href: routes.leaderboard },
           ]}
         />
 
         <FooterColumn
-          title="Info"
+          title={t("info")}
           links={[
-            { label: "About us", href: "/about" },
-            { label: "Help center", href: "/help" },
-            { label: "Terms of service", href: "/terms" },
-            { label: "Privacy policy", href: "/privacy" },
+            { label: t("links.about"), href: "/about" },
+            { label: t("links.help"), href: "/help" },
+            { label: t("links.terms"), href: "/terms" },
+            { label: t("links.privacy"), href: "/privacy" },
           ]}
         />
 
         <div>
-          <h3 className="font-display text-2xl text-[#211F20]">Connect</h3>
+          <h3 className="font-display text-2xl text-[#211F20]">{t("connect")}</h3>
           <p className="mt-2 q-body">hello@quizio.com</p>
 
           <div className="mt-4 flex gap-2">
@@ -60,13 +63,13 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h3 className="font-display text-2xl text-[#211F20]">Newsletter</h3>
-          <p className="mt-2 q-body">Get quiz tips and updates.</p>
+          <h3 className="font-display text-2xl text-[#211F20]">{t("newsletter")}</h3>
+          <p className="mt-2 q-body">{t("newsletterSubtitle")}</p>
 
           <div className="mt-4 grid grid-cols-[1fr_44px]">
             <input
               type="email"
-              placeholder="Enter your email"
+              placeholder={t("emailPlaceholder")}
               className="q-input h-11 border-r-0 bg-[#FFFAF2]"
             />
             <button className="flex h-11 items-center justify-center bg-[#006E5A] text-[#FFFAF2]">
@@ -78,7 +81,7 @@ export function SiteFooter() {
 
       <div className="border-t border-[#D7D0C4]">
         <div className="q-container py-4 q-mini text-[#211F20]">
-          © 2026 Quizio. All rights reserved.
+          {t("copyright")}
         </div>
       </div>
     </footer>

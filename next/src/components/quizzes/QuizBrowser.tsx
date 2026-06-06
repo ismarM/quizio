@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, Suspense } from "react";
 import {
   ChevronLeft,
@@ -31,20 +32,15 @@ type SortFilter =
   | "duration-desc"
   | "questions-desc";
 
-const durationOptions: { value: DurationFilter; label: string }[] = [
-  { value: "any", label: "Any duration" },
-  { value: "short", label: "10 min or less" },
-  { value: "medium", label: "11-20 min" },
-  { value: "long", label: "21+ min" },
-];
+const durationValues: DurationFilter[] = ["any", "short", "medium", "long"];
 
-const sortOptions: { value: SortFilter; label: string }[] = [
-  { value: "newest", label: "Newest" },
-  { value: "oldest", label: "Oldest" },
-  { value: "title-asc", label: "Title A-Z" },
-  { value: "duration-asc", label: "Shortest" },
-  { value: "duration-desc", label: "Longest" },
-  { value: "questions-desc", label: "Most questions" },
+const sortValues: SortFilter[] = [
+  "newest",
+  "oldest",
+  "title-asc",
+  "duration-asc",
+  "duration-desc",
+  "questions-desc",
 ];
 
 function parsePage(value: string | null) {
@@ -53,13 +49,13 @@ function parsePage(value: string | null) {
 }
 
 function parseDurationFilter(value: string | null): DurationFilter {
-  return durationOptions.some((option) => option.value === value)
+  return durationValues.some((option) => option === value)
     ? (value as DurationFilter)
     : "any";
 }
 
 function parseSortFilter(value: string | null): SortFilter {
-  return sortOptions.some((option) => option.value === value)
+  return sortValues.some((option) => option === value)
     ? (value as SortFilter)
     : "newest";
 }
@@ -89,6 +85,7 @@ export function QuizBrowser({ quizzes }: QuizBrowserProps) {
 }
 
 function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
+  const t = useTranslations("quizzes");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -246,6 +243,22 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     sortBy !== "newest",
   ].filter(Boolean).length;
 
+  const durationOptions: { value: DurationFilter; label: string }[] = [
+    { value: "any", label: t("durationAny") },
+    { value: "short", label: t("durationShort") },
+    { value: "medium", label: t("durationMedium") },
+    { value: "long", label: t("durationLong") },
+  ];
+
+  const sortOptions: { value: SortFilter; label: string }[] = [
+    { value: "newest", label: t("filterNewest") },
+    { value: "oldest", label: t("sortOldest") },
+    { value: "title-asc", label: t("sortTitleAsc") },
+    { value: "duration-asc", label: t("sortShortest") },
+    { value: "duration-desc", label: t("sortLongest") },
+    { value: "questions-desc", label: t("sortMostQuestions") },
+  ];
+
   return (
     <div className="flex flex-col gap-5">
       <div className="grid gap-3 md:grid-cols-[1fr_auto]">
@@ -253,7 +266,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--q-ink-muted)]" />
           <input
             className="q-input h-12 pl-12"
-            placeholder="Search quizzes, topics or keywords..."
+            placeholder={t("searchPlaceholder")}
             type="search"
             value={query}
             onChange={(event) => setNextQuery(event.target.value)}
@@ -266,7 +279,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
           className="q-button q-button-secondary h-12 gap-2"
         >
           <Filter className="h-4 w-4" />
-          Filters
+          {t("filters")}
           <span className="flex h-6 w-6 items-center justify-center bg-[var(--q-green)] q-mini text-[var(--q-on-accent)]">
             {activeFilterCount}
           </span>
@@ -276,22 +289,22 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
       {filtersOpen ? (
         <div className="grid gap-4 border border-[var(--q-muted-strong)] bg-[var(--q-muted)] p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
           <FilterSelect
-            label="Category"
+            label={t("filterCategory")}
             options={categoryOptions.map((item) => ({
               value: item,
-              label: item === "All" ? "All categories" : item,
+              label: item === "All" ? t("filterAllCategories") : item,
             }))}
             value={category}
             onChange={setNextCategory}
           />
           <FilterSelect
-            label="Duration"
+            label={t("filterDuration")}
             options={durationOptions}
             value={duration}
             onChange={setNextDuration}
           />
           <FilterSelect
-            label="Sort by"
+            label={t("filterSort")}
             options={sortOptions}
             value={sortBy}
             onChange={setNextSort}
@@ -303,29 +316,29 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
             className="flex h-10 items-center justify-center gap-2 q-body font-medium text-[var(--q-ink)] hover:text-[var(--q-red)] md:justify-start"
           >
             <X className="h-4 w-4" />
-            Clear all
+            {t("clearAll")}
           </button>
         </div>
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="q-body">
-          Showing{" "}
+          {t("showing")}{" "}
           <strong className="text-[var(--q-green)]">
             {visibleQuizzes.length}
           </strong>{" "}
-          of{" "}
+          {t("of")}{" "}
           <strong className="text-[var(--q-green)]">
             {filteredQuizzes.length}
           </strong>{" "}
-          quizzes
+          {t("quizzesCount", { count: filteredQuizzes.length })}
         </p>
 
         <div className="hidden gap-1 md:flex">
           <button
             type="button"
             onClick={() => setViewMode("grid")}
-            aria-label="Grid view"
+            aria-label={t("gridView")}
             className={[
               "flex h-9 w-9 items-center justify-center border border-[var(--q-muted-strong)]",
               viewMode === "grid"
@@ -339,7 +352,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            aria-label="List view"
+            aria-label={t("listView")}
             className={[
               "flex h-9 w-9 items-center justify-center border border-[var(--q-muted-strong)]",
               viewMode === "list"
@@ -367,10 +380,10 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         ) : (
           <div className="border-2 border-[var(--q-border)] bg-[var(--q-surface)] p-5 md:col-span-3 xl:col-span-4">
             <p className="font-display text-3xl leading-none text-[var(--q-ink)]">
-              No quizzes found
+              {t("noQuizzesFound")}
             </p>
             <p className="mt-2 q-body text-[var(--q-ink)]">
-              Adjust the search or filters to see more quizzes.
+              {t("adjustFilters")}
             </p>
           </div>
         )}

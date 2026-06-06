@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import {
   ArrowRight,
@@ -47,6 +48,7 @@ const categoryColorMap = {
 };
 
 export function QuizCard({ quiz, viewMode = "grid" }: QuizCardProps) {
+  const t = useTranslations("quizzes");
   const Icon =
     categoryIconMap[quiz.category as keyof typeof categoryIconMap] ??
     ListChecks;
@@ -106,18 +108,18 @@ export function QuizCard({ quiz, viewMode = "grid" }: QuizCardProps) {
         <div className="mt-4 grid grid-cols-2 gap-2 text-[#211F20]">
           <QuizMetaItem
             icon={<ListChecks className="h-4 w-4" />}
-            label="Questions"
+            label={t("questions")}
             value={`${quiz.questionCount}`}
           />
           <QuizMetaItem
             icon={<Clock3 className="h-4 w-4" />}
-            label="Time"
+            label={t("time")}
             value={`${quiz.timeLimitMinutes} min`}
           />
           <QuizMetaItem
             className="hidden md:grid md:col-span-2"
             icon={<CalendarDays className="h-4 w-4" />}
-            label="Opens"
+            label={t("opens")}
             value={quiz.opensAt}
           />
         </div>

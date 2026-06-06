@@ -16,6 +16,8 @@ type QuizDetailPageProps = {
   }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   const { id } = await params;
   let quiz;

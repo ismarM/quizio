@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Home, Languages, Pencil, Play, Save, SunMoon } from "lucide-react";
@@ -19,16 +20,6 @@ type DashboardProfileCardProps = {
   isAdmin: boolean;
   language: number;
   theme: number;
-};
-
-const languageLabels: Record<number, string> = {
-  0: "English",
-  1: "Slovenian",
-};
-
-const themeLabels: Record<number, string> = {
-  0: "Light",
-  1: "Dark",
 };
 
 function normalizeTheme(value: number) {
@@ -60,6 +51,7 @@ export function DashboardProfileCard({
   language,
   theme,
 }: DashboardProfileCardProps) {
+  const t = useTranslations("dashboard.profile");
   const router = useRouter();
   const initialTheme = normalizeTheme(theme);
   const initialLanguage = normalizeLanguage(language);
@@ -90,7 +82,7 @@ export function DashboardProfileCard({
 
     if (!trimmedName) {
       setStatus("error");
-      setMessage("Username is required.");
+      setMessage(t("usernameRequired"));
       return;
     }
 
@@ -140,16 +132,26 @@ export function DashboardProfileCard({
       setSavedLanguage(nextLanguage);
       setSelectedLanguage(nextLanguage);
       setStatus("saved");
-      setMessage("Profile updated.");
+      setMessage(t("profileUpdated"));
       applyTheme(nextTheme, true);
       router.refresh();
     } catch (error) {
       applyTheme(savedTheme);
       setSelectedTheme(savedTheme);
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Update failed.");
+      setMessage(error instanceof Error ? error.message : t("updateFailed"));
     }
   }
+
+  const themeLabels: Record<number, string> = {
+    0: t("light"),
+    1: t("dark"),
+  };
+
+  const languageLabels: Record<number, string> = {
+    0: t("english"),
+    1: t("slovenian"),
+  };
 
   return (
     <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 shadow-[6px_6px_0_var(--q-shadow)] md:p-6">
@@ -165,7 +167,7 @@ export function DashboardProfileCard({
             </h2>
             {isAdmin ? (
               <span className="bg-[var(--q-green)] px-2 py-1 q-mini font-bold uppercase text-[var(--q-on-accent)]">
-                Admin
+                {t("admin")}
               </span>
             ) : null}
           </div>
@@ -184,7 +186,7 @@ export function DashboardProfileCard({
             htmlFor="dashboard-username"
           >
             <Pencil className="h-4 w-4" />
-            Username
+            {t("username")}
           </label>
           <Input
             id="dashboard-username"
@@ -203,7 +205,7 @@ export function DashboardProfileCard({
           <label className="grid gap-2" htmlFor="dashboard-theme">
             <span className="flex items-center gap-2 q-mini font-bold uppercase text-[var(--q-green)]">
               <SunMoon className="h-4 w-4" />
-              Theme
+              {t("theme")}
             </span>
             <select
               id="dashboard-theme"
@@ -226,7 +228,7 @@ export function DashboardProfileCard({
           <label className="grid gap-2" htmlFor="dashboard-language">
             <span className="flex items-center gap-2 q-mini font-bold uppercase text-[var(--q-green)]">
               <Languages className="h-4 w-4" />
-              Language
+              {t("language")}
             </span>
             <select
               id="dashboard-language"
@@ -254,7 +256,7 @@ export function DashboardProfileCard({
           variant="outline"
         >
           <Save className="h-4 w-4" />
-          {status === "saving" ? "Saving..." : "Save profile"}
+          {status === "saving" ? t("saving") : t("saveProfile")}
         </Button>
 
         {message ? (
@@ -278,7 +280,7 @@ export function DashboardProfileCard({
         >
           <Link href={routes.quizzes}>
             <Play className="h-4 w-4" />
-            Explore quizzes
+            {t("exploreQuizzes")}
           </Link>
         </Button>
 
@@ -289,7 +291,7 @@ export function DashboardProfileCard({
         >
           <Link href={routes.home}>
             <Home className="h-4 w-4" />
-            Back home
+            {t("backHome")}
           </Link>
         </Button>
       </div>

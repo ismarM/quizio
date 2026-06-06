@@ -1,27 +1,29 @@
 import { BarChart3, PencilLine, Users } from "lucide-react";
-
-const features = [
-  {
-    title: "Create quizzes",
-    description: "Build questions, answers, points and time limits.",
-    icon: PencilLine,
-    color: "#FF3C38",
-  },
-  {
-    title: "Publish to users",
-    description: "Open quizzes at the right time and let users solve them.",
-    icon: Users,
-    color: "#006E5A",
-  },
-  {
-    title: "Track results",
-    description: "Show scores, attempts and public leaderboards.",
-    icon: BarChart3,
-    color: "#FF3C38",
-  },
-];
+import { useTranslations } from "next-intl";
 
 export function FeatureCards() {
+  const t = useTranslations("home");
+  const features = [
+    {
+      title: t("features.createTitle"),
+      description: t("features.createDesc"),
+      icon: PencilLine,
+      color: "#FF3C38",
+    },
+    {
+      title: t("features.publishTitle"),
+      description: t("features.publishDesc"),
+      icon: Users,
+      color: "#006E5A",
+    },
+    {
+      title: t("features.trackTitle"),
+      description: t("features.trackDesc"),
+      icon: BarChart3,
+      color: "#FF3C38",
+    },
+  ];
+
   return (
     <section
       id="how-it-works"

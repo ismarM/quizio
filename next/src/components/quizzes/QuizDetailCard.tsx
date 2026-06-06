@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   CalendarDays,
@@ -22,6 +23,7 @@ export function QuizDetailCard({
   isLoggedIn,
   resultSummary,
 }: QuizDetailCardProps) {
+  const t = useTranslations("quizDetail");
   const hasResult = Boolean(resultSummary);
 
   return (
@@ -32,7 +34,7 @@ export function QuizDetailCard({
           className="mb-5 inline-flex items-center gap-2 q-body text-[#211F20] hover:text-[#FF3C38]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to quizzes
+          {t("backToQuizzes")}
         </Link>
 
         {isImageUrl(quiz.image) ? (
@@ -57,7 +59,7 @@ export function QuizDetailCard({
               </p>
 
               <p className="mx-auto mt-3 max-w-md q-body text-[#211F20]">
-                Ready to test your knowledge? Start the quiz and beat the clock.
+                {t("readyLabel")}
               </p>
             </div>
           </div>
@@ -71,7 +73,7 @@ export function QuizDetailCard({
               {quiz.category}
             </span>
 
-            <span className="q-badge-green">Published</span>
+            <span className="q-badge-green">{t("published")}</span>
           </div>
 
           <h1 className="mt-4 font-display text-[58px] leading-[0.9] text-[#211F20] md:text-[92px]">
@@ -87,19 +89,19 @@ export function QuizDetailCard({
           <div className="grid gap-3 sm:grid-cols-2">
             <InfoBox
               icon={<ListChecks className="h-5 w-5" />}
-              label="Questions"
+              label={t("questionsLabel")}
               value={`${quiz.questionCount}`}
-              suffix="questions"
+              suffix={t("questionsSuffix")}
             />
             <InfoBox
               icon={<Clock3 className="h-5 w-5" />}
-              label="Time limit"
+              label={t("timeLimitLabel")}
               value={`${quiz.timeLimitMinutes}`}
-              suffix="minutes"
+              suffix={t("minutesSuffix")}
             />
             <InfoBox
               icon={<CalendarDays className="h-5 w-5" />}
-              label="Opens"
+              label={t("opensLabel")}
               value={quiz.opensAt}
               suffix=""
             />
@@ -110,25 +112,27 @@ export function QuizDetailCard({
           {hasResult ? (
             <div className="border-2 border-[#006E5A] bg-[#DDECE8] p-4">
               <p className="font-display text-2xl text-[#211F20]">
-                Completed
+                {t("completed")}
               </p>
               <p className="mt-1 q-body text-[#211F20]">
-                Score: <strong>{resultSummary?.scoreText}</strong> · {resultSummary?.percentage}%
+                {t("score")}: <strong>{resultSummary?.scoreText}</strong> · {resultSummary?.percentage}%
               </p>
               <div className="mt-3 grid gap-2 q-mini text-[#211F20]">
-                <span>Time: {resultSummary?.timeTaken}</span>
-                <span>Submitted: {resultSummary?.submittedAt}</span>
+                <span>{t("timeTaken")}: {resultSummary?.timeTaken}</span>
+                <span>{t("submitted")}: {resultSummary?.submittedAt}</span>
               </div>
             </div>
           ) : null}
 
           <div className="border-2 border-[#EBE4D8] bg-[#FFFAF2] p-4">
-            <p className="font-display text-2xl text-[#211F20]">Quiz rules</p>
+            <p className="font-display text-2xl text-[#211F20]">
+              {t("quizRules")}
+            </p>
 
             <div className="mt-3 grid gap-3 q-body text-[#211F20]">
-              <RuleItem text="Timer keeps running after the quiz starts." />
-              <RuleItem text="Answers are saved during the attempt." />
-              <RuleItem text="Results can appear on the leaderboard." />
+              <RuleItem text={t("ruleTimer")} />
+              <RuleItem text={t("ruleSaved")} />
+              <RuleItem text={t("ruleLeaderboard")} />
             </div>
           </div>
 
@@ -138,7 +142,7 @@ export function QuizDetailCard({
                 href={routes.attemptResult(quiz.id)}
                 className="q-button q-button-secondary h-14 w-full items-center justify-center"
               >
-                View result
+                {t("viewResult")}
               </Link>
             ) : (
               <Link
@@ -146,7 +150,7 @@ export function QuizDetailCard({
                 className="q-button q-button-primary h-14 w-full items-center justify-center gap-[3px] border-[#FF3C38] bg-[#FF3C38] text-lg"
               >
                 <Play className="h-6 w-6" />
-                Start quiz
+                {t("startQuiz")}
               </Link>
             )}
 
@@ -156,7 +160,7 @@ export function QuizDetailCard({
                 className="q-button q-button-secondary h-12 w-full opacity-60"
                 disabled
               >
-                Quiz already completed
+                {t("alreadyCompleted")}
               </button>
             ) : null}
           </div>

@@ -1,45 +1,43 @@
 import { Star } from "lucide-react";
-
-const testimonials = [
-  {
-    quote:
-      "Creating a quiz feels fast and clear. The admin flow focuses on the important things: questions, answers, time and results.",
-    name: "Admin user",
-    role: "Quiz creator",
-  },
-  {
-    quote:
-      "The solving experience is simple. I can see the question, choose an answer and continue without distractions.",
-    name: "Student user",
-    role: "Quiz solver",
-  },
-  {
-    quote:
-      "The platform has a clean structure and can grow into a real quiz module for larger applications.",
-    name: "Project reviewer",
-    role: "Feedback",
-  },
-];
+import { useTranslations } from "next-intl";
 
 export function TestimonialSection() {
+  const t = useTranslations("home");
+  const testimonials = [
+    {
+      quote: t("testimonials.t1quote"),
+      name: t("testimonials.t1name"),
+      role: t("testimonials.t1role"),
+    },
+    {
+      quote: t("testimonials.t2quote"),
+      name: t("testimonials.t2name"),
+      role: t("testimonials.t2role"),
+    },
+    {
+      quote: t("testimonials.t3quote"),
+      name: t("testimonials.t3name"),
+      role: t("testimonials.t3role"),
+    },
+  ];
+
   return (
     <section className="q-container pb-16 md:pb-24">
       <div className="border-2 border-[#211F20] bg-[#EBE4D8] p-5 md:p-8">
         <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr] md:items-end">
           <div>
             <p className="mb-3 inline-flex bg-[#FFFAF2] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Why Quizio
+              {t("whyLabel")}
             </p>
 
             <h2 className="font-display text-[48px] leading-[0.92] text-[#211F20] md:text-[76px]">
-              Clear for creators.
-              <span className="block text-[#FF3C38]">Simple for users.</span>
+              {t("whyHeading1")}
+              <span className="block text-[#FF3C38]">{t("whyHeading2")}</span>
             </h2>
           </div>
 
           <p className="max-w-xl q-body text-[#211F20] md:justify-self-end">
-            Quizio is designed around one simple flow: create a quiz, publish it,
-            solve it and understand the result.
+            {t("whySubtitle")}
           </p>
         </div>
 

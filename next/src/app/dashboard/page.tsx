@@ -6,6 +6,8 @@ import {
   ListChecks,
   Medal,
 } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -39,23 +41,27 @@ function formatTimeLeft(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function formatShortDate(value: string) {
+function toDateLocale(locale: string) {
+  return locale === "sl" ? "sl-SI" : "en-US";
+}
+
+function formatShortDate(value: string, locale: string, unknown: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return unknown;
   }
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(toDateLocale(locale), {
     month: "short",
     day: "numeric",
   }).format(date);
 }
 
-function formatAttemptDate(value: string) {
+function formatAttemptDate(value: string, locale: string, unknown: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return unknown;
   }
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(toDateLocale(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -72,6 +78,8 @@ function getScorePercent(submission: SubmissionSummary) {
 }
 
 export default async function DashboardPage() {
+  const t = await getTranslations("dashboard");
+  const locale = await getLocale();
   const user = await requireAuth();
 
   let profile: UserResponse["user"] | null = null;
@@ -114,7 +122,11 @@ export default async function DashboardPage() {
           attemptId: session.attempt.id,
           quizTitle,
           timeLeftSeconds: session.time_limit_seconds,
-          startedAt: formatShortDate(session.attempt.start_time),
+          startedAt: formatShortDate(
+            session.attempt.start_time,
+            locale,
+            t("unknown")
+          ),
         } satisfies OpenSessionView;
       })
     );
@@ -167,8 +179,8 @@ export default async function DashboardPage() {
   );
   const bestScore = bestSubmission ? getScorePercent(bestSubmission) : 0;
   const bestScoreDetail = bestSubmission
-    ? `Best on ${bestSubmission.quiz_title}`
-    : "No quiz yet";
+    ? t("bestOn", { quizTitle: bestSubmission.quiz_title })
+    : t("noQuizYet");
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -177,11 +189,10 @@ export default async function DashboardPage() {
       <section className="q-container pb-12 pt-7 md:pb-20 md:pt-10">
         <div className="mb-7">
           <h1 className="font-display text-[62px] leading-[0.86] text-[var(--q-ink)] md:text-[104px]">
-            Welcome back.
+            {t("heading")}
           </h1>
           <p className="mt-4 max-w-2xl text-[17px] leading-7 text-[var(--q-ink)]">
-            Track your quiz progress, continue attempts and discover new
-            quizzes.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -203,24 +214,28 @@ export default async function DashboardPage() {
             <section className="grid gap-4 md:grid-cols-3">
               <StatCard
                 icon={<ListChecks className="h-6 w-6" />}
-                label="Completed quizzes"
+                label={t("completedQuizzes")}
                 value={completedCount.toString()}
               />
               <StatCard
                 icon={<BarChart3 className="h-6 w-6" />}
-                label="Average score"
+                label={t("averageScore")}
                 value={`${averageScore}%`}
               />
               <StatCard
                 icon={<Medal className="h-6 w-6" />}
-                label="Best score"
+                label={t("bestScore")}
                 value={`${bestScore}%`}
                 detail={bestScoreDetail}
               />
             </section>
 
             <OpenSessionsPanel sessions={openSessions} />
-            <RecentAttemptsPanel submissions={submissions} />
+            <RecentAttemptsPanel
+              locale={locale}
+              submissions={submissions}
+              unknown={t("unknown")}
+            />
           </div>
         </div>
       </section>
@@ -231,6 +246,7 @@ export default async function DashboardPage() {
 }
 
 function ProgressCard({ completedCount }: { completedCount: number }) {
+  const t = useTranslations("dashboard");
   const milestone = Math.max(10, Math.ceil((completedCount + 1) / 10) * 10);
   const progress = Math.min(100, Math.round((completedCount / milestone) * 100));
 
@@ -241,17 +257,16 @@ function ProgressCard({ completedCount }: { completedCount: number }) {
       </div>
 
       <h2 className="font-display text-[44px] leading-[0.9] md:text-[52px]">
-        Keep improving.
+        {t("keepImproving")}
       </h2>
       <p className="mt-5 max-w-sm text-[17px] leading-7">
-        Your results help you see progress over time. Complete more quizzes to
-        build your profile history.
+        {t("keepImprovingBody")}
       </p>
 
       <div className="mt-8 border border-[var(--q-green-soft)] p-4">
         <div className="mb-3 flex items-center justify-between gap-3 text-[15px]">
-          <span>You&apos;re on a roll!</span>
-          <span>{completedCount} completed</span>
+          <span>{t("roll")}</span>
+          <span>{t("completedCount", { count: completedCount })}</span>
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-[var(--q-green-soft)]">
           <div
@@ -259,7 +274,9 @@ function ProgressCard({ completedCount }: { completedCount: number }) {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="mt-3 text-[15px]">Next milestone: {milestone} quizzes</p>
+        <p className="mt-3 text-[15px]">
+          {t("nextMilestone", { count: milestone })}
+        </p>
       </div>
     </section>
   );
@@ -314,16 +331,18 @@ function SectionTitle({
 }
 
 function OpenSessionsPanel({ sessions }: { sessions: OpenSessionView[] }) {
+  const t = useTranslations("dashboard");
+
   return (
     <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
-      <SectionTitle eyebrow="In progress" title="Open sessions" />
+      <SectionTitle eyebrow={t("inProgress")} title={t("openSessions")} />
       <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
 
       {sessions.length === 0 ? (
         <EmptyState
           icon={<Inbox className="h-8 w-8" />}
-          title="No active quiz sessions right now."
-          description="Start a quiz to see it here."
+          title={t("noActiveSessions")}
+          description={t("startQuizHistory")}
         />
       ) : (
         <div className="grid gap-3">
@@ -337,20 +356,22 @@ function OpenSessionsPanel({ sessions }: { sessions: OpenSessionView[] }) {
                   {session.quizTitle}
                 </p>
                 <p className="mt-1 q-mini text-[var(--q-ink-muted)]">
-                  Started {session.startedAt}
+                  {t("started", { date: session.startedAt })}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 md:justify-end">
                 <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--q-green)]">
                   <Clock3 className="h-4 w-4" />
-                  {formatTimeLeft(session.timeLeftSeconds)} limit
+                  {t("timeLimit", {
+                    time: formatTimeLeft(session.timeLeftSeconds),
+                  })}
                 </span>
                 <Link
                   href={routes.attempt(session.attemptId)}
                   className="q-button q-button-secondary"
                 >
-                  Continue
+                  {t("continue")}
                 </Link>
               </div>
             </article>
@@ -362,28 +383,34 @@ function OpenSessionsPanel({ sessions }: { sessions: OpenSessionView[] }) {
 }
 
 function RecentAttemptsPanel({
+  locale,
   submissions,
+  unknown,
 }: {
+  locale: string;
   submissions: SubmissionSummary[];
+  unknown: string;
 }) {
+  const t = useTranslations("dashboard");
+
   return (
     <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
-      <SectionTitle eyebrow="Activity" title="Recent attempts" />
+      <SectionTitle eyebrow={t("activity")} title={t("recentAttempts")} />
       <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
 
       {submissions.length === 0 ? (
         <EmptyState
           icon={<ListChecks className="h-8 w-8" />}
-          title="No recent attempts yet."
-          description="Start a quiz to build your history."
+          title={t("noRecentAttempts")}
+          description={t("startBuildHistory")}
         />
       ) : (
         <div className="overflow-hidden border border-[var(--q-muted-strong)]">
           <div className="hidden grid-cols-[minmax(0,1.2fr)_180px_130px_90px] border-b border-[var(--q-muted-strong)] bg-[var(--q-surface-alt)] px-4 py-3 q-mini font-bold uppercase text-[var(--q-ink)] md:grid">
-            <span>Quiz</span>
-            <span>Date</span>
-            <span>Status</span>
-            <span className="text-right">Score</span>
+            <span>{t("quiz")}</span>
+            <span>{t("date")}</span>
+            <span>{t("status")}</span>
+            <span className="text-right">{t("score")}</span>
           </div>
 
           {submissions.map((submission) => {
@@ -399,19 +426,19 @@ function RecentAttemptsPanel({
                     {submission.quiz_title}
                   </p>
                   <p className="mt-1 q-mini text-[var(--q-ink-muted)] md:hidden">
-                    {formatAttemptDate(submission.start_time)}
+                    {formatAttemptDate(submission.start_time, locale, unknown)}
                   </p>
                 </div>
 
                 <p className="hidden text-[13px] leading-5 text-[var(--q-ink-soft)] md:block">
-                  {formatAttemptDate(submission.start_time)}
+                  {formatAttemptDate(submission.start_time, locale, unknown)}
                 </p>
 
                 <Badge
                   className="w-fit rounded-none border-0 bg-[var(--q-green-soft)] px-2 py-1 q-mini font-bold uppercase text-[var(--q-green)]"
                   variant="secondary"
                 >
-                  Completed
+                  {t("completed")}
                 </Badge>
 
                 <div className="flex items-center justify-between gap-3 md:justify-end">

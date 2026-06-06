@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Archive, ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
@@ -14,6 +15,7 @@ import type { QuizListResponse } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export default async function ArchivedAdminQuizzesPage() {
+  const t = await getTranslations("admin");
   const user = await requireAuth();
 
   if (!user.isAdmin) {
@@ -30,21 +32,21 @@ export default async function ArchivedAdminQuizzesPage() {
         <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-3 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-              Admin archive
+              {t("adminArchive")}
             </p>
 
             <h1 className="font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
-              Archived quizzes
+              {t("archivedQuizzes")}
             </h1>
 
             <p className="mt-4 max-w-2xl q-body text-[#211F20]">
-              Review quizzes that were removed from the active publishing flow.
+              {t("archiveSubtitle")}
             </p>
           </div>
 
           <Link href={routes.admin} className="q-button q-button-secondary">
             <ArrowLeft className="h-4 w-4" />
-            Back to admin
+            {t("backToAdmin")}
           </Link>
         </div>
 
@@ -52,11 +54,11 @@ export default async function ArchivedAdminQuizzesPage() {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                Stored archive
+                {t("storedArchive")}
               </p>
 
               <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                Quiz archive
+                {t("quizArchive")}
               </h2>
             </div>
 

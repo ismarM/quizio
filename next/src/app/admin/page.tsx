@@ -8,6 +8,7 @@ import {
   Plus,
   UserRound,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
@@ -22,29 +23,29 @@ export const dynamic = "force-dynamic";
 
 const adminStats = [
   {
-    label: "Drafts",
-    shortLabel: "Drafts",
+    labelKey: "drafts",
+    shortLabelKey: "drafts",
     icon: FilePlus2,
     tone: "sand",
     metric: "drafts",
   },
   {
-    label: "Scheduled",
-    shortLabel: "Scheduled",
+    labelKey: "scheduled",
+    shortLabelKey: "scheduled",
     icon: CalendarClock,
     tone: "sand",
     metric: "scheduled",
   },
   {
-    label: "Published",
-    shortLabel: "Published",
+    labelKey: "published",
+    shortLabelKey: "published",
     icon: BarChart3,
     tone: "green",
     metric: "published",
   },
   {
-    label: "Archived / Locked",
-    shortLabel: "Archived",
+    labelKey: "archivedLocked",
+    shortLabelKey: "archived",
     icon: Archive,
     tone: "sand",
     metric: "archived",
@@ -52,6 +53,7 @@ const adminStats = [
 ] as const;
 
 export default async function AdminPage() {
+  const t = await getTranslations("admin");
   const user = await requireAuth();
 
   if (!user.isAdmin) {
@@ -92,7 +94,7 @@ export default async function AdminPage() {
               >
                 <Link href={routes.home}>
                   <Home className="h-4 w-4" />
-                  Back to homepage
+                  {t("backToHomepage")}
                 </Link>
               </Button>
             </div>
@@ -100,16 +102,15 @@ export default async function AdminPage() {
             <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
               <div>
                 <p className="mb-3 q-mini font-bold tracking-[0.18em] text-[#006E5A]">
-                  ADMIN DASHBOARD
+                  {t("dashboardLabel")}
                 </p>
 
                 <h1 className="font-display text-[46px] leading-[0.84] text-[#211F20] md:text-[72px] lg:text-[88px]">
-                  MANAGE QUIZZES
+                  {t("manageQuizzes")}
                 </h1>
 
                 <p className="mt-4 max-w-[470px] text-[15px] leading-6 text-[#211F20]">
-                  Create quizzes, publish content, review attempts and manage
-                  your quiz platform in one place.
+                  {t("subtitle")}
                 </p>
               </div>
 
@@ -119,7 +120,7 @@ export default async function AdminPage() {
               >
                 <Link href={routes.adminQuizNew}>
                   <Plus className="h-5 w-5" />
-                  Create quiz
+                  {t("createQuiz")}
                 </Link>
               </Button>
             </div>
@@ -131,7 +132,7 @@ export default async function AdminPage() {
                 return (
                   <article
                     className="grid min-h-[74px] grid-cols-[44px_1fr] items-center gap-3 border-2 border-[#211F20] bg-[#FFFDF8] p-3 transition duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_#EBE4D8] lg:min-h-[104px] lg:grid-cols-[56px_1fr] lg:p-5"
-                    key={stat.label}
+                    key={stat.labelKey}
                   >
                     <div
                       className={[
@@ -149,8 +150,8 @@ export default async function AdminPage() {
                         {stat.value}
                       </p>
                       <p className="mt-1 text-[12px] leading-4 text-[#211F20]">
-                        <span className="lg:hidden">{stat.shortLabel}</span>
-                        <span className="hidden lg:inline">{stat.label}</span>
+                        <span className="lg:hidden">{t(stat.shortLabelKey)}</span>
+                        <span className="hidden lg:inline">{t(stat.labelKey)}</span>
                       </p>
                     </div>
                   </article>
@@ -158,7 +159,7 @@ export default async function AdminPage() {
               })}
             </section>
 
-            <AdminQuizBrowser quizzes={quizzes} />
+          <AdminQuizBrowser quizzes={quizzes} />
           </div>
         </section>
       </div>
@@ -168,11 +169,13 @@ export default async function AdminPage() {
   );
 }
 
-function AdminMobileHeader() {
+async function AdminMobileHeader() {
+  const t = await getTranslations("admin");
+
   return (
     <header className="flex h-16 items-center justify-between border-b-2 border-[#211F20] px-5 lg:hidden">
       <Link
-        aria-label="Back to homepage"
+        aria-label={t("backToHomepage")}
         className="flex h-10 w-10 items-center justify-center text-[#211F20]"
         href={routes.home}
       >
@@ -190,12 +193,13 @@ function AdminMobileHeader() {
   );
 }
 
-function AdminMobileBottomNav() {
+async function AdminMobileBottomNav() {
+  const t = await getTranslations("admin");
   const items = [
-    { label: "Overview", href: routes.admin, icon: Home },
-    { label: "Drafts", href: `${routes.admin}?status=draft`, icon: FilePlus2 },
-    { label: "Archived", href: routes.adminArchivedQuizzes, icon: Archive },
-    { label: "Profile", href: routes.dashboard, icon: UserRound },
+    { label: t("overview"), href: routes.admin, icon: Home },
+    { label: t("drafts"), href: `${routes.admin}?status=draft`, icon: FilePlus2 },
+    { label: t("archived"), href: routes.adminArchivedQuizzes, icon: Archive },
+    { label: t("profile"), href: routes.dashboard, icon: UserRound },
   ];
 
   return (

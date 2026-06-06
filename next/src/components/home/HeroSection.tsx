@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check, Clock3 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/navigation/routes";
 
@@ -11,27 +12,28 @@ const answerOptions = [
 ];
 
 export function HeroSection() {
+  const t = useTranslations("home");
+
   return (
     <section className="q-container grid gap-10 pb-12 pt-8 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-16 md:pb-16 md:pt-14">
       <div>
 
         <h1 className="font-display text-[72px] leading-[0.88] text-[#211F20] sm:text-[84px] md:text-[118px]">
-          Create.
-          <span className="block text-[#FF3C38]">Challenge.</span>
+          {t("heroHeading1")}
+          <span className="block text-[#FF3C38]">{t("heroHeading2")}</span>
         </h1>
 
         <p className="mt-6 max-w-xl q-body text-[#211F20]">
-          Build timed quizzes, publish them to users, collect answers and show
-          results in a clean quiz experience.
+          {t("heroSubtitle")}
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link href={routes.login} className="q-button q-button-primary">
-            Get started
+            {t("getStarted")}
           </Link>
 
           <Link href={routes.quizzes} className="q-button q-button-secondary">
-            Explore quizzes
+            {t("exploreQuizzes")}
           </Link>
         </div>
       </div>

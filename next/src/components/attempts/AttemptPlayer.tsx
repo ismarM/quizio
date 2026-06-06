@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Clock3, Flag } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { buildProxyUrl, proxyFetchJson } from "@/lib/api/proxy-client";
@@ -28,6 +29,7 @@ export function AttemptPlayer({
   responses,
   initialTimeLeftSeconds,
 }: AttemptPlayerProps) {
+  const t = useTranslations("attempt");
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>(() => {
@@ -133,8 +135,8 @@ export function AttemptPlayer({
         method: "PATCH",
         body: payload,
       });
-    } catch (error: any) {
-      if (error?.message === "attempt_finished") {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === "attempt_finished") {
         return;
       }
       console.error("Failed to update attempt:", error);
@@ -156,7 +158,10 @@ export function AttemptPlayer({
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="q-mini text-[#8F8F8F]">
-                Question {currentIndex + 1} / {questions.length}
+                {t("questionLabel", {
+                  current: currentIndex + 1,
+                  total: questions.length,
+                })}
               </p>
               <h1 className="mt-1 font-display text-[36px] leading-none text-[#211F20] md:text-[48px]">
                 {quizTitle}
@@ -178,10 +183,10 @@ export function AttemptPlayer({
 
           <div className="mb-6 flex flex-wrap items-center gap-2">
             <span className="inline-flex bg-[#DDECE8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
-              Single choice
+              {t("singleChoice")}
             </span>
             <span className="inline-flex bg-[#EBE4D8] px-2 py-1 text-[12px] leading-4 text-[#211F20]">
-              {currentQuestion?.value ?? 0} points
+              {t("points", { count: currentQuestion?.value ?? 0 })}
             </span>
           </div>
 
@@ -191,7 +196,7 @@ export function AttemptPlayer({
             </h2>
           ) : (
             <h2 className="font-display text-[46px] leading-[0.95] text-[#211F20] md:text-[64px]">
-              No questions available.
+              {t("noQuestions")}
             </h2>
           )}
 
@@ -225,7 +230,11 @@ export function AttemptPlayer({
                     ) : null}
                   </span>
 
-                  <AnswerOptionContent value={option.title} />
+                  <AnswerOptionContent
+                    answerImageLabel={t("answerImage")}
+                    imageAnswerLabel={t("imageAnswer")}
+                    value={option.title}
+                  />
                 </button>
               );
             })
@@ -246,7 +255,7 @@ export function AttemptPlayer({
               ].join(" ")}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t("previous")}
           </button>
 
             {isLastQuestion ? (
@@ -256,7 +265,7 @@ export function AttemptPlayer({
                 className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
               >
                 <Flag className="h-4 w-4" />
-                Submit
+                {t("submit")}
               </button>
             ) : (
               <button
@@ -264,7 +273,7 @@ export function AttemptPlayer({
                 onClick={goNext}
                 className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
               >
-                Next
+                {t("next")}
                 <ChevronRight className="h-4 w-4" />
               </button>
             )}
@@ -274,15 +283,16 @@ export function AttemptPlayer({
         <aside className="grid content-start gap-4">
           <div className="border-2 border-[#211F20] bg-[#EBE4D8] p-5">
             <p className="font-display text-[38px] leading-none text-[#211F20]">
-              Attempt progress
+              {t("progressTitle")}
             </p>
 
             <div className="my-4 h-[2px] bg-[#211F20]" />
 
             <p className="q-body text-[#211F20]">
-              Answered{" "}
-              <strong className="text-[#006E5A]">{answeredCount}</strong> of{" "}
-              <strong>{questions.length}</strong> questions.
+              {t("answered")}{" "}
+              <strong className="text-[#006E5A]">{answeredCount}</strong>{" "}
+              {t("of")} <strong>{questions.length}</strong>{" "}
+              {t("questionsAnswered")}
             </p>
 
             <div className="mt-5 grid grid-cols-4 gap-2">
@@ -313,11 +323,10 @@ export function AttemptPlayer({
 
           <div className="border-2 border-[#211F20] bg-[#006E5A] p-5 text-[#FFFAF2]">
             <p className="font-display text-[38px] leading-none">
-              Timer keeps running.
+              {t("timerTitle")}
             </p>
             <p className="mt-3 q-body">
-              Closing the browser does not pause the quiz. Submit before the
-              time runs out.
+              {t("timerBody")}
             </p>
           </div>
         </aside>
@@ -326,7 +335,15 @@ export function AttemptPlayer({
   );
 }
 
-function AnswerOptionContent({ value }: { value: string }) {
+function AnswerOptionContent({
+  answerImageLabel,
+  imageAnswerLabel,
+  value,
+}: {
+  answerImageLabel: string;
+  imageAnswerLabel: string;
+  value: string;
+}) {
   if (!isImageUrl(value)) {
     return <span className="q-body text-[#211F20]">{value}</span>;
   }
@@ -334,12 +351,12 @@ function AnswerOptionContent({ value }: { value: string }) {
   return (
     <span className="grid flex-1 gap-2">
       <span
-        aria-label="Answer image"
+        aria-label={answerImageLabel}
         className="min-h-[160px] w-full border border-[#D7D0C4] bg-[#EBE4D8] bg-contain bg-center bg-no-repeat"
         role="img"
         style={{ backgroundImage: `url("${value}")` }}
       />
-      <span className="q-mini text-[#8F8F8F]">Image answer</span>
+      <span className="q-mini text-[#8F8F8F]">{imageAnswerLabel}</span>
     </span>
   );
 }
