@@ -11,8 +11,10 @@ import {
   Clock3,
   FilePlus2,
   ImagePlus,
+  LoaderCircle,
   Save,
   Shuffle,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 
@@ -26,6 +28,19 @@ type AdminQuizFormProps = {
 };
 
 type QuestionAnimation = "insert" | "reorder";
+type AiMode = "append" | "replace";
+
+type GeneratedQuestionsResponse = {
+  questions?: Array<{
+    title: string;
+    points: number;
+    answers: Array<{
+      text: string;
+      isCorrect: boolean;
+    }>;
+  }>;
+  error?: string;
+};
 
 export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const t = useTranslations("admin.form");
@@ -47,6 +62,11 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const [questionAnimations, setQuestionAnimations] = useState<
     Record<string, QuestionAnimation>
   >({});
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiCount, setAiCount] = useState("5");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiMode, setAiMode] = useState<AiMode>("append");
 
   const validationErrors = getValidationErrors({
     labels: createValidationLabels(t),
@@ -291,6 +311,76 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
     }
   }
 
+  async function generateWithAI() {
+    if (!aiPrompt.trim() || isGenerating) {
+      return;
+    }
+
+    setAiError(null);
+    setIsGenerating(true);
+
+    try {
+      const response = await fetch("/api/ai/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: aiPrompt.trim(),
+          quizTitle: title.trim() || undefined,
+          count: Math.min(Math.max(1, Number(aiCount) || 5), 20),
+        }),
+      });
+
+      const data = (await response.json()) as GeneratedQuestionsResponse;
+
+      if (!response.ok) {
+        throw new Error(data.error ?? t("aiGenerationFailed"));
+      }
+
+      const generated: DraftQuestion[] = (data.questions ?? []).map(
+        (question) => ({
+          id: createId(),
+          title: question.title,
+          points: String(question.points),
+          answers: question.answers.map((answer) => ({
+            id: createId(),
+            text: answer.text,
+            isCorrect: answer.isCorrect,
+          })),
+        })
+      );
+
+      if (generated.length === 0) {
+        throw new Error(t("aiNoQuestions"));
+      }
+
+      if (aiMode === "replace") {
+        setQuestions(generated);
+      } else {
+        setQuestions((current) => {
+          const nonEmpty = current.filter(
+            (question) =>
+              question.title.trim() !== "" ||
+              question.answers.some((answer) => answer.text.trim() !== "")
+          );
+
+          return [...nonEmpty, ...generated];
+        });
+      }
+
+      highlightQuestions(
+        generated.map((question) => question.id),
+        "insert"
+      );
+      setAiPrompt("");
+    } catch (error) {
+      setAiError(
+        error instanceof Error ? error.message : t("aiGenerationFailed")
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitError(null);
@@ -438,6 +528,97 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               </div>
             </div>
           </FormField>
+
+          <section className="border-2 border-[#006E5A] bg-[#DDECE8] p-4 shadow-[4px_4px_0_#BFD8D1]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center bg-[#006E5A] text-[#FFFAF2]">
+                <Sparkles className="h-5 w-5" />
+              </div>
+
+              <div>
+                <p className="font-display text-2xl leading-none text-[#211F20]">
+                  {t("aiTitle")}
+                </p>
+                <p className="mt-1 q-mini text-[#006E5A]">
+                  {t("aiSubtitle")}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              <FormField label={t("aiPromptLabel")}>
+                <textarea
+                  className="min-h-[88px] w-full border-2 border-[#006E5A] bg-[#FFFAF2] p-3 q-body outline-none focus:border-[#211F20] disabled:cursor-not-allowed disabled:opacity-60"
+                  value={aiPrompt}
+                  onChange={(event) => setAiPrompt(event.target.value)}
+                  placeholder={t("aiPromptPlaceholder")}
+                  disabled={isGenerating}
+                />
+              </FormField>
+
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                <FormField label={t("aiCountLabel")}>
+                  <input
+                    className="q-input h-10"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={aiCount}
+                    onChange={(event) => setAiCount(event.target.value)}
+                    disabled={isGenerating}
+                  />
+                </FormField>
+
+                <FormField label={t("aiModeLabel")}>
+                  <select
+                    className="q-input h-10"
+                    value={aiMode}
+                    onChange={(event) =>
+                      setAiMode(event.target.value as AiMode)
+                    }
+                    disabled={isGenerating}
+                  >
+                    <option value="append">{t("aiModeAppend")}</option>
+                    <option value="replace">{t("aiModeReplace")}</option>
+                  </select>
+                </FormField>
+
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => void generateWithAI()}
+                    disabled={!aiPrompt.trim() || isGenerating}
+                    className={[
+                      "q-button h-10 border-[#006E5A] bg-[#006E5A] text-[#FFFAF2] hover:bg-[#004D3D]",
+                      !aiPrompt.trim() || isGenerating
+                        ? "cursor-not-allowed opacity-50"
+                        : "",
+                    ].join(" ")}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                        <span className="pl-1 pt-0.5">
+                          {t("aiGenerating")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        <span className="pl-1 pt-0.5">
+                          {t("aiGenerate")}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {aiError ? (
+                <p className="q-mini text-[#FF3C38]">{aiError}</p>
+              ) : null}
+            </div>
+          </section>
 
           <section className="border-2 border-[#211F20] bg-white p-4 shadow-[4px_4px_0_#EBE4D8]">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -700,6 +881,10 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
             <ChecklistItem done={description.trim().length > 0} text={t("addDescription")} />
             <ChecklistItem done={Number(timeLimit) > 0} text={t("setTimeLimit")} />
             <ChecklistItem done={questions.length > 0} text={t("addQuestion")} />
+            <ChecklistItem
+              done={questions.some((question) => question.title.trim().length > 0)}
+              text={t("questionsReady")}
+            />
             <ChecklistItem done={false} text={t("publishWhenReady")} />
           </div>
         </section>
