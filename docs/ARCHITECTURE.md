@@ -111,6 +111,7 @@ A persistent goroutine that listens on the PostgreSQL `leaderboard_update` chann
 
 ---
 
+
 ### 2.3 PostgreSQL Database
 
 PostgreSQL is the single source of truth for all mutable state.
