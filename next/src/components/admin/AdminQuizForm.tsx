@@ -27,7 +27,7 @@ type AdminQuizFormProps = {
   categories: CategoryDTO[];
 };
 
-type QuestionAnimation = "insert" | "reorder";
+type QuestionAnimation = "insert" | "reorder" | "shuffle";
 type AiMode = "append" | "replace";
 
 type GeneratedQuestionsResponse = {
@@ -188,7 +188,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
       return next;
     });
 
-    highlightQuestions(animatedIds, "reorder");
+    highlightQuestions(animatedIds, "shuffle");
   }
 
   function addAnswer(questionId: string) {
@@ -662,6 +662,9 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                       : "",
                     questionAnimations[question.id] === "reorder"
                       ? "q-question-reorder"
+                      : "",
+                    questionAnimations[question.id] === "shuffle"
+                      ? "q-question-shuffle"
                       : "",
                   ].join(" ")}
                 >

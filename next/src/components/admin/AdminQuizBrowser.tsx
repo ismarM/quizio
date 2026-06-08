@@ -18,6 +18,7 @@ import {
   Search,
   Send,
   Users,
+  X,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -404,6 +405,7 @@ function AdminQuizActions({
     null
   );
   const [actionError, setActionError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isDraft = quiz.status === "draft";
   const isScheduled = quiz.status === "scheduled";
@@ -411,6 +413,31 @@ function AdminQuizActions({
   const isArchived = quiz.status === "archived";
   const canEdit = isDraft || isScheduled;
   const isPending = pendingAction !== null;
+
+  function setActionPanelOpen(open: boolean) {
+    setMenuOpen(open);
+    onMenuToggle?.(open);
+  }
+
+  function closeActionPanel() {
+    setActionPanelOpen(false);
+  }
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        onMenuToggle?.(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen, onMenuToggle]);
 
   async function runAction(
     action: PendingAction,
@@ -421,6 +448,7 @@ function AdminQuizActions({
 
     try {
       await request();
+      closeActionPanel();
       router.refresh();
     } catch (error) {
       const message =
@@ -491,87 +519,131 @@ function AdminQuizActions({
         </ActionButton>
       )}
 
-      <details
-        className="group relative z-[60] open:z-[250]"
-        onToggle={(event) => onMenuToggle?.(event.currentTarget.open)}
+      <button
+        aria-expanded={menuOpen}
+        aria-haspopup="dialog"
+        aria-label="Open quiz actions"
+        className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8]"
+        onClick={() => setActionPanelOpen(true)}
+        title="Open quiz actions"
+        type="button"
       >
-        <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8] [&::-webkit-details-marker]:hidden">
-          <MoreVertical className="h-5 w-5" />
-        </summary>
+        <MoreVertical className="h-5 w-5" />
+      </button>
 
-        <div className="absolute right-0 top-12 z-[260] grid w-[292px] gap-3 border-2 border-[#211F20] bg-[#FFFDF8] p-3 shadow-[8px_8px_0_#EBE4D8]">
-          {isDraft || isScheduled ? (
-            <>
-              <label className="grid gap-2">
-                <span className="q-mini text-[#211F20]">
-                  {t("exactReleaseTime")}
-                </span>
-                <Input
-                  className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[13px] shadow-none focus-visible:border-[#006E5A] focus-visible:ring-0"
-                  disabled={isPending}
-                  min={minPublishAt}
-                  type="datetime-local"
-                  value={scheduledAt}
-                  onChange={(event) => setScheduledAt(event.target.value)}
-                />
-              </label>
+      {menuOpen ? (
+        <div className="fixed inset-0 z-[500] flex items-end justify-center p-4 sm:items-center">
+          <button
+            aria-label="Close quiz actions"
+            className="absolute inset-0 bg-[#211F20]/35"
+            onClick={closeActionPanel}
+            type="button"
+          />
 
-              <Button
-                className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
-                disabled={isPending}
-                onClick={handleSchedulePublish}
-                type="button"
-                variant="outline"
-              >
-                <CalendarClock className="h-4 w-4" />
-                {pendingAction === "schedule"
-                  ? t("saving")
-                  : isScheduled
-                    ? t("updateTime")
-                    : t("schedule")}
-              </Button>
+          <div
+            aria-labelledby={`quiz-actions-${quiz.id}`}
+            aria-modal="true"
+            className="relative z-10 grid w-full max-w-[360px] gap-3 border-2 border-[#211F20] bg-[#FFFDF8] p-4 shadow-[8px_8px_0_#211F20]"
+            role="dialog"
+          >
+            <div className="flex items-start justify-between gap-3 border-b-2 border-[#EBE4D8] pb-3">
+              <div className="min-w-0">
+                <p
+                  className="font-display text-2xl leading-none text-[#211F20]"
+                  id={`quiz-actions-${quiz.id}`}
+                >
+                  {quiz.title}
+                </p>
+                <p className="mt-1 q-mini text-[#8F8F8F]">
+                  {getStatusLabel(quiz.status, t)}
+                </p>
+              </div>
 
-              <Button
-                className="q-button q-button-primary h-10 rounded-none border-[#006E5A] bg-[#006E5A] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
-                disabled={isPending}
-                onClick={handlePublishNow}
+              <button
+                aria-label="Close quiz actions"
+                className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:border-[#211F20] hover:bg-[#EBE4D8]"
+                onClick={closeActionPanel}
                 type="button"
               >
-                <Send className="h-4 w-4" />
-                {pendingAction === "publish-now"
-                  ? t("publishing")
-                  : t("publishNow")}
-              </Button>
-            </>
-          ) : (
-            <div className="border-2 border-[#D7D0C4] bg-[#EBE4D8] p-3">
-              <p className="q-mini text-[#006E5A]">
-                {isPublished ? t("published") : t("locked")}
-              </p>
-              <p className="mt-1 text-[13px] leading-5 text-[#211F20]">
-                {quiz.publishAtLabel}
-              </p>
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          )}
 
-          {!isArchived ? (
-            <Button
-              className="q-button q-button-secondary h-10 rounded-none border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:border-[#FF3C38] hover:text-[#FF3C38]"
-              disabled={isPending}
-              onClick={handleArchive}
-              type="button"
-              variant="outline"
-            >
-              <Archive className="h-4 w-4" />
-              {pendingAction === "archive" ? t("archiving") : t("archive")}
-            </Button>
-          ) : null}
+            <div className="grid gap-3">
+              {isDraft || isScheduled ? (
+                <>
+                  <label className="grid gap-2">
+                    <span className="q-mini text-[#211F20]">
+                      {t("exactReleaseTime")}
+                    </span>
+                    <Input
+                      className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[13px] shadow-none focus-visible:border-[#006E5A] focus-visible:ring-0"
+                      disabled={isPending}
+                      min={minPublishAt}
+                      type="datetime-local"
+                      value={scheduledAt}
+                      onChange={(event) => setScheduledAt(event.target.value)}
+                    />
+                  </label>
 
-          {actionError ? (
-            <p className="q-mini text-[#FF3C38]">{actionError}</p>
-          ) : null}
+                  <Button
+                    className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+                    disabled={isPending}
+                    onClick={handleSchedulePublish}
+                    type="button"
+                    variant="outline"
+                  >
+                    <CalendarClock className="h-4 w-4" />
+                    {pendingAction === "schedule"
+                      ? t("saving")
+                      : isScheduled
+                        ? t("updateTime")
+                        : t("schedule")}
+                  </Button>
+
+                  <Button
+                    className="q-button q-button-primary h-10 rounded-none border-[#006E5A] bg-[#006E5A] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
+                    disabled={isPending}
+                    onClick={handlePublishNow}
+                    type="button"
+                  >
+                    <Send className="h-4 w-4" />
+                    {pendingAction === "publish-now"
+                      ? t("publishing")
+                      : t("publishNow")}
+                  </Button>
+                </>
+              ) : (
+                <div className="border-2 border-[#D7D0C4] bg-[#EBE4D8] p-3">
+                  <p className="q-mini text-[#006E5A]">
+                    {isPublished ? t("published") : t("locked")}
+                  </p>
+                  <p className="mt-1 text-[13px] leading-5 text-[#211F20]">
+                    {quiz.publishAtLabel}
+                  </p>
+                </div>
+              )}
+
+              {!isArchived ? (
+                <Button
+                  className="q-button q-button-secondary h-10 rounded-none border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:border-[#FF3C38] hover:text-[#FF3C38]"
+                  disabled={isPending}
+                  onClick={handleArchive}
+                  type="button"
+                  variant="outline"
+                >
+                  <Archive className="h-4 w-4" />
+                  {pendingAction === "archive" ? t("archiving") : t("archive")}
+                </Button>
+              ) : null}
+
+              {actionError ? (
+                <p className="q-mini text-[#FF3C38]">{actionError}</p>
+              ) : null}
+            </div>
+          </div>
         </div>
-      </details>
+      ) : null}
     </div>
   );
 }

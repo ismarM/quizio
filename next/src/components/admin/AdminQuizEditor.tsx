@@ -45,6 +45,8 @@ type EditableQuestion = {
   answers: EditableAnswer[];
 };
 
+type QuestionAnimation = "insert" | "reorder" | "shuffle";
+
 type QuizMetadataPayload = {
   title: string;
   description?: string;
@@ -87,6 +89,9 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+  const [questionAnimations, setQuestionAnimations] = useState<
+    Record<string, QuestionAnimation>
+  >({});
 
   const validationErrors = getValidationErrors({
     labels: createValidationLabels(t),
@@ -96,8 +101,43 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   });
   const isValid = validationErrors.length === 0;
 
+  function highlightQuestions(ids: string[], animation: QuestionAnimation) {
+    if (ids.length === 0) {
+      return;
+    }
+
+    setQuestionAnimations((current) => {
+      const next = { ...current };
+      ids.forEach((id) => {
+        delete next[id];
+      });
+      return next;
+    });
+
+    window.requestAnimationFrame(() => {
+      setQuestionAnimations((current) => ({
+        ...current,
+        ...Object.fromEntries(ids.map((id) => [id, animation])),
+      }));
+
+      window.setTimeout(() => {
+        setQuestionAnimations((current) => {
+          const next = { ...current };
+          ids.forEach((id) => {
+            if (next[id] === animation) {
+              delete next[id];
+            }
+          });
+          return next;
+        });
+      }, 760);
+    });
+  }
+
   function addQuestion() {
-    setQuestions((current) => [...current, createQuestion()]);
+    const question = createQuestion();
+    setQuestions((current) => [...current, question]);
+    highlightQuestions([question.id], "insert");
   }
 
   function updateQuestion(id: string, updates: Partial<EditableQuestion>) {
@@ -113,6 +153,15 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   }
 
   function moveQuestion(id: string, direction: -1 | 1) {
+    const index = questions.findIndex((question) => question.id === id);
+    const nextIndex = index + direction;
+
+    if (index < 0 || nextIndex < 0 || nextIndex >= questions.length) {
+      return;
+    }
+
+    const animatedIds = [id, questions[nextIndex]?.id].filter(Boolean);
+
     setQuestions((current) => {
       const index = current.findIndex((question) => question.id === id);
       const nextIndex = index + direction;
@@ -126,9 +175,13 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       next.splice(nextIndex, 0, item);
       return next;
     });
+
+    highlightQuestions(animatedIds, "reorder");
   }
 
   function shuffleQuestions() {
+    const animatedIds = questions.map((question) => question.id);
+
     setQuestions((current) => {
       const next = [...current];
       for (let index = next.length - 1; index > 0; index -= 1) {
@@ -137,6 +190,8 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       }
       return next;
     });
+
+    highlightQuestions(animatedIds, "shuffle");
   }
 
   function addAnswer(questionId: string) {
@@ -494,7 +549,18 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
               {questions.map((question, index) => (
                 <article
                   key={question.id}
-                  className="border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 shadow-[3px_3px_0_#EBE4D8]"
+                  className={[
+                    "q-question-motion border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 shadow-[3px_3px_0_#EBE4D8]",
+                    questionAnimations[question.id] === "insert"
+                      ? "q-question-insert"
+                      : "",
+                    questionAnimations[question.id] === "reorder"
+                      ? "q-question-reorder"
+                      : "",
+                    questionAnimations[question.id] === "shuffle"
+                      ? "q-question-shuffle"
+                      : "",
+                  ].join(" ")}
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="font-display text-2xl text-[#211F20]">
