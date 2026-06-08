@@ -10,6 +10,10 @@ import {
   DashboardOpenSessionsPanel,
   type OpenSessionView,
 } from "@/components/dashboard/DashboardOpenSessionsPanel";
+import {
+  DashboardEmptyState,
+  DashboardSectionTitle,
+} from "@/components/dashboard/DashboardPanelPrimitives";
 import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
@@ -305,25 +309,6 @@ function StatCard({
   );
 }
 
-function SectionTitle({
-  eyebrow,
-  title,
-}: {
-  eyebrow: string;
-  title: string;
-}) {
-  return (
-    <div>
-      <span className="inline-flex bg-[var(--q-green-soft)] px-3 py-1 q-mini font-bold uppercase text-[var(--q-green)]">
-        {eyebrow}
-      </span>
-      <h2 className="mt-3 font-display text-[38px] leading-none text-[var(--q-ink)] md:text-[44px]">
-        {title}
-      </h2>
-    </div>
-  );
-}
-
 function RecentAttemptsPanel({
   locale,
   submissions,
@@ -337,11 +322,11 @@ function RecentAttemptsPanel({
 
   return (
     <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
-      <SectionTitle eyebrow={t("activity")} title={t("recentAttempts")} />
+      <DashboardSectionTitle eyebrow={t("activity")} title={t("recentAttempts")} />
       <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
 
       {submissions.length === 0 ? (
-        <EmptyState
+        <DashboardEmptyState
           icon={<ListChecks className="h-8 w-8" />}
           title={t("noRecentAttempts")}
           description={t("startBuildHistory")}
@@ -414,30 +399,4 @@ function calculateTimeLeftSeconds(startTime: string, timeLimitSeconds: number) {
 
   const elapsedSeconds = Math.floor((Date.now() - startDate.getTime()) / 1000);
   return Math.max(0, timeLimitSeconds - elapsedSeconds);
-}
-
-function EmptyState({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 py-8 text-center md:flex-row md:text-left">
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--q-green-soft)] text-[var(--q-green)]">
-        {icon}
-      </div>
-      <div>
-        <p className="text-[17px] font-semibold leading-6 text-[var(--q-ink)]">
-          {title}
-        </p>
-        <p className="mt-1 text-[15px] leading-6 text-[var(--q-ink)]">
-          {description}
-        </p>
-      </div>
-    </div>
-  );
 }

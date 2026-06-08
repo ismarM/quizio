@@ -32,5 +32,5 @@ const firebaseApp: FirebaseApp = getApps().length
 const auth = getAuth(firebaseApp);
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, firebaseApp, googleProvider };
+export { auth, googleProvider };
 

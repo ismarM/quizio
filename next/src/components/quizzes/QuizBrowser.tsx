@@ -16,6 +16,7 @@ import {
 
 import type { QuizListItem } from "@/lib/types";
 import { QuizCard } from "@/components/quizzes/QuizCard";
+import { buildUpdatedSearchParams } from "@/lib/navigation/search-params";
 
 const pageSize = 8;
 
@@ -167,27 +168,15 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      const newSearch = buildUpdatedSearchParams(searchParams, [
+        { name: "query", value: query },
+        { defaultValue: "All", name: "category", value: category },
+        { defaultValue: "any", name: "duration", value: duration },
+        { defaultValue: "newest", name: "sort", value: sortBy },
+        { defaultValue: 1, name: "page", value: currentPage },
+        { defaultValue: "grid", name: "view", value: viewMode },
+      ]);
 
-      if (query) params.set("query", query);
-      else params.delete("query");
-
-      if (category !== "All") params.set("category", category);
-      else params.delete("category");
-
-      if (duration !== "any") params.set("duration", duration);
-      else params.delete("duration");
-
-      if (sortBy !== "newest") params.set("sort", sortBy);
-      else params.delete("sort");
-
-      if (currentPage > 1) params.set("page", currentPage.toString());
-      else params.delete("page");
-
-      if (viewMode !== "grid") params.set("view", viewMode);
-      else params.delete("view");
-
-      const newSearch = params.toString();
       if (newSearch !== searchParams.toString()) {
         router.replace(newSearch ? `${pathname}?${newSearch}` : pathname, {
           scroll: false,

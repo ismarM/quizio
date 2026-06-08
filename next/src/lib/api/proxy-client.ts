@@ -24,7 +24,7 @@ function buildQueryString(query?: Record<string, QueryValue>) {
   return rendered ? `?${rendered}` : "";
 }
 
-export function buildProxyUrl(path: string, query?: Record<string, QueryValue>) {
+function buildProxyUrl(path: string, query?: Record<string, QueryValue>) {
   const normalized = normalizePath(path);
   const queryString = buildQueryString(query);
   return `/api/proxy/${normalized}${queryString}`;
@@ -40,7 +40,7 @@ function isJsonBody(body: unknown) {
   );
 }
 
-export async function proxyFetch(path: string, options: ProxyFetchOptions = {}) {
+async function proxyFetch(path: string, options: ProxyFetchOptions = {}) {
   const { query, headers, body, ...rest } = options;
   const url = buildProxyUrl(path, query);
   const requestHeaders = new Headers(headers);

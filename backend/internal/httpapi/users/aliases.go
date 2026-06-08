@@ -52,24 +52,12 @@ var (
 	writeJSON               = shared.WriteJSON
 	writeError              = shared.WriteError
 	decodeJSON              = shared.DecodeJSON
-	parseIDParam            = shared.ParseIDParam
 	nullStringPtr           = shared.NullStringPtr
-	nullTimePtr             = shared.NullTimePtr
 	nullTimeStringToSeconds = shared.NullTimeStringToSeconds
-	nullTimeToSeconds       = shared.NullTimeToSeconds
-	nullInt32Ptr            = shared.NullInt32Ptr
 	normalizeLimit          = shared.NormalizeLimit
 	parseQueryInt32         = shared.ParseQueryInt32
-	parseQueryBool          = shared.ParseQueryBool
 	isUniqueViolation       = shared.IsUniqueViolation
-	toNullInt32             = shared.ToNullInt32
 	toNullString            = shared.ToNullString
-	int32Ptr                = shared.Int32Ptr
 	UserFromContext         = shared.UserFromContext
-	quizFromQuizRow         = shared.QuizFromQuizRow
-	quizFromUpdateRow       = shared.QuizFromUpdateRow
-	quizFromPublishRow      = shared.QuizFromPublishRow
-	quizFromArchiveRow      = shared.QuizFromArchiveRow
-	quizFromListRow         = shared.QuizFromListRow
 	scoreAttempt            = shared.ScoreAttempt
 )

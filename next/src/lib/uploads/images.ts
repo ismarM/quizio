@@ -1,4 +1,4 @@
-export type UploadedImageResponse = {
+type UploadedImageResponse = {
   url: string;
 };
 

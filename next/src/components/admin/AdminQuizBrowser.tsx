@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import type { AdminQuizListItem } from "@/components/admin/data/quiz-mappers";
 import { cn } from "@/lib/utils";
 import { proxyFetchJson } from "@/lib/api/proxy-client";
+import { buildUpdatedSearchParams } from "@/lib/navigation/search-params";
 import { routes } from "@/lib/navigation/routes";
 import type { QuizResponse } from "@/lib/types";
 
@@ -97,18 +98,12 @@ function AdminQuizBrowserInner({
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      const newSearch = buildUpdatedSearchParams(searchParams, [
+        { name: "query", value: query },
+        { defaultValue: "all", name: "status", value: status },
+        { defaultValue: "all", name: "category", value: category },
+      ]);
 
-      if (query) params.set("query", query);
-      else params.delete("query");
-
-      if (status !== "all") params.set("status", status);
-      else params.delete("status");
-
-      if (category !== "all") params.set("category", category);
-      else params.delete("category");
-
-      const newSearch = params.toString();
       if (newSearch !== searchParams.toString()) {
         router.replace(`${pathname}?${newSearch}`, { scroll: false });
       }

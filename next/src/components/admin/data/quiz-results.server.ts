@@ -14,13 +14,13 @@ import type {
   AdminAttemptStatus,
 } from "@/components/admin/data/quiz-result-types";
 
-export const adminQuizResultEndpoints = {
+const adminQuizResultEndpoints = {
   attempts: (quizId: string | number) => `/api/quizzes/${quizId}/attempts/admin`,
   attemptReview: (quizId: string | number, userId: string | number) =>
     `/api/quizzes/${quizId}/attempt/${userId}`,
 };
 
-export async function loadAdminQuizAttemptList(quizId: string | number) {
+async function loadAdminQuizAttemptList(quizId: string | number) {
   const data = await serverFetchJson<QuizAttemptsResponse>(
     adminQuizResultEndpoints.attempts(quizId)
   );

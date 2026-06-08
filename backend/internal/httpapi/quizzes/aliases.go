@@ -56,7 +56,6 @@ var (
 	nullStringPtr           = shared.NullStringPtr
 	nullTimePtr             = shared.NullTimePtr
 	nullTimeStringToSeconds = shared.NullTimeStringToSeconds
-	nullTimeToSeconds       = shared.NullTimeToSeconds
 	nullInt32Ptr            = shared.NullInt32Ptr
 	normalizeLimit          = shared.NormalizeLimit
 	parseQueryInt32         = shared.ParseQueryInt32

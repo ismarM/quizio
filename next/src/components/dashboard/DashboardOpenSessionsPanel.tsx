@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 import { Clock3, Inbox } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import {
+  DashboardEmptyState,
+  DashboardSectionTitle,
+} from "@/components/dashboard/DashboardPanelPrimitives";
 import { Separator } from "@/components/ui/separator";
 import { routes } from "@/lib/navigation/routes";
 
@@ -41,11 +45,15 @@ export function DashboardOpenSessionsPanel({
 
   return (
     <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
-      <SectionTitle eyebrow={t("inProgress")} title={t("openSessions")} />
+      <DashboardSectionTitle
+        eyebrow={t("inProgress")}
+        title={t("openSessions")}
+      />
       <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
 
       {activeSessions.length === 0 ? (
-        <EmptyState
+        <DashboardEmptyState
+          icon={<Inbox className="h-8 w-8" />}
           title={t("noActiveSessions")}
           description={t("startQuizHistory")}
         />
@@ -84,49 +92,6 @@ export function DashboardOpenSessionsPanel({
         </div>
       )}
     </section>
-  );
-}
-
-function SectionTitle({
-  eyebrow,
-  title,
-}: {
-  eyebrow: string;
-  title: string;
-}) {
-  return (
-    <div>
-      <span className="inline-flex bg-[var(--q-green-soft)] px-3 py-1 q-mini font-bold uppercase text-[var(--q-green)]">
-        {eyebrow}
-      </span>
-      <h2 className="mt-3 font-display text-[38px] leading-none text-[var(--q-ink)] md:text-[44px]">
-        {title}
-      </h2>
-    </div>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 py-8 text-center md:flex-row md:text-left">
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--q-green-soft)] text-[var(--q-green)]">
-        <Inbox className="h-8 w-8" />
-      </div>
-      <div>
-        <p className="text-[17px] font-semibold leading-6 text-[var(--q-ink)]">
-          {title}
-        </p>
-        <p className="mt-1 text-[15px] leading-6 text-[var(--q-ink)]">
-          {description}
-        </p>
-      </div>
-    </div>
   );
 }
 
