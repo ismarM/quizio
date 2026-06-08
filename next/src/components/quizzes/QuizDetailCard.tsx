@@ -15,12 +15,14 @@ import { isImageUrl } from "@/lib/uploads/images";
 type QuizDetailCardProps = {
   quiz: QuizListItem;
   isLoggedIn: boolean;
+  hasOpenAttempt?: boolean;
   resultSummary?: QuizResultSummary;
 };
 
 export function QuizDetailCard({
   quiz,
   isLoggedIn,
+  hasOpenAttempt = false,
   resultSummary,
 }: QuizDetailCardProps) {
   const t = useTranslations("quizDetail");
@@ -150,7 +152,7 @@ export function QuizDetailCard({
                 className="q-button q-button-primary h-14 w-full items-center justify-center gap-[3px] border-[#FF3C38] bg-[#FF3C38] text-lg"
               >
                 <Play className="h-6 w-6" />
-                {t("startQuiz")}
+                {hasOpenAttempt ? t("continueQuiz") : t("startQuiz")}
               </Link>
             )}
 

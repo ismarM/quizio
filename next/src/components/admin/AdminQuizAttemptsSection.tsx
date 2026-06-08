@@ -151,21 +151,31 @@ function AdminQuizAttemptRow({
   const isSubmitted = attempt.status === "submitted";
 
   return (
-    <article className="grid gap-4 border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 transition hover:border-[#211F20] md:grid-cols-[minmax(0,1fr)_180px] md:items-center">
+    <article className="border-2 border-[#D7D0C4] bg-[#FFFDF8] p-4 transition hover:border-[#211F20]">
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center border-2 border-[#211F20] bg-[#EBE4D8] text-[#006E5A]">
-            <Mail className="h-4 w-4" />
-          </span>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="inline-flex h-9 w-9 items-center justify-center border-2 border-[#211F20] bg-[#EBE4D8] text-[#006E5A]">
+              <Mail className="h-4 w-4" />
+            </span>
 
-          <div className="min-w-0">
-            <p className="truncate font-display text-2xl leading-none text-[#211F20]">
-              {attempt.userEmail}
-            </p>
-            <p className="q-mini text-[#8F8F8F]">User #{attempt.userId}</p>
+            <div className="min-w-0">
+              <p className="truncate font-display text-2xl leading-none text-[#211F20]">
+                {attempt.userEmail}
+              </p>
+              <p className="q-mini text-[#8F8F8F]">User #{attempt.userId}</p>
+            </div>
+
+            <AttemptStatusBadge status={attempt.status} />
           </div>
 
-          <AttemptStatusBadge status={attempt.status} />
+          <Link
+            className="q-button q-button-primary flex h-10 shrink-0 items-center justify-center gap-1 border-[#FF3C38] bg-[#FF3C38] px-4"
+            href={routes.adminQuizAttempt(quizId, attempt.userId)}
+          >
+            <Eye className="h-4 w-4" />
+            <span className="pt-[3px]">Review</span>
+          </Link>
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
@@ -203,13 +213,6 @@ function AdminQuizAttemptRow({
         ) : null}
       </div>
 
-      <Link
-        className="q-button q-button-primary flex items-center justify-center gap-1 border-[#FF3C38] bg-[#FF3C38]"
-        href={routes.adminQuizAttempt(quizId, attempt.userId)}
-      >
-        <Eye className="h-4 w-4" />
-        <span className="pt-[3px]">Review</span>
-      </Link>
     </article>
   );
 }

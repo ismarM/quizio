@@ -28,6 +28,7 @@ type AdminQuizFormProps = {
 };
 
 type QuestionAnimation = "insert" | "reorder" | "shuffle";
+type AnswerAnimation = "ai";
 type AiMode = "append" | "replace";
 
 type GeneratedQuestionsResponse = {
@@ -61,6 +62,9 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [questionAnimations, setQuestionAnimations] = useState<
     Record<string, QuestionAnimation>
+  >({});
+  const [answerAnimations, setAnswerAnimations] = useState<
+    Record<string, AnswerAnimation>
   >({});
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiCount, setAiCount] = useState("5");
@@ -106,6 +110,39 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
           return next;
         });
       }, 560);
+    });
+  }
+
+  function highlightAnswers(ids: string[], animation: AnswerAnimation) {
+    if (ids.length === 0) {
+      return;
+    }
+
+    setAnswerAnimations((current) => {
+      const next = { ...current };
+      ids.forEach((id) => {
+        delete next[id];
+      });
+      return next;
+    });
+
+    window.requestAnimationFrame(() => {
+      setAnswerAnimations((current) => ({
+        ...current,
+        ...Object.fromEntries(ids.map((id) => [id, animation])),
+      }));
+
+      window.setTimeout(() => {
+        setAnswerAnimations((current) => {
+          const next = { ...current };
+          ids.forEach((id) => {
+            if (next[id] === animation) {
+              delete next[id];
+            }
+          });
+          return next;
+        });
+      }, 920);
     });
   }
 
@@ -371,6 +408,12 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
         generated.map((question) => question.id),
         "insert"
       );
+      highlightAnswers(
+        generated.flatMap((question) =>
+          question.answers.map((answer) => answer.id)
+        ),
+        "ai"
+      );
       setAiPrompt("");
     } catch (error) {
       setAiError(
@@ -423,7 +466,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <form
         className="border-2 border-[#211F20] bg-[#FFFAF2] p-4 shadow-[4px_4px_0_#EBE4D8] md:p-5"
         onSubmit={handleSubmit}
@@ -742,7 +785,12 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                       {question.answers.map((answer, answerIndex) => (
                         <div
                           key={answer.id}
-                          className="grid gap-3 border border-[#EBE4D8] bg-[#FFFAF2] p-3 md:grid-cols-[auto_1fr_auto] md:items-start"
+                          className={[
+                            "q-answer-motion grid gap-3 border border-[#EBE4D8] bg-[#FFFAF2] p-3 md:grid-cols-[auto_1fr_auto] md:items-start",
+                            answerAnimations[answer.id] === "ai"
+                              ? "q-answer-ai"
+                              : "",
+                          ].join(" ")}
                         >
                           <label className="flex items-center gap-2 q-mini text-[#211F20]">
                             <input

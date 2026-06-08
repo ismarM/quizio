@@ -1,21 +1,21 @@
-import Link from "next/link";
 import {
   BarChart3,
-  Clock3,
-  Inbox,
   ListChecks,
   Medal,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 
+import {
+  DashboardOpenSessionsPanel,
+  type OpenSessionView,
+} from "@/components/dashboard/DashboardOpenSessionsPanel";
 import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { mapQuizDtoToListItem } from "@/lib/mappers/quiz";
-import { routes } from "@/lib/navigation/routes";
 import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
 import { requireAuth } from "@/lib/auth/server-auth";
 import type {
@@ -30,19 +30,6 @@ export const dynamic = "force-dynamic";
 
 const DASHBOARD_SUBMISSIONS_LIMIT = 100;
 const RECENT_ATTEMPTS_LIMIT = 5;
-
-type OpenSessionView = {
-  attemptId: number;
-  quizTitle: string;
-  timeLeftSeconds: number;
-  startedAt: string;
-};
-
-function formatTimeLeft(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
 
 function toDateLocale(locale: string) {
   return locale === "sl" ? "sl-SI" : "en-US";
@@ -123,8 +110,12 @@ export default async function DashboardPage() {
 
         return {
           attemptId: session.attempt.id,
+          quizId: session.attempt.quiz_id,
           quizTitle,
-          timeLeftSeconds: session.time_limit_seconds,
+          timeLeftSeconds: calculateTimeLeftSeconds(
+            session.attempt.start_time,
+            session.time_limit_seconds
+          ),
           startedAt: formatShortDate(
             session.attempt.start_time,
             locale,
@@ -233,7 +224,7 @@ export default async function DashboardPage() {
               />
             </section>
 
-            <OpenSessionsPanel sessions={openSessions} />
+            <DashboardOpenSessionsPanel sessions={openSessions} />
             <RecentAttemptsPanel
               locale={locale}
               submissions={submissions.slice(0, RECENT_ATTEMPTS_LIMIT)}
@@ -333,58 +324,6 @@ function SectionTitle({
   );
 }
 
-function OpenSessionsPanel({ sessions }: { sessions: OpenSessionView[] }) {
-  const t = useTranslations("dashboard");
-
-  return (
-    <section className="border-2 border-[var(--q-muted-strong)] bg-[var(--q-surface)] p-5 md:p-6">
-      <SectionTitle eyebrow={t("inProgress")} title={t("openSessions")} />
-      <Separator className="my-4 h-[2px] bg-[var(--q-border)]" />
-
-      {sessions.length === 0 ? (
-        <EmptyState
-          icon={<Inbox className="h-8 w-8" />}
-          title={t("noActiveSessions")}
-          description={t("startQuizHistory")}
-        />
-      ) : (
-        <div className="grid gap-3">
-          {sessions.map((session) => (
-            <article
-              key={session.attemptId}
-              className="grid gap-4 border border-[var(--q-muted-strong)] bg-[var(--q-surface-alt)] p-4 md:grid-cols-[1fr_auto] md:items-center"
-            >
-              <div>
-                <p className="font-display text-2xl leading-none text-[var(--q-ink)]">
-                  {session.quizTitle}
-                </p>
-                <p className="mt-1 q-mini text-[var(--q-ink-muted)]">
-                  {t("started", { date: session.startedAt })}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 md:justify-end">
-                <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--q-green)]">
-                  <Clock3 className="h-4 w-4" />
-                  {t("timeLimit", {
-                    time: formatTimeLeft(session.timeLeftSeconds),
-                  })}
-                </span>
-                <Link
-                  href={routes.attempt(session.attemptId)}
-                  className="q-button q-button-secondary"
-                >
-                  {t("continue")}
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 function RecentAttemptsPanel({
   locale,
   submissions,
@@ -461,6 +400,20 @@ function RecentAttemptsPanel({
       )}
     </section>
   );
+}
+
+function calculateTimeLeftSeconds(startTime: string, timeLimitSeconds: number) {
+  if (timeLimitSeconds <= 0) {
+    return 0;
+  }
+
+  const startDate = new Date(startTime);
+  if (Number.isNaN(startDate.getTime())) {
+    return timeLimitSeconds;
+  }
+
+  const elapsedSeconds = Math.floor((Date.now() - startDate.getTime()) / 1000);
+  return Math.max(0, timeLimitSeconds - elapsedSeconds);
 }
 
 function EmptyState({

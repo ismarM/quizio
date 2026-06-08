@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import Script from "next/script";
+import { CookieDisclaimer } from "@/components/layout/CookieDisclaimer";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -50,6 +51,7 @@ export default async function RootLayout({
         </Script>
         <NextIntlClientProvider messages={messages}>
           {children}
+          <CookieDisclaimer />
         </NextIntlClientProvider>
       </body>
     </html>

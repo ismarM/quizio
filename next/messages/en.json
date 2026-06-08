@@ -41,7 +41,7 @@
       }
     },
     "terms": {
-      "eyebrow": "Mock legal page",
+      "eyebrow": "Legal",
       "title": "Terms of service",
       "intro": "These sample terms explain the expected use of Quizio. They are placeholder content for the project and not formal legal advice.",
       "sections": {
@@ -60,24 +60,42 @@
       }
     },
     "privacy": {
-      "eyebrow": "Mock legal page",
+      "eyebrow": "Legal",
       "title": "Privacy policy",
-      "intro": "This sample privacy policy describes the type of data a quiz platform like Quizio may use. It is placeholder content for the project.",
+      "intro": "This privacy policy explains what Quizio collects, why it is collected, and how users can contact us about their data.",
       "sections": {
         "data": {
-          "title": "Data we use",
-          "body": "Quizio may use account details, quiz attempts, scores and basic activity data to let users solve quizzes and view their history."
+          "title": "What we collect",
+          "body": "We collect account email, display name, language and theme preference, quiz attempts, selected answers, scores, timestamps, uploaded quiz images and admin-created quiz content."
         },
         "use": {
-          "title": "How it helps",
-          "body": "The data supports core features such as authentication, dashboards, results, leaderboards and admin review tools."
+          "title": "Why we collect it",
+          "body": "We use this data to authenticate users, keep quiz progress, calculate results, show dashboards and leaderboards, support admin review, and keep the service reliable."
         },
         "control": {
-          "title": "Your control",
-          "body": "Users should be able to contact the Quizio team about account or data questions at the email listed in the footer."
+          "title": "Contact",
+          "body": "For privacy questions or data requests, contact us at guiziomaster@gmail.com."
+        },
+        "retention": {
+          "title": "Retention",
+          "body": "We keep account and quiz records while the account or project is active. Finished attempts and leaderboard records are kept as long as they are needed for quiz history, review and scoring, unless deletion is requested and legally allowed."
+        },
+        "sharing": {
+          "title": "No third-party sale",
+          "body": "We do not sell personal data and do not share it with third-party actors for advertising. Data is only processed to provide Quizio features and infrastructure."
+        },
+        "rights": {
+          "title": "Your rights",
+          "body": "You may request access, correction, deletion, restriction or portability of your data, and you may object to certain processing where applicable."
         }
       }
     }
+  },
+  "cookies": {
+    "label": "Cookie notice",
+    "title": "Cookie notice",
+    "body": "Quizio uses necessary cookies for sign-in sessions and security. We do not use marketing cookies.",
+    "accept": "Accept"
   },
   "mobileNav": {
     "home": "Home",
@@ -160,6 +178,7 @@
     "timeLimitLabel": "Time limit",
     "opensLabel": "Opens",
     "startQuiz": "Start quiz",
+    "continueQuiz": "Continue quiz",
     "score": "Score",
     "timeTaken": "Time",
     "submitted": "Submitted",
@@ -315,6 +334,9 @@
     "preview": "Preview",
     "results": "Results",
     "edit": "Edit",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "unpublishToDraft": "Unpublish to draft",
     "locked": "Locked",
     "exactReleaseTime": "Exact release time",
     "saving": "Saving...",

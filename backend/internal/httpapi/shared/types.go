@@ -55,6 +55,7 @@ type UpdateQuizRequest struct {
 
 type PublishQuizRequest struct {
 	PublishDate *time.Time `json:"publish_date,omitempty"`
+	Unpublish   bool       `json:"unpublish,omitempty"`
 }
 
 type ArchiveQuizRequest struct {

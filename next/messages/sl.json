@@ -41,7 +41,7 @@
       }
     },
     "terms": {
-      "eyebrow": "Mock pravna stran",
+      "eyebrow": "Pravno",
       "title": "Pogoji uporabe",
       "intro": "Ti vzorčni pogoji opisujejo pričakovano uporabo Quizia. Besedilo je začasna vsebina za projekt in ni formalni pravni nasvet.",
       "sections": {
@@ -60,24 +60,42 @@
       }
     },
     "privacy": {
-      "eyebrow": "Mock pravna stran",
+      "eyebrow": "Pravno",
       "title": "Politika zasebnosti",
-      "intro": "Ta vzorčna politika zasebnosti opisuje podatke, ki jih lahko uporablja kvizna platforma, kot je Quizio. Besedilo je začasna projektna vsebina.",
+      "intro": "Ta politika zasebnosti pojasnjuje, katere podatke Quizio zbira, zakaj jih zbiramo in kako nas lahko uporabniki kontaktirajo glede svojih podatkov.",
       "sections": {
         "data": {
-          "title": "Podatki, ki jih uporabljamo",
-          "body": "Quizio lahko uporablja podatke računa, poskuse kvizov, rezultate in osnovno aktivnost, da uporabnikom omogoči reševanje kvizov in pregled zgodovine."
+          "title": "Kaj zbiramo",
+          "body": "Zbiramo e-pošto računa, prikazno ime, izbiro jezika in teme, poskuse kvizov, izbrane odgovore, rezultate, časovne oznake, naložene slike kvizov in vsebino kvizov, ki jo ustvarijo administratorji."
         },
         "use": {
-          "title": "Kako pomagajo",
-          "body": "Podatki podpirajo osnovne funkcije, kot so prijava, nadzorne plošče, rezultati, lestvice in administratorski pregled."
+          "title": "Zakaj jih zbiramo",
+          "body": "Podatke uporabljamo za prijavo uporabnikov, shranjevanje napredka, izračun rezultatov, prikaz nadzornih plošč in lestvic, administratorski pregled ter zanesljivo delovanje storitve."
         },
         "control": {
-          "title": "Tvoj nadzor",
-          "body": "Uporabniki se lahko glede vprašanj o računu ali podatkih obrnejo na ekipo Quizio prek e-pošte, navedene v footerju."
+          "title": "Kontakt",
+          "body": "Za vprašanja o zasebnosti ali zahteve glede podatkov nas kontaktiraj na guiziomaster@gmail.com."
+        },
+        "retention": {
+          "title": "Hramba",
+          "body": "Podatke računa in kvizov hranimo, dokler je račun ali projekt aktiven. Zaključene poskuse in zapise lestvic hranimo, dokler so potrebni za zgodovino kvizov, pregled in točkovanje, razen če je zahtevano brisanje in je to pravno dovoljeno."
+        },
+        "sharing": {
+          "title": "Brez prodaje tretjim osebam",
+          "body": "Osebnih podatkov ne prodajamo in jih ne delimo s tretjimi akterji za oglaševanje. Podatki se obdelujejo samo za zagotavljanje funkcij in infrastrukture Quizia."
+        },
+        "rights": {
+          "title": "Pravice uporabnikov",
+          "body": "Zahtevaš lahko dostop, popravek, izbris, omejitev ali prenos svojih podatkov ter ugovarjaš določeni obdelavi, kjer je to možno."
         }
       }
     }
+  },
+  "cookies": {
+    "label": "Obvestilo o piškotkih",
+    "title": "Piškotki",
+    "body": "Quizio uporablja nujne piškotke za prijavne seje in varnost. Marketinških piškotkov ne uporabljamo.",
+    "accept": "Sprejmi"
   },
   "mobileNav": {
     "home": "Domov",
@@ -160,6 +178,7 @@
     "timeLimitLabel": "Časovna omejitev",
     "opensLabel": "Odpre se",
     "startQuiz": "Začni kviz",
+    "continueQuiz": "Nadaljuj kviz",
     "score": "Točke",
     "timeTaken": "Čas",
     "submitted": "Oddano",
@@ -315,6 +334,9 @@
     "preview": "Predogled",
     "results": "Rezultati",
     "edit": "Uredi",
+    "publish": "Objavi",
+    "unpublish": "Prekliči objavo",
+    "unpublishToDraft": "Vrni v osnutek",
     "locked": "Zaklenjeno",
     "exactReleaseTime": "Točen čas objave",
     "saving": "Shranjujem...",

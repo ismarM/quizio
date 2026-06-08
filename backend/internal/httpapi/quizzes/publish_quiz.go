@@ -57,6 +57,26 @@ func (h *Handler) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
 		return
 	}
+	if state.IsArchived {
+		writeError(w, http.StatusConflict, "quiz_locked", "archived quiz is locked")
+		return
+	}
+
+	if req.Unpublish {
+		updated, err := h.queries.SetQuizPublishDate(r.Context(), sqlc.SetQuizPublishDateParams{
+			IDQuiz:      quizID,
+			PublishDate: sql.NullTime{Valid: false},
+		})
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "unpublish_quiz_failed", "failed to unpublish quiz")
+			return
+		}
+
+		quizDTO := quizFromPublishRow(updated)
+		writeJSON(w, http.StatusOK, QuizResponse{Quiz: quizDTO})
+		return
+	}
+
 	if isQuizPublishLocked(state, time.Now()) {
 		writeError(w, http.StatusConflict, "quiz_locked", "quiz is already published")
 		return

@@ -23,6 +23,18 @@ export default async function PrivacyPage() {
           title: t("sections.control.title"),
           body: t("sections.control.body"),
         },
+        {
+          title: t("sections.retention.title"),
+          body: t("sections.retention.body"),
+        },
+        {
+          title: t("sections.sharing.title"),
+          body: t("sections.sharing.body"),
+        },
+        {
+          title: t("sections.rights.title"),
+          body: t("sections.rights.body"),
+        },
       ]}
     />
   );

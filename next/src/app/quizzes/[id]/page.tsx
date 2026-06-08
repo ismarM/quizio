@@ -8,7 +8,12 @@ import { QuizLeaderboardMini } from "@/components/quizzes/QuizLeaderboardMini";
 import { mapQuizDtoToListItem } from "@/lib/mappers/quiz";
 import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
 import { getSessionUser } from "@/lib/auth/server-auth";
-import type { QuizResponse, SubmissionSummary, SubmissionsResponse } from "@/lib/types";
+import type {
+  OpenSessionsResponse,
+  QuizResponse,
+  SubmissionSummary,
+  SubmissionsResponse,
+} from "@/lib/types";
 
 type QuizDetailPageProps = {
   params: Promise<{
@@ -36,6 +41,9 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   const resultSummary = user
     ? await loadQuizResultSummary(quiz.id)
     : undefined;
+  const hasOpenAttempt = user && !resultSummary
+    ? await loadHasOpenAttempt(quiz.id)
+    : false;
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -52,6 +60,7 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
           <QuizDetailCard
             quiz={quiz}
             isLoggedIn={Boolean(user)}
+            hasOpenAttempt={hasOpenAttempt}
             resultSummary={resultSummary}
           />
           <QuizLeaderboardMini quizId={quiz.id} />
@@ -62,6 +71,18 @@ export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
       <MobileBottomNav />
     </main>
   );
+}
+
+async function loadHasOpenAttempt(quizId: number) {
+  try {
+    const sessions = await serverFetchJson<OpenSessionsResponse>(
+      "/api/users/me/open-sessions"
+    );
+    return sessions.attempts.some((session) => session.attempt.quiz_id === quizId);
+  } catch (error) {
+    console.error("Failed to load open quiz attempts:", error);
+    return false;
+  }
 }
 
 async function loadQuizResultSummary(quizId: number) {

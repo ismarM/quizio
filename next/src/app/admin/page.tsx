@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { mapQuizDtoToAdminListItem } from "@/components/admin/data/quiz-mappers";
 import { routes } from "@/lib/navigation/routes";
 import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
@@ -81,24 +82,10 @@ export default async function AdminPage() {
 
   return (
     <main className="q-page min-h-screen bg-[#FFFAF2] text-[#211F20]">
+      <SiteHeader />
       <div className="min-h-screen w-full bg-[#FFFAF2]">
         <section className="min-w-0 pb-24 lg:pb-0">
-          <AdminMobileHeader />
-
           <div className="q-container animate-in fade-in slide-in-from-bottom-4 pb-7 pt-5 duration-500 lg:py-9">
-            <div className="mb-5 hidden items-center justify-end lg:flex">
-              <Button
-                asChild
-                className="q-button q-button-secondary h-11 rounded-none px-5 transition duration-200 hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
-                variant="outline"
-              >
-                <Link href={routes.home}>
-                  <Home className="h-4 w-4" />
-                  {t("backToHomepage")}
-                </Link>
-              </Button>
-            </div>
-
             <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
               <div>
                 <p className="mb-3 q-mini font-bold tracking-[0.18em] text-[#006E5A]">
@@ -166,30 +153,6 @@ export default async function AdminPage() {
 
       <AdminMobileBottomNav />
     </main>
-  );
-}
-
-async function AdminMobileHeader() {
-  const t = await getTranslations("admin");
-
-  return (
-    <header className="flex h-16 items-center justify-between border-b-2 border-[#211F20] px-5 lg:hidden">
-      <Link
-        aria-label={t("backToHomepage")}
-        className="flex h-10 w-10 items-center justify-center text-[#211F20]"
-        href={routes.home}
-      >
-        <Home className="h-5 w-5" />
-      </Link>
-      <Link
-        className="font-display text-2xl leading-none text-[#006E5A]"
-        href={routes.admin}
-      >
-        QUIZIO
-      </Link>
-
-      <span aria-hidden="true" className="h-10 w-10" />
-    </header>
   );
 }
 

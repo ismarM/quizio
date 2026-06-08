@@ -20,17 +20,19 @@ export async function SiteHeader() {
 
   return (
     <header className="q-container flex items-center justify-between border-b-2 border-transparent py-5 md:py-7">
-      <Link
-        href={routes.home}
-        className="font-display text-5xl leading-none text-[var(--q-green)]"
-      >
-        Quizio
-      </Link>
-
-      <nav className="hidden items-center gap-8 text-[15px] leading-6 text-[var(--q-ink)] md:flex">
+      <div className="flex items-center gap-6 md:gap-8">
+        <Link
+          href={routes.home}
+          className="font-display text-5xl leading-none text-[var(--q-green)]"
+        >
+          Quizio
+        </Link>
         <Link href={routes.quizzes} className="hover:text-[var(--q-red)]">
           {t("exploreQuizzes")}
         </Link>
+      </div>
+
+      <nav className="hidden items-center gap-8 text-[15px] leading-6 text-[var(--q-ink)] md:flex">
         {!isLoggedIn ? (
           <Link href="/#how-it-works" className="hover:text-[var(--q-red)]">
             {t("howItWorks")}

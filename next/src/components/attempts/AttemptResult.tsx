@@ -23,7 +23,7 @@ export function AttemptResult({ result }: AttemptResultProps) {
     return (
         <section className="q-container pb-12 pt-6 md:pb-20 md:pt-10">
             <div className="grid gap-8">
-                <div className="border-2 border-[#211F20] bg-[#EBE4D8] p-5 shadow-[8px_8px_0_#211F20] md:p-8">
+                <div className="q-result-enter border-2 border-[#211F20] bg-[#EBE4D8] p-5 shadow-[8px_8px_0_#211F20] md:p-8">
                     <Link
                         href={routes.quizzes}
                         className="mb-6 inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
@@ -35,14 +35,14 @@ export function AttemptResult({ result }: AttemptResultProps) {
                     <div className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
                         <div className="flex min-h-[260px] items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2]">
                             <div className="text-center">
-                                <div className="mx-auto flex h-32 w-32 items-center justify-center bg-[#DDECE8]">
+                                <div className="q-result-trophy mx-auto flex h-32 w-32 items-center justify-center bg-[#DDECE8]">
                                 <Trophy
                                     className="h-20 w-20 text-[#006E5A]"
                                     strokeWidth={1.7}
                                 />
                                 </div>
 
-                                <p className="mt-6 font-display text-[64px] leading-none text-[#FF3C38]">
+                                <p className="q-result-score mt-6 font-display text-[64px] leading-none text-[#FF3C38]">
                                 {percentage}%
                                 </p>
 
@@ -91,22 +91,22 @@ export function AttemptResult({ result }: AttemptResultProps) {
                     </div>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-[0.8fr_1.2fr]">
-                    <aside className="border-2 border-[#211F20] bg-[#006E5A] p-6 text-[#FFFAF2]">
+                <div className="grid items-start gap-6 md:grid-cols-[minmax(220px,0.58fr)_1.42fr]">
+                    <aside className="border-2 border-[#211F20] bg-[#006E5A] p-5 text-[#FFFAF2] md:p-6">
                         <Trophy className="mb-6 h-12 w-12" strokeWidth={1.8} />
 
-                        <p className="font-display text-[48px] leading-[0.9]">
+                        <p className="font-display text-[38px] leading-[0.9] md:text-[44px]">
                             Nice attempt.
                         </p>
 
-                        <p className="mt-4 q-body">
+                        <p className="mt-4 text-[15px] leading-6">
                             Review your answers below. Correct answers earn points, incorrect
                             answers are shown clearly.
                         </p>
 
                         <div className="mt-6 border-2 border-[#FFFAF2] p-4">
                             <p className="q-mini">Submitted</p>
-                            <p className="font-display text-3xl">{summary.submittedAt}</p>
+                            <p className="font-display text-2xl">{summary.submittedAt}</p>
                         </div>
                     </aside>
 
@@ -128,7 +128,7 @@ export function AttemptResult({ result }: AttemptResultProps) {
 
                         <div className="mt-4 grid gap-3">
                             {summary.answers.map((answer, index) => (
-                                <AnswerReview key={answer.question} index={index} {...answer} />
+                                <AnswerReview key={`${answer.question}-${index}`} index={index} {...answer} />
                             ))}
                         </div>
                     </section>
@@ -165,7 +165,10 @@ function AnswerReview({
     points: number;
 }) {
     return (
-        <article className="border border-[#D7D0C4] bg-[#FFFAF2] p-4">
+        <article
+            className="q-result-answer border border-[#D7D0C4] bg-[#FFFAF2] p-4"
+            style={{ animationDelay: `${Math.min(index * 45, 360)}ms` }}
+        >
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="q-mini text-[#8F8F8F]">Question {index + 1}</p>

@@ -9,11 +9,9 @@ import {
   CalendarClock,
   ChevronRight,
   Clock3,
-  Eye,
   GripVertical,
   ListChecks,
   Lock,
-  MoreVertical,
   Pencil,
   Search,
   Send,
@@ -32,6 +30,7 @@ import type { QuizResponse } from "@/lib/types";
 
 type QuizPublishPayload = {
   publish_date?: string;
+  unpublish?: boolean;
 };
 
 type StatusFilter = "all" | AdminQuizListItem["status"];
@@ -75,6 +74,9 @@ function AdminQuizBrowserInner({
   );
   const [category, setCategory] = useState(
     () => searchParams.get("category") || "all"
+  );
+  const [activeActionQuizId, setActiveActionQuizId] = useState<number | null>(
+    null
   );
 
   const statusOptions = archivedView ? archivedStatuses : activeStatuses;
@@ -220,7 +222,14 @@ function AdminQuizBrowserInner({
       <div className="grid gap-2 p-4 lg:gap-3 lg:p-6 lg:pt-5">
         {filteredQuizzes.length > 0 ? (
           filteredQuizzes.map((quiz) => (
-            <AdminQuizCard key={quiz.id} quiz={quiz} />
+            <AdminQuizCard
+              actionMenuActive={activeActionQuizId !== null}
+              key={quiz.id}
+              onActionMenuToggle={(open) =>
+                setActiveActionQuizId(open ? quiz.id : null)
+              }
+              quiz={quiz}
+            />
           ))
         ) : (
           <div className="border-2 border-[#211F20] bg-[#FFFAF2] p-5">
@@ -272,19 +281,51 @@ function SelectFilter({
   );
 }
 
-function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
+function AdminQuizCard({
+  actionMenuActive,
+  onActionMenuToggle,
+  quiz,
+}: {
+  actionMenuActive: boolean;
+  onActionMenuToggle: (open: boolean) => void;
+  quiz: AdminQuizListItem;
+}) {
   const t = useTranslations("admin");
+  const router = useRouter();
   const statusTone = getStatusTone(quiz.status);
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const previewHref =
+    quiz.status === "published"
+      ? routes.quizDetail(quiz.id)
+      : routes.adminQuizDetail(quiz.id);
+
+  function openPreview() {
+    router.push(previewHref);
+  }
 
   return (
     <article
       className={cn(
-        "relative overflow-visible border-2 border-[#D7D0C4] bg-[#FFFAF2] transition duration-200 hover:-translate-y-0.5 hover:border-[#211F20] hover:shadow-[4px_4px_0_#EBE4D8]",
+        "relative overflow-visible border-2 border-[#D7D0C4] bg-[#FFFAF2] transition duration-200",
+        actionMenuActive
+          ? "border-[#D7D0C4]"
+          : "hover:-translate-y-0.5 hover:border-[#211F20] hover:shadow-[4px_4px_0_#EBE4D8]",
         isActionMenuOpen
           ? "z-[200] shadow-[4px_4px_0_#EBE4D8]"
-          : "z-0 hover:z-20"
+          : actionMenuActive
+            ? "z-0"
+            : "z-0 hover:z-20"
       )}
+      onClick={openPreview}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openPreview();
+        }
+      }}
+      aria-label={`${t("preview")} ${quiz.title}`}
+      role="link"
+      tabIndex={0}
     >
       <div className="hidden min-h-[118px] grid-cols-[34px_minmax(220px,1.35fr)_minmax(210px,250px)_minmax(130px,150px)_minmax(220px,250px)] overflow-visible lg:grid">
         <div
@@ -336,7 +377,13 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
           <StatusMarker status={quiz.status} />
         </div>
 
-        <AdminQuizActions quiz={quiz} onMenuToggle={setIsActionMenuOpen} />
+        <AdminQuizActions
+          quiz={quiz}
+          onMenuToggle={(open) => {
+            setIsActionMenuOpen(open);
+            onActionMenuToggle(open);
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-[24px_minmax(0,1fr)_40px] lg:hidden">
@@ -367,11 +414,8 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
 
         <Link
           className="flex items-center justify-center border-l-2 border-[#EBE4D8] transition hover:bg-[#EBE4D8]"
-          href={
-            quiz.status === "draft" || quiz.status === "scheduled"
-              ? routes.adminQuizDetail(quiz.id)
-              : routes.adminQuizResults(quiz.id)
-          }
+          href={previewHref}
+          onClick={(event) => event.stopPropagation()}
         >
           {quiz.status === "published" ? (
             <span className="h-2.5 w-2.5 rounded-full bg-[#12A05C]" />
@@ -386,7 +430,7 @@ function AdminQuizCard({ quiz }: { quiz: AdminQuizListItem }) {
   );
 }
 
-type PendingAction = "publish-now" | "schedule" | "archive";
+type PendingAction = "publish-now" | "schedule" | "archive" | "unpublish";
 
 function AdminQuizActions({
   quiz,
@@ -490,17 +534,27 @@ function AdminQuizActions({
     );
   }
 
+  function handleUnpublish() {
+    void runAction("unpublish", () => unpublishQuiz(quiz));
+  }
+
   return (
-    <div className="relative flex items-center justify-center gap-3 border-l-2 border-[#EBE4D8] px-4">
-      {isPublished ? (
-        <ActionLink href={routes.quizDetail(quiz.id)} label={t("preview")}>
-          <Eye className="h-5 w-5" />
-        </ActionLink>
-      ) : (
-        <ActionButton disabled label={t("preview")}>
-          <Eye className="h-5 w-5" />
-        </ActionButton>
-      )}
+    <div
+      className="relative flex items-center justify-center gap-3 border-l-2 border-[#EBE4D8] px-4"
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      <button
+        aria-expanded={menuOpen}
+        aria-haspopup="dialog"
+        aria-label={isPublished ? t("unpublish") : t("publish")}
+        className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8]"
+        onClick={() => setActionPanelOpen(true)}
+        title={isPublished ? t("unpublish") : t("publish")}
+        type="button"
+      >
+        <Send className="h-5 w-5" />
+      </button>
 
       <ActionLink href={routes.adminQuizResults(quiz.id)} label={t("results")}>
         <Users className="h-5 w-5" />
@@ -519,17 +573,22 @@ function AdminQuizActions({
         </ActionButton>
       )}
 
-      <button
-        aria-expanded={menuOpen}
-        aria-haspopup="dialog"
-        aria-label="Open quiz actions"
-        className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8]"
-        onClick={() => setActionPanelOpen(true)}
-        title="Open quiz actions"
-        type="button"
-      >
-        <MoreVertical className="h-5 w-5" />
-      </button>
+      {!isArchived ? (
+        <button
+          aria-label={t("archive")}
+          className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#FF3C38] hover:bg-[#EBE4D8] hover:text-[#FF3C38] disabled:cursor-not-allowed disabled:opacity-55"
+          disabled={isPending}
+          onClick={handleArchive}
+          title={t("archive")}
+          type="button"
+        >
+          <Archive className="h-5 w-5" />
+        </button>
+      ) : (
+        <ActionButton disabled label={t("archived")}>
+          <Archive className="h-5 w-5" />
+        </ActionButton>
+      )}
 
       {menuOpen ? (
         <div className="fixed inset-0 z-[500] flex items-end justify-center p-4 sm:items-center">
@@ -613,6 +672,19 @@ function AdminQuizActions({
                       : t("publishNow")}
                   </Button>
                 </>
+              ) : isPublished ? (
+                <Button
+                  className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+                  disabled={isPending}
+                  onClick={handleUnpublish}
+                  type="button"
+                  variant="outline"
+                >
+                  <Lock className="h-4 w-4" />
+                  {pendingAction === "unpublish"
+                    ? t("saving")
+                    : t("unpublishToDraft")}
+                </Button>
               ) : (
                 <div className="border-2 border-[#D7D0C4] bg-[#EBE4D8] p-3">
                   <p className="q-mini text-[#006E5A]">
@@ -623,19 +695,6 @@ function AdminQuizActions({
                   </p>
                 </div>
               )}
-
-              {!isArchived ? (
-                <Button
-                  className="q-button q-button-secondary h-10 rounded-none border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:border-[#FF3C38] hover:text-[#FF3C38]"
-                  disabled={isPending}
-                  onClick={handleArchive}
-                  type="button"
-                  variant="outline"
-                >
-                  <Archive className="h-4 w-4" />
-                  {pendingAction === "archive" ? t("archiving") : t("archive")}
-                </Button>
-              ) : null}
 
               {actionError ? (
                 <p className="q-mini text-[#FF3C38]">{actionError}</p>
@@ -838,6 +897,15 @@ async function scheduleQuizRelease(
   publishDate: string
 ) {
   const body: QuizPublishPayload = { publish_date: publishDate };
+
+  return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
+    method: "PATCH",
+    body,
+  });
+}
+
+async function unpublishQuiz(quiz: AdminQuizListItem) {
+  const body: QuizPublishPayload = { unpublish: true };
 
   return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
     method: "PATCH",

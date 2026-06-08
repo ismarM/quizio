@@ -9,7 +9,6 @@ import {
   ArrowLeft,
   ArrowUp,
   Clock3,
-  Eye,
   FilePlus2,
   ImagePlus,
   ListChecks,
@@ -356,6 +355,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
       }
 
       setStatusMessage(t("changesSaved"));
+      router.push(routes.admin);
       router.refresh();
     } catch (error) {
       for (const questionId of createdQuestionIds) {
@@ -373,7 +373,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <form
         className="border-2 border-[#211F20] bg-[#FFFAF2] p-4 shadow-[4px_4px_0_#EBE4D8] md:p-5"
         onSubmit={handleSubmit}
@@ -730,7 +730,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
             </div>
           </section>
 
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+          <div className="grid gap-3">
             <button
               type="submit"
               className={[
@@ -746,11 +746,6 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                 {isSubmitting ? t("saving") : t("saveChanges")}
               </span>
             </button>
-
-            <Link href={routes.quizDetail(quiz.id)} className="q-button q-button-secondary">
-              <Eye className="h-4 w-4" />
-              <span className="pl-1 pt-0.5">{t("preview")}</span>
-            </Link>
           </div>
 
           {submitError ? (

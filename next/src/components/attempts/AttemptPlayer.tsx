@@ -5,7 +5,7 @@ import { Check, ChevronLeft, ChevronRight, Clock3, Flag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
-import { buildProxyUrl, proxyFetchJson } from "@/lib/api/proxy-client";
+import { proxyFetchJson } from "@/lib/api/proxy-client";
 import { isImageUrl } from "@/lib/uploads/images";
 import { routes } from "@/lib/navigation/routes";
 import type {
@@ -81,21 +81,6 @@ export function AttemptPlayer({
     }
   }, [finishAttempt, timeLeftSeconds]);
 
-  useEffect(() => {
-    const handleUnload = () => {
-      if (isFinishingRef.current) {
-        return;
-      }
-
-      isFinishingRef.current = true;
-      const url = buildProxyUrl(`/quizzes/${quizId}/attempts/finish`);
-      navigator.sendBeacon(url);
-    };
-
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
-  }, [quizId]);
-
   const currentQuestion = questions[currentIndex];
   const selectedOptionId = currentQuestion
     ? answers[currentQuestion.id]
@@ -105,7 +90,7 @@ export function AttemptPlayer({
     if (questions.length === 0) {
       return 0;
     }
-    return ((currentIndex + 1) / questions.length) * 100;
+    return (currentIndex / questions.length) * 100;
   }, [currentIndex, questions.length]);
 
   const answeredCount = Object.keys(answers).length;
@@ -176,7 +161,8 @@ export function AttemptPlayer({
 
           <div className="mb-8 h-2 bg-[#EBE4D8]">
             <div
-              className="h-full bg-[#FF3C38]"
+              className="q-attempt-progress h-full bg-[#FF3C38]"
+              key={currentIndex}
               style={{ width: `${progressPercent}%` }}
             />
           </div>

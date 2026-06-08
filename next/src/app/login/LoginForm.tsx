@@ -14,7 +14,9 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 import { auth, googleProvider } from "@/lib/clients/firebase-client";
+import { proxyFetchJson } from "@/lib/api/proxy-client";
 import { routes } from "@/lib/navigation/routes";
+import type { UserResponse } from "@/lib/types";
 
 type LoginFormProps = {
   reason?: string;
@@ -57,6 +59,28 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
     }
   };
 
+  const syncSessionClaims = async (user: { getIdToken: (forceRefresh?: boolean) => Promise<string> }) => {
+    const idToken = await user.getIdToken();
+    await startSession(idToken);
+
+    const refreshedToken = await user.getIdToken(true);
+    if (refreshedToken !== idToken) {
+      await startSession(refreshedToken);
+    }
+  };
+
+  const applyLoggedInPreferences = async () => {
+    const profile = await proxyFetchJson<UserResponse>("/users/me");
+    const isDark = profile.user.theme === 1;
+    document.documentElement.classList.toggle("dark", isDark);
+
+    try {
+      window.localStorage.setItem("quizio-theme", isDark ? "dark" : "light");
+    } catch {
+      // The backend profile remains the source of truth.
+    }
+  };
+
   const goAfterLogin = () => {
     const safeNext = next && next.startsWith("/") ? next : routes.quizzes;
     router.push(safeNext);
@@ -71,9 +95,9 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
     try {
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      const idToken = await result.user.getIdToken();
 
-      await startSession(idToken);
+      await syncSessionClaims(result.user);
+      await applyLoggedInPreferences();
       goAfterLogin();
     } catch (err) {
       setError(getErrorMessage(err, t("genericError")));
@@ -89,9 +113,9 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
     try {
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
 
-      await startSession(idToken);
+      await syncSessionClaims(result.user);
+      await applyLoggedInPreferences();
       goAfterLogin();
     } catch (err) {
       setError(getErrorMessage(err, t("genericError")));
@@ -114,9 +138,8 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
         registerPassword
       );
 
-      const idToken = await result.user.getIdToken();
-
-      await startSession(idToken);
+      await syncSessionClaims(result.user);
+      await applyLoggedInPreferences();
       goAfterLogin();
     } catch (err) {
       setError(getErrorMessage(err, t("genericError")));
