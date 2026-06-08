@@ -77,7 +77,7 @@ func (h *Handler) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isQuizPublishLocked(state, time.Now()) {
+	if IsQuizPublishLocked(state, time.Now()) {
 		writeError(w, http.StatusConflict, "quiz_locked", "quiz is already published")
 		return
 	}
@@ -100,7 +100,8 @@ func (h *Handler) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, QuizResponse{Quiz: quizDTO})
 }
 
-func isQuizPublishLocked(state sqlc.GetQuizStateRow, now time.Time) bool {
+// IsQuizPublishLocked reports whether the quiz cannot be scheduled or published.
+func IsQuizPublishLocked(state sqlc.GetQuizStateRow, now time.Time) bool {
 	if state.IsArchived {
 		return true
 	}

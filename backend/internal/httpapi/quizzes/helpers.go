@@ -2,8 +2,8 @@ package quizzes
 
 import (
 	"context"
+
 	"github.com/ismarM/quizio/internal/db/sqlc"
-	"sort"
 )
 
 func (h *Handler) loadQuizzes(ctx context.Context, scope, title string, ownerID int32, submittedOnly bool, submittedBy int32, sortBy string, limit, offset int32) ([]QuizDTO, error) {
@@ -52,16 +52,7 @@ func (h *Handler) calculateLeaderboard(ctx context.Context, quizID int32) (*Lead
 		return nil, err
 	}
 
-	questionValue := make(map[int32]float64, len(questions))
-	answerIsCorrect := make(map[int32]bool)
-	var maxPoints float64
-	for _, q := range questions {
-		questionValue[q.ID] = q.Value
-		maxPoints += q.Value
-		for _, a := range q.Answers {
-			answerIsCorrect[a.ID] = a.IsCorrect
-		}
-	}
+	_, maxPoints := scoreAttempt(questions, nil)
 
 	attempts, err := h.queries.ListFinishedAttemptsByQuiz(ctx, quizID)
 	if err != nil {
@@ -75,14 +66,14 @@ func (h *Handler) calculateLeaderboard(ctx context.Context, quizID int32) (*Lead
 			return nil, err
 		}
 
-		var achieved float64
+		responseDTOs := make([]AttemptQuestionDTO, 0, len(responses))
 		for _, resp := range responses {
-			if correct, ok := answerIsCorrect[resp.TkAnswer]; ok && correct {
-				if val, ok := questionValue[resp.TkQuestion]; ok {
-					achieved += val
-				}
-			}
+			responseDTOs = append(responseDTOs, AttemptQuestionDTO{
+				QuestionID: resp.TkQuestion,
+				AnswerID:   resp.TkAnswer,
+			})
 		}
+		achieved, _ := scoreAttempt(questions, responseDTOs)
 
 		var timeTakenSecs *int32
 		if att.TimeTaken.Valid {
@@ -104,19 +95,7 @@ func (h *Handler) calculateLeaderboard(ctx context.Context, quizID int32) (*Lead
 		})
 	}
 
-	sort.Slice(entries, func(i, j int) bool {
-		if entries[i].AchievedPoints != entries[j].AchievedPoints {
-			return entries[i].AchievedPoints > entries[j].AchievedPoints
-		}
-		var ti, tj int32 = 999999, 999999
-		if entries[i].TimeTakenSeconds != nil {
-			ti = *entries[i].TimeTakenSeconds
-		}
-		if entries[j].TimeTakenSeconds != nil {
-			tj = *entries[j].TimeTakenSeconds
-		}
-		return ti < tj
-	})
+	sortLeaderboardEntries(entries)
 
 	return &LeaderboardResponse{
 		QuizID:  quizID,

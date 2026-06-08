@@ -71,4 +71,5 @@ var (
 	quizFromPublishRow      = shared.QuizFromPublishRow
 	quizFromArchiveRow      = shared.QuizFromArchiveRow
 	quizFromListRow         = shared.QuizFromListRow
+	scoreAttempt            = shared.ScoreAttempt
 )

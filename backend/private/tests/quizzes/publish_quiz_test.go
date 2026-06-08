@@ -1,4 +1,4 @@
-package quizzes
+package quizzes_test
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ismarM/quizio/internal/db/sqlc"
+	"github.com/ismarM/quizio/internal/httpapi/quizzes"
 )
 
 func TestIsQuizPublishLocked(t *testing.T) {
@@ -55,9 +56,9 @@ func TestIsQuizPublishLocked(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := isQuizPublishLocked(tt.state, now)
+			got := quizzes.IsQuizPublishLocked(tt.state, now)
 			if got != tt.want {
-				t.Fatalf("isQuizPublishLocked() = %v, want %v", got, tt.want)
+				t.Fatalf("IsQuizPublishLocked() = %v, want %v", got, tt.want)
 			}
 		})
 	}

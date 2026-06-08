@@ -71,16 +71,6 @@ func (h *Handler) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// build maps for quick lookup
-		questionValue := make(map[int32]float64, len(questions))
-		answerIsCorrect := make(map[int32]bool)
-		for _, q := range questions {
-			questionValue[q.ID] = q.Value
-			for _, a := range q.Answers {
-				answerIsCorrect[a.ID] = a.IsCorrect
-			}
-		}
-
 		// load attempt responses
 		responses, err := h.queries.ListAttemptQuestions(r.Context(), row.IDAttempt)
 		if err != nil {
@@ -89,18 +79,14 @@ func (h *Handler) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// calculate scores
-		var maxPoints float64
-		for _, q := range questions {
-			maxPoints += q.Value
-		}
-		var achieved float64
+		responseDTOs := make([]AttemptQuestionDTO, 0, len(responses))
 		for _, resp := range responses {
-			if correct, ok := answerIsCorrect[resp.TkAnswer]; ok && correct {
-				if val, ok := questionValue[resp.TkQuestion]; ok {
-					achieved += val
-				}
-			}
+			responseDTOs = append(responseDTOs, AttemptQuestionDTO{
+				QuestionID: resp.TkQuestion,
+				AnswerID:   resp.TkAnswer,
+			})
 		}
+		achieved, maxPoints := scoreAttempt(questions, responseDTOs)
 
 		results = append(results, SubmissionSummary{
 			QuizID:           row.TkQuiz,
