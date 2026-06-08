@@ -1,0 +1,6 @@
+.git
+.fallow
+bin/
+tmp/
+.air.toml
+*.exe

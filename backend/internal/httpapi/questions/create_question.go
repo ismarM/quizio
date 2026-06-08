@@ -3,8 +3,9 @@ package questions
 import (
 	"database/sql"
 	"errors"
-	"github.com/ismarM/quizio/internal/db/sqlc"
 	"net/http"
+
+	"github.com/ismarM/quizio/internal/db/sqlc"
 )
 
 // CreateQuestion godoc
@@ -53,10 +54,6 @@ func (h *Handler) CreateQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
-		return
-	}
-	if state.TkUser != claims.ID {
-		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can manage questions")
 		return
 	}
 	if state.IsArchived || state.PublishDate.Valid {

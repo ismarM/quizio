@@ -42,8 +42,8 @@ func (h *Handler) GetFullQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !claims.IsAdmin || quizRow.TkUser != claims.ID {
-		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can view the full quiz details")
+	if !claims.IsAdmin {
+		writeError(w, http.StatusForbidden, "forbidden", "only admins can view the full quiz details")
 		return
 	}
 

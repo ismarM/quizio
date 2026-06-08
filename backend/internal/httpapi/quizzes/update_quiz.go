@@ -3,8 +3,9 @@ package quizzes
 import (
 	"database/sql"
 	"errors"
-	"github.com/ismarM/quizio/internal/db/sqlc"
 	"net/http"
+
+	"github.com/ismarM/quizio/internal/db/sqlc"
 )
 
 // UpdateQuiz godoc
@@ -62,10 +63,6 @@ func (h *Handler) UpdateQuiz(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
-		return
-	}
-	if state.TkUser != claims.ID {
-		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can update it")
 		return
 	}
 	if state.IsArchived || state.PublishDate.Valid {

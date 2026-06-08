@@ -1,686 +1,205 @@
 # Quizio
 
-Interactive web-based quiz platform built with Next.js, Go, PostgreSQL, Firebase Authentication, and Supabase Storage.
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Next.js](https://img.shields.io/badge/Next.js-16+-black?logo=next.js)
+![Go](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?logo=postgresql)
+![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?logo=firebase)
+![License](https://img.shields.io/badge/license-proprietary-red)
+
+An interactive web-based quiz platform built with a Next.js BFF, Go REST API, and PostgreSQL backend. Developed in collaboration with [Inova IT d.o.o.](https://www.inovait.si/).
 
 ---
 
-# Table of Contents
+## Table of Contents
 
-1. Vision
-
-   * Purpose
-   * Solution Boundaries
-   * Key Functionalities
-   * Business Limits
-2. Glossary
-3. Architecture Overview
-4. Technology Stack
-5. Production Installation
-
-   * Prerequisites
-   * Firebase Configuration
-   * Supabase Configuration
-   * Environment Variables
-   * Docker Deployment
-6. Development Setup
-
-   * Prerequisites
-   * PostgreSQL
-   * Backend Setup
-   * Frontend Setup
-7. Project Structure
-8. Developer Documentation
-
-   * Technologies and Versions
-   * Coding Standards
-   * Git Workflow
-   * Commit Message Convention
-9. Contributing
-10. Troubleshooting
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Getting Started](#getting-started)
+- [Agentic Development](#agentic-development)
 
 ---
 
-# Vision
+## Overview
 
-## Purpose
+Quizio allows administrators to create and publish quizzes with multiple-choice and image-based questions. Registered users can take quizzes against a server-enforced countdown timer, and results are reflected on a real-time leaderboard.
 
-Quizio is a web-based quiz platform that enables administrators to create and manage quizzes while allowing registered users to participate in timed quiz sessions and compete on real-time leaderboards.
+Key characteristics:
+- **Server-authoritative timers** — quiz countdowns are enforced in PostgreSQL; closing a browser tab cannot extend an attempt.
+- **Stateless design** — all state is stored in the database and sessions are JWT-based, enabling horizontal scaling of all components.
+- **Real-time leaderboard** — event-driven push via `pg_notify → SSE`, no polling.
+- **Layered security** — JWT session management, HMAC-SHA256 request signing, and compile-time parameterized SQL via `sqlc`.
 
-The platform emphasizes:
-
-* Fair server-authoritative timing
-* Real-time ranking updates
-* Secure authentication
-* Maintainable architecture
-* Horizontal scalability
+A full list of supported features and Non-Functional Requirements (NFRs) can be found in the [documentation](docs/features.md).
 
 ---
 
-## Solution Boundaries
+## Architecture
 
-### Included
+Quizio uses a **BFF (Backend-For-Frontend)** pattern:
 
-* User registration and login
-* Quiz creation and management
-* Multiple-choice questions
-* Image comparison questions
-* Quiz publishing/unpublishing
-* Timed quiz attempts
-* Automatic quiz submission on timeout
-* User score history
-* Real-time leaderboards
-* Administrator result visibility
-* Role-based access control
-
-### Not Included
-
-* Payments or subscriptions
-* Public API for third parties
-* Offline quiz participation
-* Team competitions
-* Live collaborative quiz sessions
-* Question banks shared between quizzes
-* Advanced analytics dashboards
-* AI-generated quiz content
-* Native mobile applications
-
----
-
-## Key Functionalities
-
-### For Users
-
-* Register and authenticate
-* Browse published quizzes
-* Start quiz attempts
-* Answer questions incrementally
-* Submit quizzes manually
-* Automatic timeout handling
-* View previous attempts
-* View real-time rankings
-
-### For Administrators
-
-* Create quizzes
-* Edit quizzes
-* Delete quizzes
-* Publish and unpublish quizzes
-* Create questions
-* Configure scoring
-* Review user results
-
----
-
-## Business Limits
-
-### Roles
-
-Only two roles exist:
-
-* User
-* Administrator
-
-### Quiz Timing
-
-* Timers are authoritative on the server
-* Browser manipulation cannot extend attempts
-
-### Leaderboards
-
-Rankings are ordered by:
-
-1. Total points (descending)
-2. Completion time (ascending)
-
-### Authentication
-
-Authentication is delegated to Firebase Authentication.
-
-### Storage
-
-Supabase Storage is used for image assets.
-
----
-
-# Glossary
-
-This glossary intentionally focuses on business terminology rather than implementation details.
-
-| Term             | Meaning                                           |
-| ---------------- | ------------------------------------------------- |
-| Quiz             | A collection of questions that users can complete |
-| Question         | A single challenge within a quiz                  |
-| Answer           | A selectable response to a question               |
-| Attempt          | One user's participation in a quiz                |
-| Score            | Points earned during an attempt                   |
-| Leaderboard      | Ranking of users for a quiz                       |
-| Published Quiz   | Quiz visible to users                             |
-| Unpublished Quiz | Quiz visible only to administrators               |
-| Administrator    | User who manages quizzes                          |
-| Participant      | User taking quizzes                               |
-| Time Limit       | Maximum allowed duration for a quiz               |
-| Result           | Final outcome of an attempt                       |
-
----
-
-# Architecture Overview
-
-The system consists of four primary components:
-
-1. Next.js Frontend
-2. Next.js Backend-for-Frontend (BFF)
-3. Go Backend API
-4. PostgreSQL Database
-
-Supporting services:
-
-* Firebase Authentication
-* Supabase Storage
-
-The architecture follows a Backend-for-Frontend (BFF) pattern.
-
-All browser requests pass through the Next.js server before reaching the Go backend.
-
----
-
-# Technology Stack
-
-## Frontend
-
-* Next.js 14+
-* React 18+
-* TypeScript
-* Tailwind CSS 3+
-* shadcn/ui
-
-## Backend
-
-* Go 1.21+
-* Chi Router v5
-
-## Database
-
-* PostgreSQL 15+
-* sqlc
-
-## Authentication
-
-* Firebase Authentication
-* Firebase Admin SDK
-
-## Storage
-
-* Supabase Storage
-
-## Infrastructure
-
-* Docker
-* Docker Compose
-
----
-
-# Production Installation
-
-## Prerequisites
-
-Required software:
-
-* Docker Engine 24+
-* Docker Compose
-* Firebase Project
-* Supabase Project
-* Domain name (recommended)
-* HTTPS certificate
-
----
-
-## Firebase Configuration
-
-Create a Firebase project and enable:
-
-### Authentication
-
-Enable at least one provider:
-
-* Email/Password
-* Google OAuth
-
-### Service Account
-
-Generate a Firebase Admin SDK service account.
-
-The following values will be required:
-
-* FIREBASE_PROJECT_ID
-* FIREBASE_CLIENT_EMAIL
-* FIREBASE_PRIVATE_KEY
-
----
-
-## Supabase Configuration
-
-Create a Supabase project.
-
-Create a storage bucket for quiz images.
-
-Required values:
-
-* SUPABASE_URL
-* SUPABASE_SERVICE_ROLE_KEY
-
----
-
-## Environment Variables
-
-### Frontend (.env)
-
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
-
-GO_BACKEND_URL=
-
-HMAC_SECRET=
-
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+```
+Browser → Next.js BFF → Go REST API → PostgreSQL
+                ↕
+        Firebase Auth (external)
 ```
 
-### Backend (.env)
+- The **Next.js BFF** handles session management, RBAC enforcement, and HMAC request signing. It is the only entry point for browser traffic.
+- The **Go API** is a stateless HTTP server responsible for the quiz and attempt lifecycle. It is not publicly exposed.
+- **PostgreSQL** is the single source of truth for all mutable state, including timers.
+- **Firebase Authentication** handles user registration, login, and ID token issuance.
 
-```env
-SERVER_PORT=8080
+Additional architectural information along with sequence diagrams can be found in the [docs](docs/architecture.md).
 
-DB_HOST=
-DB_PORT=5432
-DB_NAME=
-DB_USER=
-DB_PASSWORD=
-DB_SSLMODE=require
+---
 
-HMAC_SECRET=
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend / BFF | Next.js 16 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
+| Backend | Go 1.23+, Chi router |
+| Database | PostgreSQL 16 |
+| Auth | Firebase Authentication |
+| DB Access | sqlc (compile-time SQL → type-safe Go) |
+| Real-time | PostgreSQL `pg_notify` + Server-Sent Events (SSE) |
+
+---
+
+
+## Project Structure
+
+```
+quizio/
+├── .agents/                  # Configuration and skills for AI agents
+├── docs/                     # Documentation files & draw.io diagrams
+├── next/                     # Next.js BFF & frontend app
+│   └── src/
+│       ├── app/              # App Router pages and API routes
+│       │   └── api/
+│       │       ├── session/  # Firebase session cookie route
+│       │       ├── proxy/    # BFF proxy (RBAC, HMAC signing, forwarding)
+│       │       └── upload/   # File uploads handling
+│       ├── lib/              # Shared utilities (HMAC, Firebase Admin, sessions)
+│       └── components/       # React components (shadcn/ui)
+└── backend/                  # Go REST API backend
+    ├── cmd/server/           # Application entry point (main.go)
+    ├── internal/             # Internal packages
+    │   ├── config/           # Configuration parsing & dotenv loading
+    │   ├── db/               # Database connection & sqlc-generated code
+    │   │   ├── sqlc/         # sqlc type-safe generated code
+    │   │   └── migrate.go    # Migration logic
+    │   └── httpapi/          # Chi router and route mounts
+    └── migrations/           # PostgreSQL migration DDL files
 ```
 
 ---
 
-## Docker Deployment
 
-Build and start the full platform:
+## Configuration
 
+Both the Next.js BFF and the Go server require configuration via environment variables.
+
+### Generating the HMAC Secret
+The Go backend and Next.js BFF use a shared `HMAC_SECRET` to verify requests. Generate a secret string using:
 ```bash
-docker compose up -d --build
+openssl rand -base64 32
 ```
 
-Verify services:
+### Acquiring External API Keys
 
-```bash
-docker compose ps
-```
+#### 1. Firebase Authentication & Admin SDK Keys
+- Go to the [Firebase Console](https://console.firebase.google.com/).
+- Create or select a project (e.g., `quizio`).
+- **Client Keys**: In your project settings page, under General, create a Web App. Copy the configurations to populate the `NEXT_PUBLIC_FIREBASE_*` variables.
+- **Admin Keys**: Go to Project Settings -> Service Accounts -> Click "Generate new private key". A JSON credentials file will download. Use the `client_email` for `FIREBASE_CLIENT_EMAIL` and the `private_key` block (replacing newlines with `\n`) for `FIREBASE_PRIVATE_KEY`.
 
-Run database migrations:
+#### 2. Gemini AI Key
+- Navigate to [Google AI Studio](https://aistudio.google.com/).
+- Sign in and click **Get API key**.
+- Create a new API key and copy its value to `GEMINI_API_KEY`.
 
-```bash
-docker compose exec backend go run ./cmd/server migrate
-```
-
-View logs:
-
-```bash
-docker compose logs -f
-```
+#### 3. Supabase URL & Keys
+- Create a database project on [Supabase](https://supabase.com/).
+- Navigate to Project Settings -> API.
+- Copy the Project URL to `SUPABASE_URL`.
+- Copy the `service_role` secret key to `SUPABASE_SERVICE_ROLE_KEY`.
 
 ---
 
-# Development Setup
+## Getting Started
 
-## Prerequisites
+### Prerequisites
+- Node.js v22+
+- Go 1.23+
+- Docker Desktop
 
-Install:
-
-* Node.js 20+
-* npm 10+
-* Go 1.21+
-* Docker Desktop or Docker Engine
-* Git
+### Copy Environment Files
+Before running the services, copy the environment files templates and replace placeholders with the [acquired keys](#configuration):
+- Backend: Copy `backend/.env.example` $\rightarrow$ `backend/.env`
+- Frontend: Copy `next/.env.local.example` $\rightarrow$ `next/.env.local`
 
 ---
 
-## Start PostgreSQL
+### Method A: Run via Docker Compose (Recommended)
+This method spins up the database, compiles the services, runs migrations, and starts everything in the correct sequence automatically.
 
-From repository root:
+1. Start Docker Desktop on your machine.
+2. Verify you meet all [prerequisites](#prerequisites) and have correctly set up [environment variables](#copy-environment-files).
+3. In the repository root, build and start all containers in the background:
+   ```bash
+   docker compose up --build -d
+   ```
+4. Access the applications:
+   - **Frontend App**: [http://localhost:3000](http://localhost:3000)
+   - **API Docs (Swagger)**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
+---
+
+### Method B: Run on Host Machine (Development)
+
+#### 1. Start Database Container
+Only run PostgreSQL in Docker:
 ```bash
 docker compose up -d postgres
 ```
 
-Verify:
-
-```bash
-docker ps
-```
-
----
-
-## Backend Setup
-
-Navigate to backend:
-
+#### 2. Start Go Backend
+Ensure you are in the `backend/` directory:
 ```bash
 cd backend
-```
-
-Install dependencies:
-
-```bash
+# Download dependencies
 go mod download
-```
 
-Run migrations:
-
-```bash
+# Run migrations
 go run ./cmd/server migrate
-```
 
-Run server:
-
-```bash
+# Run server (or run 'air' for live reloading)
 go run ./cmd/server
 ```
 
-or:
-
-```bash
-air
-```
-
-Default API:
-
-```text
-http://localhost:8080
-```
-
----
-
-## Frontend Setup
-
-Navigate to frontend:
-
+#### 3. Start Next.js Frontend
+Ensure you are in the `next/` directory:
 ```bash
 cd next
-```
-
-Install dependencies:
-
-```bash
+# Install dependencies
 npm install
-```
 
-Run development server:
-
-```bash
+# Start development server
 npm run dev
 ```
-
-Default frontend:
-
-```text
-http://localhost:3000
-```
+#### 4. Access the applications:
+   - **Frontend App**: [http://localhost:3000](http://localhost:3000)
+   - **API Docs (Swagger)**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 ---
 
-# Project Structure
+## Agentic Development
 
-```text
-/
-├── next/
-│   ├── src/
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── lib/
-│   │   └── hooks/
-│   ├── public/
-│   └── package.json
-│
-├── backend/
-│   ├── cmd/
-│   │   └── server/
-│   ├── internal/
-│   │   ├── db/
-│   │   ├── handlers/
-│   │   ├── middleware/
-│   │   ├── hub/
-│   │   └── services/
-│   ├── sql/
-│   │   ├── schema/
-│   │   └── queries/
-│   └── go.mod
-│
-├── docker-compose.yml
-├── README.md
-└── .gitignore
-```
+This repository is optimized for development with AI coding agents.
 
----
-
-# Developer Documentation
-
-## Technologies and Versions
-
-| Technology         | Version |
-| ------------------ | ------- |
-| Go                 | 1.21+   |
-| PostgreSQL         | 15+     |
-| Node.js            | 20+     |
-| Next.js            | 14+     |
-| React              | 18+     |
-| TypeScript         | 5+      |
-| Tailwind CSS       | 3+      |
-| Firebase Admin SDK | 12+     |
-| Chi Router         | v5      |
-| sqlc               | v1+     |
-| Docker             | 24+     |
-
----
-
-## Coding Standards
-
-### General
-
-* Prefer readability over cleverness.
-* Keep functions small and focused.
-* Avoid duplicated business logic.
-* Follow existing architectural patterns.
-
----
-
-### TypeScript
-
-* Enable strict mode.
-* Avoid `any`.
-* Prefer explicit interfaces.
-* Use server components by default.
-
----
-
-### Go
-
-* Follow standard Go formatting:
-
-```bash
-go fmt ./...
-```
-
-* Run:
-
-```bash
-go vet ./...
-```
-
-* Prefer explicit error handling.
-* Keep handlers thin.
-* Place business logic in services.
-
----
-
-### SQL
-
-* Use sqlc-generated queries.
-* No string-concatenated SQL.
-* All schema changes must be migration-based.
-
----
-
-# Git Workflow
-
-## Branch Naming
-
-Feature:
-
-```text
-feature/quiz-publishing
-```
-
-Bugfix:
-
-```text
-fix/leaderboard-refresh
-```
-
-Hotfix:
-
-```text
-hotfix/auth-bypass
-```
-
-Documentation:
-
-```text
-docs/readme-update
-```
-
----
-
-## Commit Messages
-
-Use Conventional Commits.
-
-Examples:
-
-```text
-feat: add quiz publishing workflow
-
-fix: prevent duplicate leaderboard events
-
-docs: update installation guide
-
-refactor: simplify attempt scoring logic
-```
-
-Common types:
-
-* feat
-* fix
-* docs
-* refactor
-* test
-* chore
-* ci
-
----
-
-## Pull Requests
-
-Requirements:
-
-* Passing build
-* Passing tests
-* No secrets committed
-* Documentation updated if applicable
-
----
-
-# Contributing
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Implement changes.
-4. Add or update tests.
-5. Run formatting and linting.
-6. Open a pull request.
-
-Checklist:
-
-* [ ] Code builds successfully
-* [ ] Tests pass
-* [ ] No secrets included
-* [ ] Documentation updated
-* [ ] Migrations included if schema changed
-
----
-
-# Troubleshooting
-
-## Database Connection Failed
-
-Verify PostgreSQL is running:
-
-```bash
-docker ps
-```
-
-Check backend configuration:
-
-```bash
-DB_HOST
-DB_PORT
-DB_NAME
-DB_USER
-DB_PASSWORD
-```
-
----
-
-## Firebase Authentication Errors
-
-Verify:
-
-* Project ID
-* Service account credentials
-* Authentication provider configuration
-
----
-
-## Leaderboard Not Updating
-
-Verify:
-
-* PostgreSQL trigger exists
-* LISTEN/NOTIFY is functioning
-* SSE endpoint is reachable
-* Go Leaderboard Hub is running
-
----
-
-## HMAC Validation Failures
-
-Verify:
-
-```text
-HMAC_SECRET
-```
-
-matches in both:
-
-* Next.js
-* Go Backend
-
-The value must be identical in every environment.
+- **Skills**: Specialized development tasks, code constraints, and guidelines are defined as instructions under the [.agents/skills/](.agents/skills) directory. Before asking an AI agent to perform any task, the agent should read respective `SKILL.md` files located in `.agents/skills/<skill-name>/SKILL.md`.
+- **Rules**: Global repository constraints and styling rules are enforced via [AGENTS.md](AGENTS.md) in the root.

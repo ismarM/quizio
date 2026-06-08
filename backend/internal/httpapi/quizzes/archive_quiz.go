@@ -1,10 +1,9 @@
 package quizzes
 
 import (
-	"database/sql"
-	"errors"
-	"github.com/ismarM/quizio/internal/db/sqlc"
 	"net/http"
+
+	"github.com/ismarM/quizio/internal/db/sqlc"
 )
 
 // ArchiveQuiz godoc
@@ -42,20 +41,6 @@ func (h *Handler) ArchiveQuiz(w http.ResponseWriter, r *http.Request) {
 	var req ArchiveQuizRequest
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_payload", "invalid JSON payload")
-		return
-	}
-
-	state, err := h.queries.GetQuizState(r.Context(), quizID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
-			return
-		}
-		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
-		return
-	}
-	if state.TkUser != claims.ID {
-		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can archive it")
 		return
 	}
 

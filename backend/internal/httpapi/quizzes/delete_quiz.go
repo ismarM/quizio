@@ -1,8 +1,6 @@
 package quizzes
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 )
 
@@ -33,20 +31,6 @@ func (h *Handler) DeleteQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 	if !claims.IsAdmin {
 		writeError(w, http.StatusForbidden, "forbidden", "only admins can delete quizzes")
-		return
-	}
-
-	state, err := h.queries.GetQuizState(r.Context(), quizID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "not_found", "quiz not found")
-			return
-		}
-		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
-		return
-	}
-	if state.TkUser != claims.ID {
-		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can delete it")
 		return
 	}
 

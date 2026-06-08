@@ -3,9 +3,10 @@ package quizzes
 import (
 	"database/sql"
 	"errors"
-	"github.com/ismarM/quizio/internal/db/sqlc"
 	"net/http"
 	"time"
+
+	"github.com/ismarM/quizio/internal/db/sqlc"
 )
 
 // PublishQuiz godoc
@@ -54,10 +55,6 @@ func (h *Handler) PublishQuiz(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "get_quiz_failed", "failed to load quiz")
-		return
-	}
-	if state.TkUser != claims.ID {
-		writeError(w, http.StatusForbidden, "forbidden", "only the quiz owner can publish it")
 		return
 	}
 	if isQuizPublishLocked(state, time.Now()) {
