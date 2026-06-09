@@ -4,15 +4,16 @@ import {
   BarChart3,
   CalendarClock,
   FilePlus2,
-  Home,
   Plus,
-  UserRound,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
+import { AdminRoleManager } from "@/components/admin/AdminRoleManager";
 import { Button } from "@/components/ui/button";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { mapQuizDtoToAdminListItem } from "@/components/admin/data/quiz-mappers";
 import { routes } from "@/lib/navigation/routes";
@@ -81,7 +82,7 @@ export default async function AdminPage() {
   }));
 
   return (
-    <main className="q-page min-h-screen bg-[#FFFAF2] text-[#211F20]">
+    <main className="q-page min-h-screen bg-[#FFFAF2] pb-20 text-[#211F20] md:pb-0">
       <SiteHeader />
       <div className="min-h-screen w-full bg-[#FFFAF2]">
         <section className="min-w-0 pb-24 lg:pb-0">
@@ -146,60 +147,16 @@ export default async function AdminPage() {
               })}
             </section>
 
-          <AdminQuizBrowser quizzes={quizzes} />
+            <AdminRoleManager currentEmail={user.email ?? ""} />
+
+            <AdminQuizBrowser quizzes={quizzes} />
           </div>
         </section>
       </div>
 
-      <AdminMobileBottomNav />
+      <SiteFooter />
+      <MobileBottomNav />
     </main>
-  );
-}
-
-async function AdminMobileBottomNav() {
-  const t = await getTranslations("admin");
-  const items = [
-    { label: t("overview"), href: routes.admin, icon: Home },
-    { label: t("drafts"), href: `${routes.admin}?status=draft`, icon: FilePlus2 },
-    { label: t("archived"), href: routes.adminArchivedQuizzes, icon: Archive },
-    { label: t("profile"), href: routes.dashboard, icon: UserRound },
-  ];
-
-  return (
-    <nav className="fixed bottom-0 left-0 z-50 grid h-20 w-full grid-cols-[1fr_1fr_72px_1fr_1fr] border-t border-[#D7D0C4] bg-[#FFFAF2] lg:hidden">
-      {items.slice(0, 2).map((item) => (
-        <MobileNavItem item={item} key={item.label} />
-      ))}
-
-      <Link
-        className="-mt-5 flex h-16 w-16 items-center justify-center justify-self-center rounded-full border-2 border-[#211F20] bg-[#006E5A] text-[#FFFAF2] shadow-[0_8px_22px_rgba(0,0,0,0.18)] transition hover:-translate-y-1"
-        href={routes.adminQuizNew}
-      >
-        <Plus className="h-8 w-8" />
-      </Link>
-
-      {items.slice(2).map((item) => (
-        <MobileNavItem item={item} key={item.label} />
-      ))}
-    </nav>
-  );
-}
-
-function MobileNavItem({
-  item,
-}: {
-  item: { label: string; href: string; icon: typeof Home };
-}) {
-  const Icon = item.icon;
-
-  return (
-    <Link
-      className="flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#211F20] first:text-[#006E5A]"
-      href={item.href}
-    >
-      <Icon className="h-5 w-5" strokeWidth={1.8} />
-      {item.label}
-    </Link>
   );
 }
 

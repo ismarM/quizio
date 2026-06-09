@@ -1,4 +1,5 @@
 import { AdminAttemptReviewLoading } from "@/components/admin/AdminAttemptReview";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 
@@ -9,6 +10,7 @@ export default function AdminAttemptReviewLoadingPage() {
 
       <AdminAttemptReviewLoading />
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

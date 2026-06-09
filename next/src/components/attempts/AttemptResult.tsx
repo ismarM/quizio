@@ -26,7 +26,7 @@ export function AttemptResult({ result }: AttemptResultProps) {
                 <div className="q-result-enter border-2 border-[#211F20] bg-[#EBE4D8] p-5 shadow-[8px_8px_0_#211F20] md:p-8">
                     <Link
                         href={routes.quizzes}
-                        className="mb-6 inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
+                        className="q-button q-button-secondary mb-6 h-11 w-fit border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[3px_3px_0_#D7D0C4] transition hover:-translate-y-0.5 hover:bg-[#FFFDF8] hover:text-[#211F20]"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Back to quizzes
@@ -81,13 +81,13 @@ export function AttemptResult({ result }: AttemptResultProps) {
                             <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto]">
                                 <Link
                                 href={routes.quizzes}
-                                className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
+                                className="q-button q-button-primary h-12 border-[#FF3C38] bg-[#FF3C38] px-5 text-[17px]"
                                 >
                                 Explore more quizzes
                                 </Link>
                                 <Link
                                 href={routes.quizLeaderboard(result.quiz.id)}
-                                className="q-button q-button-secondary"
+                                className="q-button q-button-secondary h-12 px-5 text-[17px]"
                                 >
                                 View leaderboard
                                 </Link>

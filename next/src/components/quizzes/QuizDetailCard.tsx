@@ -33,7 +33,7 @@ export function QuizDetailCard({
       <div className="relative border-b-2 border-[#211F20] bg-[#EBE4D8] p-5 md:p-7">
         <Link
           href={routes.quizzes}
-          className="mb-5 inline-flex items-center gap-2 q-body text-[#211F20] hover:text-[#FF3C38]"
+          className="q-button q-button-secondary mb-5 h-11 w-fit border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[3px_3px_0_#D7D0C4] transition hover:-translate-y-0.5 hover:bg-[#FFFAF2] hover:text-[#211F20]"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("backToQuizzes")}

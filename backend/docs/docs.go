@@ -1555,9 +1555,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/me/role": {
+        "/api/users/{userId}/role": {
             "patch": {
-                "description": "Update admin role for the authenticated user.",
+                "description": "Update admin role. Admins can grant admin access to any user; admins can only revoke admin access from themselves.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1569,6 +1569,13 @@ const docTemplate = `{
                 ],
                 "summary": "Update user role",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Update user role",
                         "name": "request",
@@ -1594,6 +1601,18 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpapi.ErrorResponse"
                         }

@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 
+import { AdminQuizMobileActions } from "@/components/admin/AdminQuizMobileActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -183,7 +184,7 @@ function AdminQuizBrowserInner({
           {archivedView ? (
             <Button
               asChild
-              className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+              className="q-button q-button-secondary h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
               variant="outline"
             >
               <Link href={routes.admin}>
@@ -194,7 +195,7 @@ function AdminQuizBrowserInner({
           ) : (
             <Button
               asChild
-              className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+              className="q-button q-button-secondary h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
               variant="outline"
             >
               <Link href={routes.adminArchivedQuizzes}>
@@ -380,7 +381,7 @@ function AdminQuizCard({
         />
       </div>
 
-      <div className="grid grid-cols-[24px_minmax(0,1fr)_40px] lg:hidden">
+      <div className="grid grid-cols-[24px_minmax(0,1fr)_44px] lg:hidden">
         <div
           className={[
             "flex items-center justify-center text-[#FFFAF2]",
@@ -406,19 +407,7 @@ function AdminQuizCard({
           </p>
         </div>
 
-        <Link
-          className="flex items-center justify-center border-l-2 border-[#EBE4D8] transition hover:bg-[#EBE4D8]"
-          href={previewHref}
-          onClick={(event) => event.stopPropagation()}
-        >
-          {quiz.status === "published" ? (
-            <span className="h-2.5 w-2.5 rounded-full bg-[#12A05C]" />
-          ) : quiz.status === "archived" ? (
-            <Lock className="h-4 w-4 text-[#211F20]" />
-          ) : (
-            <ChevronRight className="h-5 w-5 text-[#211F20]" />
-          )}
-        </Link>
+        <AdminQuizMobileActions quiz={quiz} />
       </div>
     </article>
   );
@@ -546,9 +535,15 @@ function AdminQuizActions({
         <Send className="h-5 w-5" />
       </button>
 
-      <ActionLink href={routes.adminQuizResults(quiz.id)} label={t("results")}>
-        <Users className="h-5 w-5" />
-      </ActionLink>
+      {isPublished ? (
+        <ActionLink href={routes.adminQuizResults(quiz.id)} label={t("results")}>
+          <Users className="h-5 w-5" />
+        </ActionLink>
+      ) : (
+        <ActionButton disabled label={t("results")}>
+          <Users className="h-5 w-5" />
+        </ActionButton>
+      )}
 
       {canEdit ? (
         <ActionLink href={routes.adminQuizDetail(quiz.id)} label={t("edit")}>
@@ -610,7 +605,7 @@ function AdminQuizActions({
 
               <button
                 aria-label="Close quiz actions"
-                className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:border-[#211F20] hover:bg-[#EBE4D8]"
+                className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006E5A]"
                 onClick={closeActionPanel}
                 type="button"
               >
@@ -626,7 +621,7 @@ function AdminQuizActions({
                       {t("exactReleaseTime")}
                     </span>
                     <Input
-                      className="h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[13px] shadow-none focus-visible:border-[#006E5A] focus-visible:ring-0"
+                      className="h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[13px] shadow-none focus-visible:border-[#006E5A] focus-visible:ring-0"
                       disabled={isPending}
                       min={minPublishAt}
                       type="datetime-local"
@@ -636,7 +631,7 @@ function AdminQuizActions({
                   </label>
 
                   <Button
-                    className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+                    className="q-button q-button-secondary h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
                     disabled={isPending}
                     onClick={handleSchedulePublish}
                     type="button"
@@ -651,7 +646,7 @@ function AdminQuizActions({
                   </Button>
 
                   <Button
-                    className="q-button q-button-primary h-10 rounded-none border-[#006E5A] bg-[#006E5A] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
+                    className="q-button q-button-primary h-11 rounded-none border-[#006E5A] bg-[#006E5A] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
                     disabled={isPending}
                     onClick={handlePublishNow}
                     type="button"
@@ -664,7 +659,7 @@ function AdminQuizActions({
                 </>
               ) : isPublished ? (
                 <Button
-                  className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
+                  className="q-button q-button-secondary h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
                   disabled={isPending}
                   onClick={handleArchive}
                   type="button"

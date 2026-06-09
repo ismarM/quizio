@@ -53,9 +53,17 @@
           "title": "Quiz content",
           "body": "Creators are responsible for the questions, answers, images and descriptions they publish. Content should be respectful, accurate and safe for the intended audience."
         },
+        "results": {
+          "title": "Results",
+          "body": "Quiz attempts, selected answers, scores and timing may be visible to admins so they can review quiz activity and support fair scoring."
+        },
         "availability": {
           "title": "Availability",
           "body": "Quizio may change features, fix issues or temporarily pause parts of the service while the platform is being improved."
+        },
+        "disclaimer": {
+          "title": "Project disclaimer",
+          "body": "Quizio is provided as an educational project without a formal warranty. Results should be used as learning feedback, not as the only source for important decisions."
         }
       }
     },
@@ -355,8 +363,24 @@
     "chooseFutureTime": "Choose a future time or use Publish now.",
     "notScheduled": "Not scheduled",
     "publishes": "Publishes {date}",
-    "publishedAt": "Published {date}"
-    ,
+    "publishedAt": "Published {date}",
+    "roleManager": {
+      "eyebrow": "Admin access",
+      "title": "Manage admins",
+      "description": "Grant admin access by email, or revoke your own admin access if you no longer need it.",
+      "currentAdmin": "Current admin",
+      "emailLabel": "User email",
+      "emailPlaceholder": "user@example.com",
+      "emailRequired": "Enter a user email first.",
+      "grantAdmin": "Make admin",
+      "granting": "Updating...",
+      "grantSuccess": "{email} is now an admin.",
+      "selfRevokeTitle": "Revoke your access",
+      "selfRevokeDescription": "This only removes admin access from your own account. You will be signed out after the change.",
+      "revokeSelf": "Revoke my admin",
+      "revoking": "Revoking...",
+      "updateFailed": "Role update failed."
+    },
     "form": {
       "backToAdmin": "Back to admin",
       "backToQuizzes": "Back to quizzes",

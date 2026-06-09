@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { AdminQuizBrowser } from "@/components/admin/AdminQuizBrowser";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { mapQuizDtoToAdminListItem } from "@/components/admin/data/quiz-mappers";
@@ -44,7 +45,10 @@ export default async function ArchivedAdminQuizzesPage() {
             </p>
           </div>
 
-          <Link href={routes.admin} className="q-button q-button-secondary">
+          <Link
+            href={routes.admin}
+            className="q-button q-button-secondary h-11 border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[4px_4px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
+          >
             <ArrowLeft className="h-4 w-4" />
             {t("backToAdmin")}
           </Link>
@@ -75,6 +79,7 @@ export default async function ArchivedAdminQuizzesPage() {
         </section>
       </section>
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

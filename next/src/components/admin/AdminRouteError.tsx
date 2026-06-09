@@ -41,14 +41,17 @@ export function AdminRouteError({
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <button
-              className="q-button q-button-primary border-[#FF3C38] bg-[#FF3C38]"
+              className="q-button q-button-primary h-11 border-[#FF3C38] bg-[#FF3C38] px-5 text-[16px]"
               onClick={reset}
               type="button"
             >
               <RotateCcw className="h-4 w-4" />
               Try again
             </button>
-            <Link className="q-button q-button-secondary" href={routes.admin}>
+            <Link
+              className="q-button q-button-secondary h-11 px-5 text-[16px]"
+              href={routes.admin}
+            >
               <ArrowLeft className="h-4 w-4" />
               Back to admin
             </Link>

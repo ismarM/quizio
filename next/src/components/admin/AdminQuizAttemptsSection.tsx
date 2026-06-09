@@ -169,7 +169,7 @@ function AdminQuizAttemptRow({
           </div>
 
           <Link
-            className="q-button q-button-primary flex h-10 shrink-0 items-center justify-center gap-1 border-[#FF3C38] bg-[#FF3C38] px-4"
+            className="q-button q-button-primary flex h-11 shrink-0 items-center justify-center gap-1 border-[#FF3C38] bg-[#FF3C38] px-4"
             href={routes.adminQuizAttempt(quizId, attempt.userId)}
           >
             <Eye className="h-4 w-4" />

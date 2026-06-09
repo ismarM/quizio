@@ -48,7 +48,7 @@ export function CookieDisclaimer() {
         {t("body")}
       </p>
       <Button
-        className="q-button q-button-primary mt-4 h-10 rounded-none border-[#006E5A] bg-[#006E5A] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
+        className="q-button q-button-primary mt-4 h-11 rounded-none border-[#006E5A] bg-[#006E5A] px-4 text-[15px] transition hover:-translate-y-0.5 hover:bg-[#005647]"
         onClick={acceptNotice}
         type="button"
       >

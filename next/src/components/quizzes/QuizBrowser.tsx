@@ -346,7 +346,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex h-10 items-center justify-center gap-2 q-body font-medium text-[var(--q-ink)] hover:text-[var(--q-red)] md:justify-start"
+            className="flex min-h-11 items-center justify-center gap-2 px-2 q-body font-medium text-[var(--q-ink)] transition hover:-translate-y-0.5 hover:text-[var(--q-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-focus)] md:justify-start"
           >
             <X className="h-4 w-4" />
             {t("clearAll")}
@@ -373,7 +373,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
             onClick={() => setViewMode("grid")}
             aria-label={t("gridView")}
             className={[
-              "flex h-9 w-9 items-center justify-center border border-[var(--q-muted-strong)]",
+              "flex h-11 w-11 items-center justify-center border-2 border-[var(--q-muted-strong)] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-focus)]",
               viewMode === "grid"
                 ? "bg-[var(--q-green)] text-[var(--q-on-accent)]"
                 : "bg-[var(--q-surface)] text-[var(--q-ink)] hover:border-[var(--q-border)]",
@@ -387,7 +387,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
             onClick={() => setViewMode("list")}
             aria-label={t("listView")}
             className={[
-              "flex h-9 w-9 items-center justify-center border border-[var(--q-muted-strong)]",
+              "flex h-11 w-11 items-center justify-center border-2 border-[var(--q-muted-strong)] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-focus)]",
               viewMode === "list"
                 ? "bg-[var(--q-green)] text-[var(--q-on-accent)]"
                 : "bg-[var(--q-surface)] text-[var(--q-ink)] hover:border-[var(--q-border)]",

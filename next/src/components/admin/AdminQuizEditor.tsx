@@ -381,7 +381,7 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={routes.admin}
-            className="inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
+            className="q-button q-button-secondary h-11 border-2 border-[#211F20] bg-[#FFFDF8] px-4 text-[16px] shadow-[3px_3px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
           >
             <ArrowLeft className="h-4 w-4" />
             {t("backToAdmin")}

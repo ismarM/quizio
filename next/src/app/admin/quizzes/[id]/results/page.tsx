@@ -8,6 +8,7 @@ import {
   AdminQuizAttemptsLoading,
   AdminQuizAttemptsSection,
 } from "@/components/admin/AdminQuizAttemptsSection";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { Button } from "@/components/ui/button";
@@ -42,12 +43,12 @@ export default async function AdminQuizResultsPage({
         <div className="mb-6 flex">
           <Button
             asChild
-            className="q-button q-button-secondary rounded-none border-[#211F20] bg-[#FFFAF2] text-[#211F20] shadow-[4px_4px_0_#211F20] hover:bg-black"
+            className="q-button q-button-secondary h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] text-[#211F20] shadow-[4px_4px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
             variant="outline"
           >
             <Link href={routes.admin}>
               <ArrowLeft data-icon="inline-start" />
-              <span className="pt-[3px] pl-1">{t("backToAdmin")}</span>
+              <span>{t("backToAdmin")}</span>
             </Link>
           </Button>
         </div>
@@ -73,6 +74,7 @@ export default async function AdminQuizResultsPage({
         </Suspense>
       </section>
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

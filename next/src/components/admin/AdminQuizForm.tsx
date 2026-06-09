@@ -474,7 +474,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={routes.adminQuizzes}
-            className="inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
+            className="q-button q-button-secondary h-11 border-2 border-[#211F20] bg-[#FFFDF8] px-4 text-[16px] shadow-[3px_3px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
           >
             <ArrowLeft className="h-4 w-4" />
             {t("backToQuizzes")}
@@ -632,7 +632,7 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
                     onClick={() => void generateWithAI()}
                     disabled={!aiPrompt.trim() || isGenerating}
                     className={[
-                      "q-button h-10 border-[#006E5A] bg-[#006E5A] text-[#FFFAF2] hover:bg-[#004D3D]",
+                      "q-button h-11 border-[#006E5A] bg-[#006E5A] text-[#FFFAF2] hover:bg-[#004D3D]",
                       !aiPrompt.trim() || isGenerating
                         ? "cursor-not-allowed opacity-50"
                         : "",
@@ -902,7 +902,10 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
               </span>
             </button>
 
-            <Link href={routes.adminQuizzes} className="q-button q-button-secondary">
+            <Link
+              href={routes.adminQuizzes}
+              className="q-button q-button-secondary h-11 px-5 text-[16px]"
+            >
               {t("cancel")}
             </Link>
           </div>

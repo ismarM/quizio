@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { AdminQuizEditor } from "@/components/admin/AdminQuizEditor";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { mapFullQuizToAdminDetail } from "@/components/admin/data/quiz-mappers";
@@ -67,6 +68,7 @@ export default async function AdminQuizDetailPage({
         <AdminQuizEditor categories={categories} quiz={quiz} />
       </section>
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

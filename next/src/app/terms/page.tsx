@@ -20,8 +20,16 @@ export default async function TermsPage() {
           body: t("sections.content.body"),
         },
         {
+          title: t("sections.results.title"),
+          body: t("sections.results.body"),
+        },
+        {
           title: t("sections.availability.title"),
           body: t("sections.availability.body"),
+        },
+        {
+          title: t("sections.disclaimer.title"),
+          body: t("sections.disclaimer.body"),
         },
       ]}
     />

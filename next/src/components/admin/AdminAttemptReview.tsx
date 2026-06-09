@@ -35,7 +35,7 @@ export function AdminAttemptReview({ review }: AdminAttemptReviewProps) {
       <div className="mb-6 flex">
         <Button
           asChild
-          className="q-button q-button-secondary rounded-none border-[#211F20] bg-[#FFFAF2] text-[#211F20] shadow-[4px_4px_0_#211F20] hover:bg-[#EBE4D8]"
+          className="q-button q-button-secondary h-11 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] text-[#211F20] shadow-[4px_4px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
           variant="outline"
         >
           <Link href={routes.adminQuizResults(review.quizId)}>

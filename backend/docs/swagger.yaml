@@ -1408,12 +1408,18 @@ paths:
       summary: Update preferences
       tags:
       - users
-  /api/users/me/role:
+  /api/users/{userId}/role:
     patch:
       consumes:
       - application/json
-      description: Update admin role for the authenticated user.
+      description: Update admin role. Admins can grant admin access to any user;
+        admins can only revoke admin access from themselves.
       parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
       - description: Update user role
         in: body
         name: request
@@ -1433,6 +1439,14 @@ paths:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpapi.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpapi.ErrorResponse'
         "500":

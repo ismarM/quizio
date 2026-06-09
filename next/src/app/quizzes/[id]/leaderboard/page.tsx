@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -23,9 +24,10 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
       <section className="q-container py-8 md:py-16">
         <Link
           href={routes.quizDetail(quizId)}
-          className="mb-8 inline-flex items-center gap-2 font-display text-lg hover:underline"
+          className="q-button q-button-secondary mb-8 h-11 w-fit border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[3px_3px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
         >
-          &larr; Back to quiz
+          <ArrowLeft className="h-4 w-4" />
+          Back to quiz
         </Link>
 
         <QuizLeaderboardTable quizId={quizId} />

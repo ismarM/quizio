@@ -1,4 +1,5 @@
 import { AttemptResult } from "@/components/attempts/AttemptResult";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { ServerFetchError, serverFetchJson } from "@/lib/api/server-fetch";
@@ -31,6 +32,7 @@ export default async function AttemptResultPage({
 
       <AttemptResult result={result} />
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

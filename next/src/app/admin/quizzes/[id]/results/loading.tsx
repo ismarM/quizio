@@ -1,4 +1,5 @@
 import { AdminQuizAttemptsLoading } from "@/components/admin/AdminQuizAttemptsSection";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 
@@ -17,6 +18,7 @@ export default function AdminQuizResultsLoadingPage() {
         <AdminQuizAttemptsLoading />
       </section>
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

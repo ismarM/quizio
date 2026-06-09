@@ -105,7 +105,7 @@ function FooterIcon({
       aria-label={label}
       rel={isExternal ? "noreferrer" : undefined}
       target={isExternal ? "_blank" : undefined}
-      className="flex h-9 w-9 items-center justify-center border border-[#211F20] bg-[#FFFAF2] hover:bg-[#211F20] hover:text-[#FFFAF2]"
+      className="flex h-11 w-11 items-center justify-center border-2 border-[#211F20] bg-[#FFFAF2] transition hover:-translate-y-0.5 hover:bg-[#211F20] hover:text-[#FFFAF2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006E5A]"
     >
       {children}
     </a>

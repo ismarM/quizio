@@ -1,7 +1,6 @@
 import {
   BarChart3,
   ListChecks,
-  Medal,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
@@ -15,6 +14,7 @@ import {
   DashboardSectionTitle,
 } from "@/components/dashboard/DashboardPanelPrimitives";
 import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { Badge } from "@/components/ui/badge";
@@ -151,34 +151,6 @@ export default async function DashboardPage() {
   );
   const averageScore =
     totalMax > 0 ? Math.round((totalAchieved / totalMax) * 100) : 0;
-  const bestSubmission = submissions.reduce<SubmissionSummary | null>(
-    (best, submission) => {
-      if (!best) {
-        return submission;
-      }
-
-      const currentPercent = getScorePercent(submission);
-      const bestPercent = getScorePercent(best);
-
-      if (currentPercent > bestPercent) {
-        return submission;
-      }
-
-      if (
-        currentPercent === bestPercent &&
-        submission.achieved_points > best.achieved_points
-      ) {
-        return submission;
-      }
-
-      return best;
-    },
-    null
-  );
-  const bestScore = bestSubmission ? getScorePercent(bestSubmission) : 0;
-  const bestScoreDetail = bestSubmission
-    ? t("bestOn", { quizTitle: bestSubmission.quiz_title })
-    : t("noQuizYet");
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
@@ -209,7 +181,7 @@ export default async function DashboardPage() {
           </aside>
 
           <div className="grid gap-6">
-            <section className="grid gap-4 md:grid-cols-3">
+            <section className="grid gap-4 md:grid-cols-2">
               <StatCard
                 icon={<ListChecks className="h-6 w-6" />}
                 label={t("completedQuizzes")}
@@ -219,12 +191,6 @@ export default async function DashboardPage() {
                 icon={<BarChart3 className="h-6 w-6" />}
                 label={t("averageScore")}
                 value={`${averageScore}%`}
-              />
-              <StatCard
-                icon={<Medal className="h-6 w-6" />}
-                label={t("bestScore")}
-                value={`${bestScore}%`}
-                detail={bestScoreDetail}
               />
             </section>
 
@@ -238,6 +204,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { requireAuth } from "@/lib/auth/server-auth";
@@ -42,6 +43,7 @@ export default async function NewAdminQuizPage() {
         <AdminQuizForm categories={categories} />
       </section>
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

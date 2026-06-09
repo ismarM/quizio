@@ -17,19 +17,22 @@ export async function SiteHeader() {
 
   const isLoggedIn = Boolean(user);
   const isAdmin = user?.isAdmin;
+  const logoHref = isLoggedIn ? routes.quizzes : routes.home;
 
   return (
     <header className="q-container flex items-center justify-between border-b-2 border-transparent py-5 md:py-7">
       <div className="flex items-center gap-6 md:gap-8">
         <Link
-          href={routes.home}
+          href={logoHref}
           className="font-display text-5xl leading-none text-[var(--q-green)]"
         >
           Quizio
         </Link>
-        <Link href={routes.quizzes} className="hover:text-[var(--q-red)]">
-          {t("exploreQuizzes")}
-        </Link>
+        {!isLoggedIn ? (
+          <Link href={routes.quizzes} className="hover:text-[var(--q-red)]">
+            {t("exploreQuizzes")}
+          </Link>
+        ) : null}
       </div>
 
       <nav className="hidden items-center gap-8 text-[15px] leading-6 text-[var(--q-ink)] md:flex">
@@ -60,7 +63,7 @@ export async function SiteHeader() {
 
             <Link
               href={routes.dashboard}
-              className="flex h-9 w-9 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)] hover:bg-[var(--q-green)] hover:text-[var(--q-on-accent)]"
+              className="flex h-11 w-11 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)] transition hover:-translate-y-0.5 hover:bg-[var(--q-green)] hover:text-[var(--q-on-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-focus)]"
               title={user?.email ?? t("profile")}
             >
               {user ? (
@@ -79,7 +82,7 @@ export async function SiteHeader() {
         {isLoggedIn ? (
           <Link
             href={routes.dashboard}
-            className="flex h-9 w-9 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)]"
+            className="flex h-11 w-11 items-center justify-center border-2 border-[var(--q-border)] bg-[var(--q-muted)] font-display text-xl text-[var(--q-green)] transition hover:-translate-y-0.5 hover:bg-[var(--q-green)] hover:text-[var(--q-on-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-focus)]"
             title={user?.email ?? t("profile")}
           >
             {getInitials(user?.email, user?.displayName)}

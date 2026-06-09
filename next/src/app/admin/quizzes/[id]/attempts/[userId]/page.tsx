@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { AdminAttemptReview } from "@/components/admin/AdminAttemptReview";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { loadAdminQuizAttemptReview } from "@/components/admin/data/quiz-results.server";
@@ -48,6 +49,7 @@ export default async function AdminAttemptReviewPage({
 
       <AdminAttemptReview review={review} />
 
+      <SiteFooter />
       <MobileBottomNav />
     </main>
   );

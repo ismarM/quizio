@@ -38,7 +38,7 @@ export function StaticInfoPage({
       <section className="q-container pb-12 pt-6 md:pb-16 md:pt-10">
         <Link
           href={routes.home}
-          className="mb-6 inline-flex items-center gap-2 q-mini text-[#211F20] hover:text-[#FF3C38]"
+          className="q-button q-button-secondary mb-6 h-11 w-fit border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[3px_3px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
         >
           <ArrowLeft className="h-4 w-4" />
           Quizio
@@ -58,7 +58,7 @@ export function StaticInfoPage({
 
         <Separator className="my-8 h-0.5 bg-[#211F20]" />
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {sections.map((section) => (
             <Card
               key={section.title}

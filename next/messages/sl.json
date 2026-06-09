@@ -53,9 +53,17 @@
           "title": "Vsebina kvizov",
           "body": "Ustvarjalci so odgovorni za vprašanja, odgovore, slike in opise, ki jih objavijo. Vsebina naj bo spoštljiva, točna in primerna za ciljno občinstvo."
         },
+        "results": {
+          "title": "Rezultati",
+          "body": "Poskusi kvizov, izbrani odgovori, rezultati in čas reševanja so lahko vidni administratorjem za pregled aktivnosti in pravično točkovanje."
+        },
         "availability": {
           "title": "Razpoložljivost",
           "body": "Quizio lahko spreminja funkcije, odpravlja napake ali začasno ustavi dele storitve med izboljševanjem platforme."
+        },
+        "disclaimer": {
+          "title": "Projektno obvestilo",
+          "body": "Quizio je izobraževalni projekt brez formalne garancije. Rezultati naj služijo kot povratna informacija za učenje, ne kot edini vir za pomembne odločitve."
         }
       }
     },
@@ -355,8 +363,24 @@
     "chooseFutureTime": "Izberi prihodnji čas ali uporabi Objavi zdaj.",
     "notScheduled": "Ni načrtovano",
     "publishes": "Objava {date}",
-    "publishedAt": "Objavljeno {date}"
-    ,
+    "publishedAt": "Objavljeno {date}",
+    "roleManager": {
+      "eyebrow": "Admin dostop",
+      "title": "Upravljanje adminov",
+      "description": "Dodaj admin dostop uporabniku po e-pošti ali odstrani admin dostop svojemu računu, če ga več ne potrebuješ.",
+      "currentAdmin": "Trenutni admin",
+      "emailLabel": "E-pošta uporabnika",
+      "emailPlaceholder": "uporabnik@primer.com",
+      "emailRequired": "Najprej vpiši e-pošto uporabnika.",
+      "grantAdmin": "Naredi admina",
+      "granting": "Posodabljam...",
+      "grantSuccess": "{email} je zdaj admin.",
+      "selfRevokeTitle": "Odstrani svoj dostop",
+      "selfRevokeDescription": "To odstrani admin dostop samo tvojemu računu. Po spremembi boš odjavljen.",
+      "revokeSelf": "Odstrani moj admin",
+      "revoking": "Odstranjujem...",
+      "updateFailed": "Posodobitev vloge ni uspela."
+    },
     "form": {
       "backToAdmin": "Nazaj na admin",
       "backToQuizzes": "Nazaj na kvize",
