@@ -242,7 +242,6 @@ type QuizAttemptsResponse struct {
 type QuizAttemptDTO struct {
 	IDAttempt        int32     `json:"id_attempt"`
 	UserID           int32     `json:"user_id"`
-	UserEmail        string    `json:"user_email"`
 	UserName         string    `json:"user_name"`
 	StartTime        time.Time `json:"start_time"`
 	TimeTakenSeconds *int32    `json:"time_taken_seconds,omitempty"`

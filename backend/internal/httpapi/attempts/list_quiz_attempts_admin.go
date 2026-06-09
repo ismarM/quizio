@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 )
 
 // ListQuizAttemptsAdmin godoc
 // @Summary List all attempts for a quiz (admin only)
-// @Description Retrieve a list of all attempts on a quiz with start time, time taken, user email, and score achieved.
+// @Description Retrieve a list of all attempts on a quiz with start time, time taken, user name, and score achieved.
 // @Tags attempts
 // @Produce json
 // @Param quizId path int true "Quiz ID"
@@ -91,10 +92,18 @@ func (h *Handler) ListQuizAttemptsAdmin(w http.ResponseWriter, r *http.Request) 
 			timeTakenSecs = nullTimeStringToSeconds(att.TimeTaken)
 		}
 
+		if att.UserName == "" {
+			at := strings.Index(att.UserEmail, "@")
+			if at > 0 {
+				att.UserName = att.UserEmail[:at]
+			} else {
+				att.UserName = att.UserEmail // no @ found, use full email
+			}
+		}
+
 		attemptsDTO = append(attemptsDTO, QuizAttemptDTO{
 			IDAttempt:        att.IDAttempt,
 			UserID:           att.TkUser,
-			UserEmail:        att.UserEmail,
 			UserName:         att.UserName,
 			StartTime:        att.StartTime,
 			TimeTakenSeconds: timeTakenSecs,
