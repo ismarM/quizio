@@ -122,5 +122,10 @@ function formatScore(achieved: number, max: number): string {
 }
 
 function getDisplayName(entry: LeaderboardEntryDTO): string {
-  return entry.display_name || entry.email.split("@")[0];
+  const displayName = entry.display_name?.trim();
+  if (displayName && displayName !== entry.email && !displayName.includes("@")) {
+    return displayName;
+  }
+
+  return entry.email.split("@")[0];
 }

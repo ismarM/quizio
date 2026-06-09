@@ -11,6 +11,7 @@ export type QuizDTO = {
   category_id?: number;
   category_name?: string;
   image_url?: string;
+  is_completed?: boolean;
 };
 
 export type QuizListResponse = {
@@ -77,6 +78,8 @@ export type QuizListItem = {
   status: "published" | "draft";
   opensAt: string;
   image: string;
+  isCompleted: boolean;
+  hasOpenAttempt?: boolean;
 };
 
 export type AnswerDTO = {
@@ -150,6 +153,7 @@ export type QuizAttemptDTO = {
   id_attempt: number;
   user_id: number;
   user_email: string;
+  user_name: string;
   start_time: string;
   time_taken_seconds?: number;
   score_achieved: number;

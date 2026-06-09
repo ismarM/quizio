@@ -604,7 +604,8 @@ SELECT a.id_Attempt,
 	a.time_taken,
 	a.tk_Quiz,
 	a.tk_User,
-	u.email AS user_email
+	u.email AS user_email,
+	COALESCE(NULLIF(u.displayName, ''), u.email) AS user_name
 FROM quizio."Attempt" a
 JOIN quizio."User" u ON a.tk_User = u.id_User
 WHERE a.tk_Quiz = $1
@@ -618,6 +619,7 @@ type ListAttemptsByQuizRow struct {
 	TkQuiz    int32          `json:"tk_quiz"`
 	TkUser    int32          `json:"tk_user"`
 	UserEmail string         `json:"user_email"`
+	UserName  string         `json:"user_name"`
 }
 
 func (q *Queries) ListAttemptsByQuiz(ctx context.Context, tkQuiz int32) ([]ListAttemptsByQuizRow, error) {
@@ -636,6 +638,7 @@ func (q *Queries) ListAttemptsByQuiz(ctx context.Context, tkQuiz int32) ([]ListA
 			&i.TkQuiz,
 			&i.TkUser,
 			&i.UserEmail,
+			&i.UserName,
 		); err != nil {
 			return nil, err
 		}
@@ -723,7 +726,7 @@ SELECT a.id_Attempt,
 	a.tk_Quiz,
 	a.tk_User,
 	u.email AS user_email,
-	u.displayName AS user_display_name
+	NULLIF(u.displayName, '') AS user_display_name
 FROM quizio."Attempt" a
 JOIN quizio."User" u ON a.tk_User = u.id_User
 WHERE a.tk_Quiz = $1
@@ -915,6 +918,13 @@ SELECT q.id_Quiz,
 	q.is_archived,
 	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
 	COUNT(qq.id_Question)::int AS question_count,
+	EXISTS (
+		SELECT 1
+		FROM quizio."Attempt" completed_attempt
+		WHERE completed_attempt.tk_Quiz = q.id_Quiz
+			AND completed_attempt.tk_User = $5
+			AND completed_attempt.time_taken IS NOT NULL
+	) AS is_completed,
 	q.tk_Category,
 	q.image_url,
 	c.name AS category_name
@@ -964,6 +974,7 @@ type ListQuizzesRow struct {
 	IsArchived       bool           `json:"is_archived"`
 	TimeLimitSeconds int32          `json:"time_limit_seconds"`
 	QuestionCount    int32          `json:"question_count"`
+	IsCompleted      bool           `json:"is_completed"`
 	TkCategory       sql.NullInt32  `json:"tk_category"`
 	ImageUrl         sql.NullString `json:"image_url"`
 	CategoryName     sql.NullString `json:"category_name"`
@@ -997,6 +1008,7 @@ func (q *Queries) ListQuizzes(ctx context.Context, arg ListQuizzesParams) ([]Lis
 			&i.IsArchived,
 			&i.TimeLimitSeconds,
 			&i.QuestionCount,
+			&i.IsCompleted,
 			&i.TkCategory,
 			&i.ImageUrl,
 			&i.CategoryName,

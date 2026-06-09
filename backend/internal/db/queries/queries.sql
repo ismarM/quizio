@@ -154,6 +154,13 @@ SELECT q.id_Quiz,
 	q.is_archived,
 	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds,
 	COUNT(qq.id_Question)::int AS question_count,
+	EXISTS (
+		SELECT 1
+		FROM quizio."Attempt" completed_attempt
+		WHERE completed_attempt.tk_Quiz = q.id_Quiz
+			AND completed_attempt.tk_User = $5
+			AND completed_attempt.time_taken IS NOT NULL
+	) AS is_completed,
 	q.tk_Category,
 	q.image_url,
 	c.name AS category_name
@@ -195,7 +202,7 @@ SELECT a.id_Attempt,
 	a.tk_Quiz,
 	a.tk_User,
 	u.email AS user_email,
-	u.displayName AS user_display_name
+	NULLIF(u.displayName, '') AS user_display_name
 FROM quizio."Attempt" a
 JOIN quizio."User" u ON a.tk_User = u.id_User
 WHERE a.tk_Quiz = $1
@@ -337,7 +344,8 @@ SELECT a.id_Attempt,
 	a.time_taken,
 	a.tk_Quiz,
 	a.tk_User,
-	u.email AS user_email
+	u.email AS user_email,
+	COALESCE(NULLIF(u.displayName, ''), u.email) AS user_name
 FROM quizio."Attempt" a
 JOIN quizio."User" u ON a.tk_User = u.id_User
 WHERE a.tk_Quiz = $1

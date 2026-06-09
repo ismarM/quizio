@@ -45,7 +45,7 @@ const adminStats = [
     metric: "published",
   },
   {
-    labelKey: "archivedLocked",
+    labelKey: "archived",
     shortLabelKey: "archived",
     icon: Archive,
     tone: "sand",

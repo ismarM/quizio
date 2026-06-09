@@ -6,7 +6,11 @@ import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { QuizBrowser } from "@/components/quizzes/QuizBrowser";
 import { mapQuizDtoToListItem } from "@/lib/mappers/quiz";
 import { serverFetchJson } from "@/lib/api/server-fetch";
-import type { QuizListItem, QuizListResponse } from "@/lib/types";
+import type {
+  OpenSessionsResponse,
+  QuizListItem,
+  QuizListResponse,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +19,18 @@ export default async function QuizzesPage() {
   let quizzes: QuizListItem[] = [];
 
   try {
-    const data = await serverFetchJson<QuizListResponse>(
-      "/api/quizzes?limit=20&offset=0"
+    const [data, sessions] = await Promise.all([
+      serverFetchJson<QuizListResponse>("/api/quizzes?limit=20&offset=0"),
+      serverFetchJson<OpenSessionsResponse>("/api/users/me/open-sessions"),
+    ]);
+    const openQuizIds = new Set(
+      sessions.attempts.map((session) => session.attempt.quiz_id)
     );
-    quizzes = data.quizzes.map(mapQuizDtoToListItem);
+
+    quizzes = data.quizzes.map((quiz) => ({
+      ...mapQuizDtoToListItem(quiz),
+      hasOpenAttempt: openQuizIds.has(quiz.id),
+    }));
   } catch (error) {
     console.error("Failed to load quizzes:", error);
   }

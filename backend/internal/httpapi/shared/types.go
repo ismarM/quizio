@@ -119,6 +119,7 @@ type QuizDTO struct {
 	CategoryID       *int32     `json:"category_id,omitempty"`
 	ImageURL         *string    `json:"image_url,omitempty"`
 	CategoryName     *string    `json:"category_name,omitempty"`
+	IsCompleted      bool       `json:"is_completed"`
 }
 
 type QuizResponse struct {
@@ -241,6 +242,7 @@ type QuizAttemptDTO struct {
 	IDAttempt        int32     `json:"id_attempt"`
 	UserID           int32     `json:"user_id"`
 	UserEmail        string    `json:"user_email"`
+	UserName         string    `json:"user_name"`
 	StartTime        time.Time `json:"start_time"`
 	TimeTakenSeconds *int32    `json:"time_taken_seconds,omitempty"`
 	ScoreAchieved    float64   `json:"score_achieved"`

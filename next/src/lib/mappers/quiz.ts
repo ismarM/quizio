@@ -33,5 +33,6 @@ export function mapQuizDtoToListItem(quiz: QuizDTO): QuizListItem {
     status: quiz.is_archived ? "draft" : "published",
     opensAt: formatQuizDate(quiz.publish_date ?? quiz.created_at),
     image: quiz.image_url ?? "",
+    isCompleted: Boolean(quiz.is_completed),
   };
 }

@@ -112,7 +112,7 @@ func QuizFromArchiveRow(row sqlc.ArchiveQuizRow) QuizDTO {
 }
 
 // QuizFromListRow maps the list query projection to the API DTO.
-func QuizFromListRow(id int32, title string, description sql.NullString, createdAt time.Time, publishDate sql.NullTime, ownerID int32, isArchived bool, timeLimitSeconds int32, questionCount int32, categoryID sql.NullInt32, imageURL sql.NullString, categoryName sql.NullString) QuizDTO {
+func QuizFromListRow(id int32, title string, description sql.NullString, createdAt time.Time, publishDate sql.NullTime, ownerID int32, isArchived bool, timeLimitSeconds int32, questionCount int32, categoryID sql.NullInt32, imageURL sql.NullString, categoryName sql.NullString, isCompleted bool) QuizDTO {
 	count := questionCount
 	return QuizDTO{
 		ID:               id,
@@ -127,5 +127,6 @@ func QuizFromListRow(id int32, title string, description sql.NullString, created
 		CategoryID:       NullInt32Ptr(categoryID),
 		ImageURL:         NullStringPtr(imageURL),
 		CategoryName:     NullStringPtr(categoryName),
+		IsCompleted:      isCompleted,
 	}
 }

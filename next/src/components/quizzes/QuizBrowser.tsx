@@ -25,6 +25,7 @@ type QuizBrowserProps = {
 };
 
 type DurationFilter = "any" | "short" | "medium" | "long";
+type CompletionFilter = "all" | "completed" | "uncompleted";
 type SortFilter =
   | "newest"
   | "oldest"
@@ -34,6 +35,11 @@ type SortFilter =
   | "questions-desc";
 
 const durationValues: DurationFilter[] = ["any", "short", "medium", "long"];
+const completionValues: CompletionFilter[] = [
+  "all",
+  "completed",
+  "uncompleted",
+];
 
 const sortValues: SortFilter[] = [
   "newest",
@@ -53,6 +59,12 @@ function parseDurationFilter(value: string | null): DurationFilter {
   return durationValues.some((option) => option === value)
     ? (value as DurationFilter)
     : "any";
+}
+
+function parseCompletionFilter(value: string | null): CompletionFilter {
+  return completionValues.some((option) => option === value)
+    ? (value as CompletionFilter)
+    : "all";
 }
 
 function parseSortFilter(value: string | null): SortFilter {
@@ -106,6 +118,9 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
   const [duration, setDuration] = useState<DurationFilter>(() =>
     parseDurationFilter(searchParams.get("duration"))
   );
+  const [completion, setCompletion] = useState<CompletionFilter>(() =>
+    parseCompletionFilter(searchParams.get("completion"))
+  );
   const [sortBy, setSortBy] = useState<SortFilter>(() =>
     parseSortFilter(searchParams.get("sort"))
   );
@@ -126,8 +141,14 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
 
       const matchesCategory = category === "All" || quiz.category === category;
       const matchesDuration = matchesDurationFilter(quiz, duration);
+      const matchesCompletion =
+        completion === "all" ||
+        (completion === "completed" && quiz.isCompleted) ||
+        (completion === "uncompleted" && !quiz.isCompleted);
 
-      return matchesQuery && matchesCategory && matchesDuration;
+      return (
+        matchesQuery && matchesCategory && matchesDuration && matchesCompletion
+      );
     });
 
     return filtered
@@ -156,7 +177,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         return a.index - b.index;
       })
       .map((item) => item.quiz);
-  }, [quizzes, query, category, duration, sortBy]);
+  }, [quizzes, query, category, duration, completion, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredQuizzes.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -172,6 +193,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         { name: "query", value: query },
         { defaultValue: "All", name: "category", value: category },
         { defaultValue: "any", name: "duration", value: duration },
+        { defaultValue: "all", name: "completion", value: completion },
         { defaultValue: "newest", name: "sort", value: sortBy },
         { defaultValue: 1, name: "page", value: currentPage },
         { defaultValue: "grid", name: "view", value: viewMode },
@@ -189,6 +211,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     query,
     category,
     duration,
+    completion,
     sortBy,
     currentPage,
     viewMode,
@@ -212,6 +235,11 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     setPage(1);
   }
 
+  function setNextCompletion(value: string) {
+    setCompletion(parseCompletionFilter(value));
+    setPage(1);
+  }
+
   function setNextSort(value: string) {
     setSortBy(parseSortFilter(value));
     setPage(1);
@@ -220,6 +248,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
   function clearFilters() {
     setCategory("All");
     setDuration("any");
+    setCompletion("all");
     setSortBy("newest");
     setQuery("");
     setPage(1);
@@ -229,6 +258,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     query.trim().length > 0,
     category !== "All",
     duration !== "any",
+    completion !== "all",
     sortBy !== "newest",
   ].filter(Boolean).length;
 
@@ -248,6 +278,12 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
     { value: "questions-desc", label: t("sortMostQuestions") },
   ];
 
+  const completionOptions: { value: CompletionFilter; label: string }[] = [
+    { value: "all", label: t("completionAll") },
+    { value: "completed", label: t("completionCompleted") },
+    { value: "uncompleted", label: t("completionUncompleted") },
+  ];
+
   return (
     <div className="flex flex-col gap-5">
       <div className="grid gap-3 md:grid-cols-[1fr_auto]">
@@ -265,18 +301,18 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         <button
           type="button"
           onClick={() => setFiltersOpen((value) => !value)}
-          className="q-button q-button-secondary h-12 gap-2"
+          className="q-button q-button-secondary inline-flex h-12 items-center justify-center gap-2 text-center"
         >
           <Filter className="h-4 w-4" />
           {t("filters")}
-          <span className="flex h-6 w-6 items-center justify-center bg-[var(--q-green)] q-mini text-[var(--q-on-accent)]">
+          <span className="grid size-6 place-items-center bg-[var(--q-green)] pt-0 q-mini leading-none text-[var(--q-on-accent)]">
             {activeFilterCount}
           </span>
         </button>
       </div>
 
       {filtersOpen ? (
-        <div className="grid gap-4 border border-[var(--q-muted-strong)] bg-[var(--q-muted)] p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+        <div className="grid gap-4 border border-[var(--q-muted-strong)] bg-[var(--q-muted)] p-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto] md:items-end">
           <FilterSelect
             label={t("filterCategory")}
             options={categoryOptions.map((item) => ({
@@ -291,6 +327,12 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
             options={durationOptions}
             value={duration}
             onChange={setNextDuration}
+          />
+          <FilterSelect
+            label={t("filterCompletion")}
+            options={completionOptions}
+            value={completion}
+            onChange={setNextCompletion}
           />
           <FilterSelect
             label={t("filterSort")}
@@ -440,7 +482,7 @@ function FilterSelect({
       </span>
 
       <select
-        className="q-input h-10 bg-[var(--q-surface)] q-mini"
+        className="q-input h-10 appearance-none rounded-none border-2 border-[var(--q-border)] bg-[var(--q-surface)] pr-10 q-mini text-[var(--q-ink)] transition focus:border-[var(--q-green)]"
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >

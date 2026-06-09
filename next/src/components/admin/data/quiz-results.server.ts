@@ -91,6 +91,10 @@ function buildAdminAttemptReview(
     quizTitle: result.quiz.title,
     userId: attempt?.user_id ?? result.attempt.user_id,
     userEmail: attempt?.user_email ?? `User #${result.attempt.user_id}`,
+    userName:
+      attempt?.user_name ??
+      attempt?.user_email ??
+      `User #${result.attempt.user_id}`,
     attemptId: attempt?.id_attempt ?? result.attempt.id,
     status,
     startedAt: result.attempt.start_time,
@@ -146,6 +150,7 @@ function toAdminAttemptListItem(
     attemptId: review.attemptId,
     userId: review.userId,
     userEmail: review.userEmail,
+    userName: review.userName,
     status: review.status,
     startedAt: review.startedAt,
     submittedAt: review.submittedAt,

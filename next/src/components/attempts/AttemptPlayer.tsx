@@ -31,7 +31,15 @@ export function AttemptPlayer({
 }: AttemptPlayerProps) {
   const t = useTranslations("attempt");
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const answeredQuestionIds = new Set(
+      responses.map((response) => response.question_id)
+    );
+    const firstUnansweredIndex = questions.findIndex(
+      (question) => !answeredQuestionIds.has(question.id)
+    );
+    return firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0;
+  });
   const [answers, setAnswers] = useState<Record<number, number>>(() => {
     const initial: Record<number, number> = {};
     responses.forEach((response) => {

@@ -57,10 +57,7 @@ func (h *Handler) ListQuizzes(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid_query", "invalid submitted_only")
 		return
 	}
-	var submittedBy int32
-	if submittedOnly {
-		submittedBy = claims.ID
-	}
+	submittedBy := claims.ID
 	sortVal := r.URL.Query().Get("sort")
 
 	limit, err := parseQueryInt32(r, "limit", defaultLimit)

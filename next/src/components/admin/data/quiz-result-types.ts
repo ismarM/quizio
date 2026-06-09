@@ -17,6 +17,7 @@ export type AdminAttemptReview = {
   quizTitle: string;
   userId: number;
   userEmail: string;
+  userName: string;
   attemptId: number;
   status: AdminAttemptStatus;
   startedAt: string;
@@ -33,6 +34,7 @@ export type AdminAttemptListItem = {
   attemptId: number;
   userId: number;
   userEmail: string;
+  userName: string;
   status: AdminAttemptStatus;
   startedAt: string;
   submittedAt?: string;

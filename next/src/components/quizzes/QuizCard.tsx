@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BookOpen,
   Calculator,
+  CheckCircle2,
   FlaskConical,
   Globe2,
   Landmark,
@@ -97,9 +98,23 @@ export function QuizCard({ quiz, viewMode = "grid" }: QuizCardProps) {
           {quiz.title}
         </h2>
 
-        <span className="mt-2 inline-flex bg-[#DDECE8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
-          {quiz.category}
-        </span>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="inline-flex bg-[#DDECE8] px-2 py-1 text-[12px] leading-4 text-[#006E5A]">
+            {quiz.category}
+          </span>
+          {quiz.isCompleted ? (
+            <span className="inline-flex items-center gap-1 bg-[#006E5A] px-2 py-1 text-[12px] leading-4 text-[#FFFAF2]">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              COMPLETED
+            </span>
+          ) : null}
+          {quiz.hasOpenAttempt ? (
+            <span className="inline-flex items-center gap-1 border border-[#FF3C38] bg-[#FFFDF8] px-2 py-1 text-[12px] leading-4 text-[#FF3C38]">
+              <Clock3 className="h-3.5 w-3.5" />
+              IN PROGRESS
+            </span>
+          ) : null}
+        </div>
 
         <p className="mt-3 line-clamp-2 text-[14px] leading-5 text-[#211F20] md:min-h-[40px]">
           {quiz.description}

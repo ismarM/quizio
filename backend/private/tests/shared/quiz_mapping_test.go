@@ -25,6 +25,7 @@ func TestQuizFromListRowMapsNullableFields(t *testing.T) {
 		sql.NullInt32{Int32: 3, Valid: true},
 		sql.NullString{String: "https://example.com/image.png", Valid: true},
 		sql.NullString{String: "Math", Valid: true},
+		true,
 	)
 
 	if got.ID != 1 || got.Title != "Final quiz" || got.OwnerID != 2 {
@@ -48,6 +49,9 @@ func TestQuizFromListRowMapsNullableFields(t *testing.T) {
 	if got.CategoryName == nil || *got.CategoryName != "Math" {
 		t.Fatalf("CategoryName = %v, want Math", got.CategoryName)
 	}
+	if !got.IsCompleted {
+		t.Fatal("IsCompleted = false, want true")
+	}
 }
 
 func TestQuizFromListRowMapsInvalidNullsToNil(t *testing.T) {
@@ -64,6 +68,7 @@ func TestQuizFromListRowMapsInvalidNullsToNil(t *testing.T) {
 		sql.NullInt32{},
 		sql.NullString{},
 		sql.NullString{},
+		false,
 	)
 
 	if got.Description != nil {

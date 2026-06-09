@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Check,
   Clock3,
-  Mail,
   Timer,
   Trophy,
   UserRound,
@@ -79,7 +78,7 @@ export function AdminAttemptReview({ review }: AdminAttemptReviewProps) {
               <div>
                 <p className="q-mini text-[#8F8F8F]">User</p>
                 <p className="mt-1 break-all font-display text-3xl leading-none text-[#211F20]">
-                  {review.userEmail}
+                  {review.userName}
                 </p>
               </div>
               <AttemptStatusBadge status={review.status} />
@@ -94,9 +93,9 @@ export function AdminAttemptReview({ review }: AdminAttemptReviewProps) {
                 value={`#${review.userId}`}
               />
               <InfoRow
-                icon={<Mail className="h-4 w-4" />}
-                label="Email"
-                value={review.userEmail}
+                icon={<UserRound className="h-4 w-4" />}
+                label="Username"
+                value={review.userName}
               />
               <InfoRow
                 icon={<Clock3 className="h-4 w-4" />}

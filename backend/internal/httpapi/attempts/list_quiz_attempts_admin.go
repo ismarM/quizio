@@ -95,6 +95,7 @@ func (h *Handler) ListQuizAttemptsAdmin(w http.ResponseWriter, r *http.Request) 
 			IDAttempt:        att.IDAttempt,
 			UserID:           att.TkUser,
 			UserEmail:        att.UserEmail,
+			UserName:         att.UserName,
 			StartTime:        att.StartTime,
 			TimeTakenSeconds: timeTakenSecs,
 			ScoreAchieved:    achieved,

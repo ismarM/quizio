@@ -85,6 +85,12 @@ export function AttemptResult({ result }: AttemptResultProps) {
                                 >
                                 Explore more quizzes
                                 </Link>
+                                <Link
+                                href={routes.quizLeaderboard(result.quiz.id)}
+                                className="q-button q-button-secondary"
+                                >
+                                View leaderboard
+                                </Link>
 
                             </div>
                         </div>

@@ -21,7 +21,7 @@ import {
 import { isImageUrl, uploadImageFile } from "@/lib/uploads/images";
 import { proxyFetchJson } from "@/lib/api/proxy-client";
 import { routes } from "@/lib/navigation/routes";
-import type { CategoryDTO, QuizFullResponse } from "@/lib/types";
+import type { CategoryDTO } from "@/lib/types";
 
 type AdminQuizFormProps = {
   categories: CategoryDTO[];
@@ -449,12 +449,12 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
 
     setIsSubmitting(true);
     try {
-      const data = await proxyFetchJson<QuizFullResponse>("/quizzes", {
+      await proxyFetchJson<unknown>("/quizzes", {
         method: "POST",
         body: payload,
       });
 
-      router.push(routes.adminQuizDetail(data.quiz.id));
+      router.push(routes.admin);
       router.refresh();
     } catch (error) {
       const message =

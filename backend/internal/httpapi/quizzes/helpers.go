@@ -35,6 +35,7 @@ func (h *Handler) loadQuizzes(ctx context.Context, scope, title string, ownerID 
 			row.TkCategory,
 			row.ImageUrl,
 			row.CategoryName,
+			row.IsCompleted,
 		))
 	}
 	return results, nil

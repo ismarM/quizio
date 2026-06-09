@@ -31,7 +31,6 @@ import type { QuizResponse } from "@/lib/types";
 
 type QuizPublishPayload = {
   publish_date?: string;
-  unpublish?: boolean;
 };
 
 type StatusFilter = "all" | AdminQuizListItem["status"];
@@ -200,7 +199,7 @@ function AdminQuizBrowserInner({
             >
               <Link href={routes.adminArchivedQuizzes}>
                 <Lock className="h-4 w-4" />
-                {t("archivedLocked")}
+                {t("archived")}
               </Link>
             </Button>
           )}
@@ -425,7 +424,7 @@ function AdminQuizCard({
   );
 }
 
-type PendingAction = "publish-now" | "schedule" | "archive" | "unpublish";
+type PendingAction = "publish-now" | "schedule" | "archive";
 
 function AdminQuizActions({
   quiz,
@@ -529,10 +528,6 @@ function AdminQuizActions({
     );
   }
 
-  function handleUnpublish() {
-    void runAction("unpublish", () => unpublishQuiz(quiz));
-  }
-
   return (
     <div
       className="relative flex items-center justify-center gap-3 border-l-2 border-[#EBE4D8] px-4"
@@ -542,10 +537,10 @@ function AdminQuizActions({
       <button
         aria-expanded={menuOpen}
         aria-haspopup="dialog"
-        aria-label={isPublished ? t("unpublish") : t("publish")}
+        aria-label={isPublished ? t("archive") : t("publish")}
         className="flex h-11 w-11 items-center justify-center border-2 border-[#D7D0C4] bg-[#FFFAF2] text-[#211F20] transition hover:-translate-y-0.5 hover:border-[#211F20] hover:bg-[#EBE4D8]"
         onClick={() => setActionPanelOpen(true)}
-        title={isPublished ? t("unpublish") : t("publish")}
+        title={isPublished ? t("archive") : t("publish")}
         type="button"
       >
         <Send className="h-5 w-5" />
@@ -671,14 +666,12 @@ function AdminQuizActions({
                 <Button
                   className="q-button q-button-secondary h-10 rounded-none border-2 border-[#211F20] bg-[#FFFAF2] text-[15px] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8]"
                   disabled={isPending}
-                  onClick={handleUnpublish}
+                  onClick={handleArchive}
                   type="button"
                   variant="outline"
                 >
-                  <Lock className="h-4 w-4" />
-                  {pendingAction === "unpublish"
-                    ? t("saving")
-                    : t("unpublishToDraft")}
+                  <Archive className="h-4 w-4" />
+                  {pendingAction === "archive" ? t("saving") : t("archive")}
                 </Button>
               ) : (
                 <div className="border-2 border-[#D7D0C4] bg-[#EBE4D8] p-3">
@@ -799,7 +792,7 @@ function StatusMarker({ status }: { status: AdminQuizListItem["status"] }) {
         <span className={["h-2.5 w-2.5 rounded-full", tone.dot].join(" ")} />
       )}
       <span className={["q-mini", tone.text].join(" ")}>
-        {status === "archived" ? t("locked") : getStatusLabel(status, t)}
+        {status === "archived" ? t("archived") : getStatusLabel(status, t)}
       </span>
     </div>
   );
@@ -892,15 +885,6 @@ async function scheduleQuizRelease(
   publishDate: string
 ) {
   const body: QuizPublishPayload = { publish_date: publishDate };
-
-  return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
-    method: "PATCH",
-    body,
-  });
-}
-
-async function unpublishQuiz(quiz: AdminQuizListItem) {
-  const body: QuizPublishPayload = { unpublish: true };
 
   return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
     method: "PATCH",
