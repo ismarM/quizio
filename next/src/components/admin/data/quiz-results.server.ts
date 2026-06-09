@@ -85,16 +85,19 @@ function buildAdminAttemptReview(
     attempt?.time_taken_seconds ?? result.attempt.time_taken_seconds;
   const status: AdminAttemptStatus =
     typeof timeTakenSeconds === "number" ? "submitted" : "in_progress";
+  const userName = normalizeAdminUserName(
+    attempt?.user_name ??
+      result.attempt.user_name ??
+      attempt?.user_email ??
+      `User #${result.attempt.user_id}`
+  );
 
   return {
     quizId: result.quiz.id,
     quizTitle: result.quiz.title,
     userId: attempt?.user_id ?? result.attempt.user_id,
-    userEmail: attempt?.user_email ?? `User #${result.attempt.user_id}`,
-    userName:
-      attempt?.user_name ??
-      attempt?.user_email ??
-      `User #${result.attempt.user_id}`,
+    userEmail: attempt?.user_email ?? userName,
+    userName,
     attemptId: attempt?.id_attempt ?? result.attempt.id,
     status,
     startedAt: result.attempt.start_time,
@@ -109,6 +112,15 @@ function buildAdminAttemptReview(
     totalQuestions: result.questions.length,
     questions,
   };
+}
+
+function normalizeAdminUserName(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "User";
+  }
+
+  return trimmed.includes("@") ? trimmed.split("@")[0] : trimmed;
 }
 
 function buildQuestionReview(

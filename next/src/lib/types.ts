@@ -100,6 +100,7 @@ export type AttemptDTO = {
   id: number;
   quiz_id: number;
   user_id: number;
+  user_name?: string;
   start_time: string;
   time_taken_seconds?: number;
 };

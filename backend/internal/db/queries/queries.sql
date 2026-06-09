@@ -270,10 +270,12 @@ SELECT a.id_Attempt,
 	a.time_taken,
 	a.tk_Quiz,
 	a.tk_User,
+	COALESCE(NULLIF(u.displayName, ''), split_part(u.email, '@', 1)) AS user_name,
 	(NOW() < a.start_time + q.time_limit) AS is_active,
 	EXTRACT(EPOCH FROM q.time_limit)::int AS time_limit_seconds
 FROM quizio."Attempt" a
 JOIN quizio."Quiz" q ON q.id_Quiz = a.tk_Quiz
+JOIN quizio."User" u ON u.id_User = a.tk_User
 WHERE a.tk_Quiz = $1
 	AND a.tk_User = $2;
 
@@ -345,7 +347,7 @@ SELECT a.id_Attempt,
 	a.tk_Quiz,
 	a.tk_User,
 	u.email AS user_email,
-	COALESCE(NULLIF(u.displayName, ''), u.email) AS user_name
+	COALESCE(NULLIF(u.displayName, ''), split_part(u.email, '@', 1)) AS user_name
 FROM quizio."Attempt" a
 JOIN quizio."User" u ON a.tk_User = u.id_User
 WHERE a.tk_Quiz = $1

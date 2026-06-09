@@ -43,6 +43,7 @@ func attemptFromRow(row sqlc.GetAttemptWithQuizRow) AttemptDTO {
 		TimeTakenSeconds: nullTimeStringToSeconds(row.TimeTaken),
 		QuizID:           row.TkQuiz,
 		UserID:           row.TkUser,
+		UserName:         row.UserName,
 	}
 }
 func mapAttemptResponses(rows []sqlc.QuizioAttemptQuestion) []AttemptQuestionDTO {

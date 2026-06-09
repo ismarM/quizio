@@ -301,12 +301,14 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
         <button
           type="button"
           onClick={() => setFiltersOpen((value) => !value)}
-          className="q-button q-button-secondary inline-flex h-12 items-center justify-center gap-2 text-center"
+          className="q-button q-button-secondary grid h-12 place-items-center px-5 text-center"
         >
-          <Filter className="h-4 w-4" />
-          {t("filters")}
-          <span className="grid size-6 place-items-center bg-[var(--q-green)] pt-0 q-mini leading-none text-[var(--q-on-accent)]">
-            {activeFilterCount}
+          <span className="inline-flex items-center justify-center gap-2">
+            <Filter className="h-4 w-4" />
+            <span className="pt-1">{t("filters")}</span>
+            <span className="grid size-6 place-items-center bg-[var(--q-green)] pt-0 q-mini leading-none text-[var(--q-on-accent)]">
+              {activeFilterCount}
+            </span>
           </span>
         </button>
       </div>

@@ -157,6 +157,7 @@ type AttemptDTO struct {
 	TimeTakenSeconds *int32    `json:"time_taken_seconds,omitempty"`
 	QuizID           int32     `json:"quiz_id"`
 	UserID           int32     `json:"user_id"`
+	UserName         string    `json:"user_name,omitempty"`
 }
 
 type OpenAttemptDTO struct {
