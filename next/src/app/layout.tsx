@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -20,8 +20,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Quizio",
-  description: "Create. Challenge. Compete.",
+  applicationName: "Quizio",
+  title: {
+    default: "Quizio",
+    template: "%s | Quizio",
+  },
+  description:
+    "Create, publish and solve focused quiz challenges with clean results tracking.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icons/quizio-icon.svg", type: "image/svg+xml" }],
+    shortcut: [{ url: "/icons/quizio-icon.svg", type: "image/svg+xml" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Quizio",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFAF2" },
+    { media: "(prefers-color-scheme: dark)", color: "#11100E" },
+  ],
 };
 
 export default async function RootLayout({
