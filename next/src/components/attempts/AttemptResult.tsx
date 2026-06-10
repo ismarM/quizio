@@ -5,6 +5,7 @@ import {
     Trophy,
     X,
 } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { isImageUrl } from "@/lib/uploads/images";
 import { routes } from "@/lib/navigation/routes";
@@ -14,8 +15,10 @@ type AttemptResultProps = {
     result: AttemptResultResponse;
 }
 
-export function AttemptResult({ result }: AttemptResultProps) {
-    const summary = buildResultSummary(result);
+export async function AttemptResult({ result }: AttemptResultProps) {
+    const t = await getTranslations("attemptResult");
+    const locale = await getLocale();
+    const summary = buildResultSummary(result, t, locale);
     const percentage = summary.maxScore > 0
         ? Math.round((summary.totalScore / summary.maxScore) * 100)
         : 0;
@@ -29,7 +32,7 @@ export function AttemptResult({ result }: AttemptResultProps) {
                         className="q-button q-button-secondary mb-6 h-11 w-fit border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[3px_3px_0_#D7D0C4] transition hover:-translate-y-0.5 hover:bg-[#FFFDF8] hover:text-[#211F20]"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        Back to quizzes
+                        {t("backToQuizzes")}
                     </Link>
 
                     <div className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
@@ -47,35 +50,37 @@ export function AttemptResult({ result }: AttemptResultProps) {
                                 </p>
 
                                 <p className="mt-2 q-body text-[#211F20]">
-                                Final quiz result
+                                {t("finalQuizResult")}
                                 </p>
                             </div>
                         </div>
 
                         <div>
                             <p className="mb-3 inline-flex bg-[#FFFAF2] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                                Result
+                                {t("result")}
                             </p>
 
                             <h1 className="font-display text-[58px] leading-[0.9] text-[#211F20] md:text-[92px]">
-                                Quiz completed.
+                                {t("quizCompleted")}
                             </h1>
 
                             <p className="mt-5 max-w-2xl text-[18px] leading-7 text-[#211F20]">
-                                You finished <strong>{summary.quizTitle}</strong>. Your score is
-                                saved and can be shown on the quiz leaderboard.
+                                {t.rich("completedBody", {
+                                    quizTitle: summary.quizTitle,
+                                    strong: (chunks) => <strong>{chunks}</strong>,
+                                })}
                             </p>
 
                             <div className="mt-7 grid gap-3 sm:grid-cols-3">
                                 <StatBox
-                                    label="Score"
+                                    label={t("score")}
                                     value={`${summary.totalScore}/${summary.maxScore}`}
                                 />
                                 <StatBox
-                                    label="Correct"
+                                    label={t("correct")}
                                     value={`${summary.correctAnswers}/${summary.totalQuestions}`}
                                 />
-                                <StatBox label="Time" value={summary.timeTaken} />
+                                <StatBox label={t("time")} value={summary.timeTaken} />
                             </div>
 
                             <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -83,13 +88,13 @@ export function AttemptResult({ result }: AttemptResultProps) {
                                 href={routes.quizzes}
                                 className="q-button q-button-primary h-12 border-[#FF3C38] bg-[#FF3C38] px-5 text-[17px]"
                                 >
-                                Explore more quizzes
+                                {t("exploreMoreQuizzes")}
                                 </Link>
                                 <Link
                                 href={routes.quizLeaderboard(result.quiz.id)}
                                 className="q-button q-button-secondary h-12 px-5 text-[17px]"
                                 >
-                                View leaderboard
+                                {t("viewLeaderboard")}
                                 </Link>
 
                             </div>
@@ -102,16 +107,15 @@ export function AttemptResult({ result }: AttemptResultProps) {
                         <Trophy className="mb-6 h-12 w-12" strokeWidth={1.8} />
 
                         <p className="font-display text-[38px] leading-[0.9] md:text-[44px]">
-                            Nice attempt.
+                            {t("niceAttempt")}
                         </p>
 
                         <p className="mt-4 text-[15px] leading-6">
-                            Review your answers below. Correct answers earn points, incorrect
-                            answers are shown clearly.
+                            {t("reviewBody")}
                         </p>
 
                         <div className="mt-6 border-2 border-[#FFFAF2] p-4">
-                            <p className="q-mini">Submitted</p>
+                            <p className="q-mini">{t("submitted")}</p>
                             <p className="font-display text-2xl">{summary.submittedAt}</p>
                         </div>
                     </aside>
@@ -120,21 +124,30 @@ export function AttemptResult({ result }: AttemptResultProps) {
                             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                             <div>
                                 <p className="mb-2 inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-                                Review
+                                {t("review")}
                                 </p>
                                 <h2 className="font-display text-[48px] leading-none text-[#211F20]">
-                                Your answers
+                                {t("yourAnswers")}
                                 </h2>
                             </div>
 
-                            <span className="q-badge-green">Graded</span>
+                            <span className="q-badge-green">{t("graded")}</span>
                         </div>
 
                         <div className="h-[2px] bg-[#211F20]" />
 
                         <div className="mt-4 grid gap-3">
                             {summary.answers.map((answer, index) => (
-                                <AnswerReview key={`${answer.question}-${index}`} index={index} {...answer} />
+                                <AnswerReview
+                                    correctLabel={t("correct")}
+                                    imageAnswerLabel={t("imageAnswer")}
+                                    index={index}
+                                    key={`${answer.question}-${index}`}
+                                    pointsLabel={t("points")}
+                                    questionLabel={t("question", { number: index + 1 })}
+                                    selectedLabel={t("selected")}
+                                    {...answer}
+                                />
                             ))}
                         </div>
                     </section>
@@ -162,13 +175,23 @@ function AnswerReview({
     correct,
     isCorrect,
     points,
+    correctLabel,
+    imageAnswerLabel,
+    pointsLabel,
+    questionLabel,
+    selectedLabel,
 }: {
-    index: number;
     question: string;
     selected: string;
     correct: string;
+    index: number;
     isCorrect: boolean;
     points: number;
+    correctLabel: string;
+    imageAnswerLabel: string;
+    pointsLabel: string;
+    questionLabel: string;
+    selectedLabel: string;
 }) {
     return (
         <article
@@ -177,7 +200,7 @@ function AnswerReview({
         >
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="q-mini text-[#8F8F8F]">Question {index + 1}</p>
+                    <p className="q-mini text-[#8F8F8F]">{questionLabel}</p>
                     <h3 className="mt-1 font-display text-2xl leading-none text-[#211F20]">
                         {question}
                     </h3>
@@ -200,15 +223,23 @@ function AnswerReview({
             </div>
 
             <div className="mt-4 grid gap-2 text-[14px] leading-5 md:grid-cols-3">
-                <ResultLine label="Selected" value={selected} />
-                <ResultLine label="Correct" value={correct} />
-                <ResultLine label="Points" value={`${points}`} />
+                <ResultLine imageAnswerLabel={imageAnswerLabel} label={selectedLabel} value={selected} />
+                <ResultLine imageAnswerLabel={imageAnswerLabel} label={correctLabel} value={correct} />
+                <ResultLine imageAnswerLabel={imageAnswerLabel} label={pointsLabel} value={`${points}`} />
             </div>
         </article>
     );
 }
 
-function ResultLine({ label, value }: { label: string; value: string }) {
+function ResultLine({
+    imageAnswerLabel,
+    label,
+    value,
+}: {
+    imageAnswerLabel: string;
+    label: string;
+    value: string;
+}) {
     return (
       <div className="border border-[#EBE4D8] p-3">
         <p className="q-mini text-[#8F8F8F]">{label}</p>
@@ -220,7 +251,7 @@ function ResultLine({ label, value }: { label: string; value: string }) {
               role="img"
               style={{ backgroundImage: `url("${value}")` }}
             />
-            <p className="q-mini text-[#8F8F8F]">Image answer</p>
+            <p className="q-mini text-[#8F8F8F]">{imageAnswerLabel}</p>
           </div>
         ) : (
           <p className="font-display text-xl leading-none text-[#211F20]">
@@ -250,7 +281,11 @@ type ResultSummary = {
     answers: AnswerSummary[];
 };
 
-function buildResultSummary(result: AttemptResultResponse): ResultSummary {
+function buildResultSummary(
+    result: AttemptResultResponse,
+    t: (key: string) => string,
+    locale: string
+): ResultSummary {
     const responseMap = new Map(
         result.responses.map((response) => [response.question_id, response.answer_id])
     );
@@ -271,8 +306,8 @@ function buildResultSummary(result: AttemptResultResponse): ResultSummary {
 
         return {
             question: question.title,
-            selected: selectedAnswer?.title ?? "Not answered",
-            correct: correctAnswer?.title ?? "Unknown",
+            selected: selectedAnswer?.title ?? t("notAnswered"),
+            correct: correctAnswer?.title ?? t("unknown"),
             isCorrect,
             points,
         };
@@ -289,7 +324,7 @@ function buildResultSummary(result: AttemptResultResponse): ResultSummary {
         correctAnswers,
         totalQuestions,
         timeTaken: formatDuration(timeTakenSeconds),
-        submittedAt: formatDate(result.attempt, timeTakenSeconds),
+        submittedAt: formatDate(result.attempt, timeTakenSeconds, locale, t("unknown")),
         answers,
     };
 }
@@ -300,13 +335,18 @@ function formatDuration(totalSeconds: number) {
     return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function formatDate(attempt: AttemptResultResponse["attempt"], timeTakenSeconds: number) {
+function formatDate(
+    attempt: AttemptResultResponse["attempt"],
+    timeTakenSeconds: number,
+    locale: string,
+    fallback: string
+) {
     const start = new Date(attempt.start_time);
     if (Number.isNaN(start.getTime())) {
-        return "Unknown";
+        return fallback;
     }
     const submitted = new Date(start.getTime() + timeTakenSeconds * 1000);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat(locale, {
         month: "short",
         day: "numeric",
     }).format(submitted);

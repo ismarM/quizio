@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   AlertCircle,
   CheckCircle2,
@@ -23,9 +24,36 @@ type AdminQuizAttemptsSectionProps = {
   quizId: string | number;
 };
 
+type AdminQuizAttemptsLabels = {
+  attempts: string;
+  avgScore: string;
+  correct: string;
+  description: string;
+  duration: string;
+  emptyBody: string;
+  emptyTitle: string;
+  errorBody: string;
+  errorTitle: string;
+  eyebrow: string;
+  inProgress: string;
+  notSubmitted: string;
+  open: string;
+  openAttemptNote: string;
+  review: string;
+  score: string;
+  started: string;
+  submitted: string;
+  title: string;
+  unknown: string;
+  userId: string;
+};
+
 export async function AdminQuizAttemptsSection({
   quizId,
 }: AdminQuizAttemptsSectionProps) {
+  const t = await getTranslations("admin.attempts");
+  const locale = await getLocale();
+  const labels = createAdminQuizAttemptsLabels(t);
   let attempts: AdminAttemptListItem[] = [];
   let hasError = false;
 
@@ -37,19 +65,30 @@ export async function AdminQuizAttemptsSection({
   }
 
   if (hasError) {
-    return <AdminQuizAttemptsError />;
+    return <AdminQuizAttemptsError labels={labels} />;
   }
 
-  return <AdminQuizAttemptsList attempts={attempts} quizId={quizId} />;
+  return (
+    <AdminQuizAttemptsList
+      attempts={attempts}
+      labels={labels}
+      locale={locale}
+      quizId={quizId}
+    />
+  );
 }
 
-export function AdminQuizAttemptsLoading() {
+export function AdminQuizAttemptsLoading({
+  labels,
+}: {
+  labels?: Pick<AdminQuizAttemptsLabels, "description" | "eyebrow" | "title">;
+}) {
   return (
     <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 shadow-[4px_4px_0_#EBE4D8] md:p-6">
       <AttemptsSectionHeader
-        description="Loading attempt results for this quiz."
-        eyebrow="Results"
-        title="Attempts"
+        description={labels?.description ?? ""}
+        eyebrow={labels?.eyebrow ?? ""}
+        title={labels?.title ?? ""}
       />
 
       <Separator className="my-5 h-[2px] bg-[#211F20]" />
@@ -79,9 +118,13 @@ export function AdminQuizAttemptsLoading() {
 
 function AdminQuizAttemptsList({
   attempts,
+  labels,
+  locale,
   quizId,
 }: {
   attempts: AdminAttemptListItem[];
+  labels: AdminQuizAttemptsLabels;
+  locale: string;
   quizId: string | number;
 }) {
   const submittedCount = attempts.filter(
@@ -92,30 +135,30 @@ function AdminQuizAttemptsList({
     <section className="border-2 border-[#211F20] bg-[#FFFAF2] p-5 shadow-[4px_4px_0_#EBE4D8] md:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <AttemptsSectionHeader
-          description="Review submitted and in-progress quiz attempts without leaving the admin flow."
-          eyebrow="Results"
-          title="Attempts"
+          description={labels.description}
+          eyebrow={labels.eyebrow}
+          title={labels.title}
         />
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[420px]">
           <CompactStat
             icon={<Users className="h-4 w-4" />}
-            label="Attempts"
+            label={labels.attempts}
             value={`${attempts.length}`}
           />
           <CompactStat
             icon={<CheckCircle2 className="h-4 w-4" />}
-            label="Submitted"
+            label={labels.submitted}
             value={`${submittedCount}`}
           />
           <CompactStat
             icon={<Clock3 className="h-4 w-4" />}
-            label="Open"
+            label={labels.open}
             value={`${attempts.length - submittedCount}`}
           />
           <CompactStat
             icon={<Trophy className="h-4 w-4" />}
-            label="Avg score"
+            label={labels.avgScore}
             value={formatAverageScore(attempts)}
           />
         </div>
@@ -124,13 +167,15 @@ function AdminQuizAttemptsList({
       <Separator className="my-5 h-[2px] bg-[#211F20]" />
 
       {attempts.length === 0 ? (
-        <AdminQuizAttemptsEmpty />
+        <AdminQuizAttemptsEmpty labels={labels} />
       ) : (
         <div className="grid gap-3">
           {attempts.map((attempt) => (
             <AdminQuizAttemptRow
               attempt={attempt}
               key={attempt.attemptId}
+              labels={labels}
+              locale={locale}
               quizId={quizId}
             />
           ))}
@@ -142,9 +187,13 @@ function AdminQuizAttemptsList({
 
 function AdminQuizAttemptRow({
   attempt,
+  labels,
+  locale,
   quizId,
 }: {
   attempt: AdminAttemptListItem;
+  labels: AdminQuizAttemptsLabels;
+  locale: string;
   quizId: string | number;
 }) {
   const isSubmitted = attempt.status === "submitted";
@@ -162,10 +211,12 @@ function AdminQuizAttemptRow({
               <p className="truncate font-display text-2xl leading-none text-[#211F20]">
                 {attempt.userName}
               </p>
-              <p className="q-mini text-[#8F8F8F]">User #{attempt.userId}</p>
+              <p className="q-mini text-[#8F8F8F]">
+                {labels.userId} #{attempt.userId}
+              </p>
             </div>
 
-            <AttemptStatusBadge status={attempt.status} />
+            <AttemptStatusBadge labels={labels} status={attempt.status} />
           </div>
 
           <Link
@@ -173,41 +224,41 @@ function AdminQuizAttemptRow({
             href={routes.adminQuizAttempt(quizId, attempt.userId)}
           >
             <Eye className="h-4 w-4" />
-            <span className="pt-[3px]">Review</span>
+            <span className="pt-[3px]">{labels.review}</span>
           </Link>
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           <ResultMetaItem
             icon={<Trophy className="h-4 w-4" />}
-            label="Score"
+            label={labels.score}
             value={formatScore(attempt.score, attempt.maxScore)}
           />
           <ResultMetaItem
             icon={<ListChecks className="h-4 w-4" />}
-            label="Correct"
+            label={labels.correct}
             value={`${attempt.correctAnswers}/${attempt.totalQuestions}`}
           />
           <ResultMetaItem
             icon={<Timer className="h-4 w-4" />}
-            label="Duration"
-            value={formatDuration(attempt.timeTakenSeconds)}
+            label={labels.duration}
+            value={formatDuration(attempt.timeTakenSeconds, labels)}
           />
           <ResultMetaItem
             icon={<Clock3 className="h-4 w-4" />}
-            label="Submitted"
-            value={formatDateTime(attempt.submittedAt)}
+            label={labels.submitted}
+            value={formatDateTime(attempt.submittedAt, locale, labels)}
           />
           <ResultMetaItem
             icon={<Clock3 className="h-4 w-4" />}
-            label="Started"
-            value={formatDateTime(attempt.startedAt)}
+            label={labels.started}
+            value={formatDateTime(attempt.startedAt, locale, labels)}
           />
         </div>
 
         {!isSubmitted ? (
           <p className="mt-3 q-mini text-[#8F8F8F]">
-            This attempt is still open, so final submission time and score may change.
+            {labels.openAttemptNote}
           </p>
         ) : null}
       </div>
@@ -216,33 +267,39 @@ function AdminQuizAttemptRow({
   );
 }
 
-function AdminQuizAttemptsEmpty() {
+function AdminQuizAttemptsEmpty({
+  labels,
+}: {
+  labels: AdminQuizAttemptsLabels;
+}) {
   return (
     <div className="border-2 border-dashed border-[#D7D0C4] bg-[#FFFDF8] p-8 text-center">
       <ListChecks className="mx-auto mb-4 h-10 w-10 text-[#006E5A]" />
       <p className="font-display text-4xl leading-none text-[#211F20]">
-        No attempts yet
+        {labels.emptyTitle}
       </p>
       <p className="mx-auto mt-2 max-w-xl q-body text-[#211F20]">
-        When users start or submit this quiz, their attempts will appear here for
-        admin review.
+        {labels.emptyBody}
       </p>
     </div>
   );
 }
 
-function AdminQuizAttemptsError() {
+function AdminQuizAttemptsError({
+  labels,
+}: {
+  labels: AdminQuizAttemptsLabels;
+}) {
   return (
     <section className="border-2 border-[#FF3C38] bg-[#FFFDF8] p-5 md:p-6">
       <div className="flex items-start gap-3">
         <AlertCircle className="mt-1 h-5 w-5 text-[#FF3C38]" />
         <div>
           <p className="font-display text-3xl leading-none text-[#211F20]">
-            Results could not be loaded
+            {labels.errorTitle}
           </p>
           <p className="mt-2 q-body text-[#211F20]">
-            The quiz editor is still available. Refresh the page to try loading
-            attempts again.
+            {labels.errorBody}
           </p>
         </div>
       </div>
@@ -312,7 +369,13 @@ function ResultMetaItem({
   );
 }
 
-function AttemptStatusBadge({ status }: { status: AdminAttemptListItem["status"] }) {
+function AttemptStatusBadge({
+  labels,
+  status,
+}: {
+  labels: AdminQuizAttemptsLabels;
+  status: AdminAttemptListItem["status"];
+}) {
   const isSubmitted = status === "submitted";
 
   return (
@@ -325,7 +388,7 @@ function AttemptStatusBadge({ status }: { status: AdminAttemptListItem["status"]
       ].join(" ")}
       variant="secondary"
     >
-      {isSubmitted ? "Submitted" : "In progress"}
+      {isSubmitted ? labels.submitted : labels.inProgress}
     </Badge>
   );
 }
@@ -354,9 +417,9 @@ function formatScore(score: number, maxScore: number) {
   return `${formatNumber(score)}/${formatNumber(maxScore)}`;
 }
 
-function formatDuration(totalSeconds?: number) {
+function formatDuration(totalSeconds: number | undefined, labels: AdminQuizAttemptsLabels) {
   if (typeof totalSeconds !== "number") {
-    return "In progress";
+    return labels.inProgress;
   }
 
   const minutes = Math.floor(totalSeconds / 60);
@@ -364,17 +427,21 @@ function formatDuration(totalSeconds?: number) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function formatDateTime(value?: string) {
+function formatDateTime(
+  value: string | undefined,
+  locale: string,
+  labels: AdminQuizAttemptsLabels
+) {
   if (!value) {
-    return "Not submitted";
+    return labels.notSubmitted;
   }
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return labels.unknown;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -384,4 +451,32 @@ function formatDateTime(value?: string) {
 
 function formatNumber(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function createAdminQuizAttemptsLabels(
+  t: (key: string) => string
+): AdminQuizAttemptsLabels {
+  return {
+    attempts: t("attempts"),
+    avgScore: t("avgScore"),
+    correct: t("correct"),
+    description: t("description"),
+    duration: t("duration"),
+    emptyBody: t("emptyBody"),
+    emptyTitle: t("emptyTitle"),
+    errorBody: t("errorBody"),
+    errorTitle: t("errorTitle"),
+    eyebrow: t("eyebrow"),
+    inProgress: t("inProgress"),
+    notSubmitted: t("notSubmitted"),
+    open: t("open"),
+    openAttemptNote: t("openAttemptNote"),
+    review: t("review"),
+    score: t("score"),
+    started: t("started"),
+    submitted: t("submitted"),
+    title: t("title"),
+    unknown: t("unknown"),
+    userId: t("userId"),
+  };
 }

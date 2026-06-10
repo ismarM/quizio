@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -14,6 +15,7 @@ type LeaderboardPageProps = {
 };
 
 export default async function LeaderboardPage({ params }: LeaderboardPageProps) {
+  const t = await getTranslations("leaderboard");
   const { id } = await params;
   const quizId = Number(id);
 
@@ -27,7 +29,7 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
           className="q-button q-button-secondary mb-8 h-11 w-fit border-2 border-[#211F20] bg-[#FFFAF2] px-4 text-[16px] shadow-[3px_3px_0_#EBE4D8] transition hover:-translate-y-0.5 hover:bg-[#EBE4D8] hover:text-[#211F20]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to quiz
+          {t("backToQuiz")}
         </Link>
 
         <QuizLeaderboardTable quizId={quizId} />

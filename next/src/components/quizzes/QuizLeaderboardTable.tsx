@@ -1,6 +1,7 @@
 "use client";
 
 import { Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
 import type { LeaderboardEntryDTO } from "@/lib/types";
@@ -10,6 +11,7 @@ type QuizLeaderboardTableProps = {
 };
 
 export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
+  const t = useTranslations("leaderboard");
   const { entries, isConnected } = useLeaderboard(quizId);
 
   return (
@@ -17,17 +19,17 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
       <div className="mb-12">
         <div className="flex items-center gap-4">
           <p className="inline-flex bg-[#EBE4D8] px-3 py-1 font-display text-lg leading-none text-[#006E5A]">
-            Leaderboard
+            {t("label")}
           </p>
           {isConnected ? (
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 animate-pulse rounded-full bg-[#006E5A]" />
-              <span className="font-display text-[#006E5A]">Live</span>
+              <span className="font-display text-[#006E5A]">{t("live")}</span>
             </div>
           ) : null}
         </div>
         <h1 className="mt-4 font-display text-[56px] leading-[0.9] text-[#211F20] md:text-[86px]">
-          Rankings
+          {t("heading")}
         </h1>
       </div>
 
@@ -36,16 +38,16 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
           <thead>
             <tr className="font-display text-xl text-[#211F20]">
               <th className="sticky top-0 z-10 w-20 border-b-2 border-[#211F20] bg-[#FFFAF2] py-4 pr-4">
-                Rank
+                {t("rank")}
               </th>
               <th className="sticky top-0 z-10 border-b-2 border-[#211F20] bg-[#FFFAF2] py-4 pr-4">
-                Player
+                {t("player")}
               </th>
               <th className="sticky top-0 z-10 border-b-2 border-[#211F20] bg-[#FFFAF2] py-4 pr-4">
-                Score
+                {t("scoreCol")}
               </th>
               <th className="sticky top-0 z-10 border-b-2 border-[#211F20] bg-[#FFFAF2] py-4">
-                Time
+                {t("timeCol")}
               </th>
             </tr>
           </thead>
@@ -53,7 +55,7 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
             {entries.length === 0 ? (
               <tr>
                 <td className="py-12 text-center text-lg opacity-60" colSpan={4}>
-                  No one has completed this quiz yet.
+                  {t("noCompletedResults")}
                 </td>
               </tr>
             ) : (
@@ -87,10 +89,10 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
                     </td>
                     <td className="py-4 pr-4">
                       <div className="font-display text-2xl text-[#006E5A]">
-                        {formatScore(entry.achieved_points, entry.max_points)}
+                        {formatScore(entry.achieved_points, entry.max_points, t("pts"))}
                       </div>
                       <div className="text-sm opacity-70">
-                        {scorePercentage}% correct
+                        {t("percentCorrect", { percentage: scorePercentage })}
                       </div>
                     </td>
                     <td className="py-4 font-display text-xl">
@@ -117,8 +119,8 @@ function formatTime(seconds: number | undefined): string {
   return `${minutes}:${remainder.toString().padStart(2, "0")}`;
 }
 
-function formatScore(achieved: number, max: number): string {
-  return `${Math.round(achieved)}/${Math.round(max)} pts`;
+function formatScore(achieved: number, max: number, pointsLabel: string): string {
+  return `${Math.round(achieved)}/${Math.round(max)} ${pointsLabel}`;
 }
 
 function getDisplayName(entry: LeaderboardEntryDTO): string {

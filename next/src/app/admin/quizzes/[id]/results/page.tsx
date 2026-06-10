@@ -27,6 +27,7 @@ export default async function AdminQuizResultsPage({
   params,
 }: AdminQuizResultsPageProps) {
   const t = await getTranslations("admin");
+  const attemptsT = await getTranslations("admin.attempts");
   const user = await requireAuth();
 
   if (!user.isAdmin) {
@@ -69,7 +70,17 @@ export default async function AdminQuizResultsPage({
           </div>
         </div>
 
-        <Suspense fallback={<AdminQuizAttemptsLoading />}>
+        <Suspense
+          fallback={
+            <AdminQuizAttemptsLoading
+              labels={{
+                description: attemptsT("description"),
+                eyebrow: attemptsT("eyebrow"),
+                title: attemptsT("title"),
+              }}
+            />
+          }
+        >
           <AdminQuizAttemptsSection quizId={id} />
         </Suspense>
       </section>

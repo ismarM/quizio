@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, RotateCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { routes } from "@/lib/navigation/routes";
 
@@ -16,6 +17,8 @@ export function AdminRouteError({
   message,
   reset,
 }: AdminRouteErrorProps) {
+  const t = useTranslations("admin.errors");
+
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
       <header className="q-container py-5 md:py-7">
@@ -35,7 +38,7 @@ export function AdminRouteError({
             {eyebrow}
           </p>
           <h1 className="font-display text-[54px] leading-[0.9] text-[#211F20] md:text-[82px]">
-            Results could not be loaded.
+            {t("title")}
           </h1>
           <p className="mt-4 max-w-2xl q-body text-[#211F20]">{message}</p>
 
@@ -46,14 +49,14 @@ export function AdminRouteError({
               type="button"
             >
               <RotateCcw className="h-4 w-4" />
-              Try again
+              {t("tryAgain")}
             </button>
             <Link
               className="q-button q-button-secondary h-11 px-5 text-[16px]"
               href={routes.admin}
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to admin
+              {t("backToAdmin")}
             </Link>
           </div>
         </div>

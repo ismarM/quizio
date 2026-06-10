@@ -79,7 +79,7 @@ export async function SiteHeader({
               )}
             </Link>
 
-            <LogoutButton />
+            <LogoutButton label={t("signOut")} />
           </>
         )}
       </div>

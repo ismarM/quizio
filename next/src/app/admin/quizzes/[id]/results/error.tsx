@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminRouteError } from "@/components/admin/AdminRouteError";
+import { useTranslations } from "next-intl";
 
 export default function AdminQuizResultsError({
   reset,
@@ -8,10 +9,12 @@ export default function AdminQuizResultsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("admin.errors");
+
   return (
     <AdminRouteError
-      eyebrow="Admin results"
-      message="Try again or go back to the admin panel."
+      eyebrow={t("resultsEyebrow")}
+      message={t("resultsMessage")}
       reset={reset}
     />
   );
