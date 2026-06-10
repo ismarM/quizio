@@ -52,7 +52,7 @@ Browser → Next.js BFF → Go REST API → PostgreSQL
 - **PostgreSQL** is the single source of truth for all mutable state, including timers.
 - **Firebase Authentication** handles user registration, login, and ID token issuance.
 
-Additional architectural information along with sequence diagrams can be found in the [docs](docs/architecture.md).
+Additional architectural information along with sequence diagrams can be found in the [docs](docs/ARCHITECTURE.md).
 
 ---
 
