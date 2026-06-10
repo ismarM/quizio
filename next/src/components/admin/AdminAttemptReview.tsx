@@ -19,6 +19,11 @@ import type {
   AdminAttemptQuestionReview,
   AdminAttemptReview as AdminAttemptReviewModel,
 } from "@/components/admin/data/quiz-result-types";
+import {
+  formatDateTimeLabel,
+  formatDurationClock,
+  formatScoreFraction,
+} from "@/lib/formatting/quiz-results";
 import { routes } from "@/lib/navigation/routes";
 
 type AdminAttemptReviewProps = {
@@ -420,17 +425,11 @@ function AttemptStatusBadge({
 }
 
 function formatScore(score: number, maxScore: number) {
-  return `${formatNumber(score)}/${formatNumber(maxScore)}`;
+  return formatScoreFraction(score, maxScore);
 }
 
 function formatDuration(totalSeconds: number | undefined, labels: AdminAttemptReviewLabels) {
-  if (typeof totalSeconds !== "number") {
-    return labels.inProgress;
-  }
-
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = Math.max(0, totalSeconds % 60);
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  return formatDurationClock(totalSeconds, labels.inProgress);
 }
 
 function formatDateTime(
@@ -438,26 +437,19 @@ function formatDateTime(
   locale: string,
   labels: AdminAttemptReviewLabels
 ) {
-  if (!value) {
-    return labels.notSubmitted;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return labels.unknown;
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  return formatDateTimeLabel({
+    fallback: labels.notSubmitted,
+    locale,
+    options: {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+    unknownLabel: labels.unknown,
+    value,
+  });
 }
 
 function createAdminAttemptReviewLabels(

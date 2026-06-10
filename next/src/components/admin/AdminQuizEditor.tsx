@@ -20,6 +20,22 @@ import {
 
 import { isImageUrl, uploadImageFile } from "@/lib/uploads/images";
 import type { AdminQuizDetail } from "@/components/admin/data/quiz-mappers";
+import {
+  buildQuestionPayload,
+  buildQuizMetadataPayload,
+  createAnswer,
+  createQuestion,
+  createValidationLabels,
+  getValidationErrors,
+  type AdminQuizAnswerDraft,
+  type AdminQuizQuestionDraft,
+  type QuizMetadataPayload,
+} from "@/components/admin/admin-quiz-form-shared";
+import {
+  FormField,
+  ImagePreview,
+  SummaryItem,
+} from "@/components/admin/admin-quiz-form-ui";
 import { proxyFetchJson } from "@/lib/api/proxy-client";
 import { routes } from "@/lib/navigation/routes";
 import type { CategoryDTO, QuestionDTO, QuizResponse } from "@/lib/types";
@@ -29,30 +45,10 @@ type AdminQuizEditorProps = {
   quiz: AdminQuizDetail;
 };
 
-type EditableAnswer = {
-  id: string;
-  originalId?: number;
-  text: string;
-  isCorrect: boolean;
-};
-
-type EditableQuestion = {
-  id: string;
-  originalId?: number;
-  title: string;
-  points: string;
-  answers: EditableAnswer[];
-};
+type EditableAnswer = AdminQuizAnswerDraft;
+type EditableQuestion = AdminQuizQuestionDraft;
 
 type QuestionAnimation = "insert" | "reorder" | "shuffle";
-
-type QuizMetadataPayload = {
-  title: string;
-  description?: string;
-  category_id?: number;
-  image_url?: string;
-  time_limit_seconds: number;
-};
 
 export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   const t = useTranslations("admin.form");
@@ -814,37 +810,6 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
   );
 }
 
-function FormField({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="block">
-      <span className="mb-2 block font-display text-2xl leading-none text-[#211F20]">
-        {label}
-        {required ? <span className="text-[#FF3C38]"> *</span> : null}
-      </span>
-      {children}
-    </div>
-  );
-}
-
-function SummaryItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-b border-[#211F20] pb-3 last:border-b-0">
-      <p className="q-mini text-[#211F20]">{label}</p>
-      <p className="font-display text-3xl leading-none text-[#211F20]">
-        {value}
-      </p>
-    </div>
-  );
-}
-
 function StatusBadge({ status }: { status: AdminQuizDetail["status"] }) {
   const t = useTranslations("admin.form");
   const label =
@@ -866,128 +831,6 @@ function StatusBadge({ status }: { status: AdminQuizDetail["status"] }) {
   );
 }
 
-function ImagePreview({
-  emptyLabel,
-  label,
-  value,
-}: {
-  emptyLabel: string;
-  label: string;
-  value: string;
-}) {
-  if (!isImageUrl(value)) {
-    return (
-      <div className="flex min-h-[132px] items-center justify-center border-2 border-[#D7D0C4] bg-[#EBE4D8] p-4 text-center q-mini text-[#211F20]">
-        {emptyLabel}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      aria-label={label}
-      className="min-h-[132px] border-2 border-[#211F20] bg-[#EBE4D8] bg-contain bg-center bg-no-repeat"
-      role="img"
-      style={{ backgroundImage: `url("${value}")` }}
-    />
-  );
-}
-
-function createId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function createAnswer(isCorrect: boolean): EditableAnswer {
-  return {
-    id: createId(),
-    text: "",
-    isCorrect,
-  };
-}
-
-function createQuestion(): EditableQuestion {
-  return {
-    id: createId(),
-    title: "",
-    points: "5",
-    answers: [createAnswer(true), createAnswer(false)],
-  };
-}
-
-type ValidationLabels = {
-  addAtLeastOneQuestion: string;
-  questionHasEmptyAnswers: (number: number) => string;
-  questionNeedsAnswers: (number: number) => string;
-  questionNeedsCorrect: (number: number) => string;
-  questionNeedsPoints: (number: number) => string;
-  questionNeedsTitle: (number: number) => string;
-  timeLimitInvalid: string;
-  titleRequired: string;
-};
-
-function createValidationLabels(
-  t: ReturnType<typeof useTranslations<"admin.form">>
-): ValidationLabels {
-  return {
-    addAtLeastOneQuestion: t("addAtLeastOneQuestion"),
-    questionHasEmptyAnswers: (number) =>
-      t("questionHasEmptyAnswers", { number }),
-    questionNeedsAnswers: (number) => t("questionNeedsAnswers", { number }),
-    questionNeedsCorrect: (number) => t("questionNeedsCorrect", { number }),
-    questionNeedsPoints: (number) => t("questionNeedsPoints", { number }),
-    questionNeedsTitle: (number) => t("questionNeedsTitle", { number }),
-    timeLimitInvalid: t("timeLimitInvalid"),
-    titleRequired: t("titleRequired"),
-  };
-}
-
-function getValidationErrors({
-  labels,
-  title,
-  timeLimit,
-  questions,
-}: {
-  labels: ValidationLabels;
-  title: string;
-  timeLimit: string;
-  questions: EditableQuestion[];
-}) {
-  const errors: string[] = [];
-  if (!title.trim()) {
-    errors.push(labels.titleRequired);
-  }
-  if (Number(timeLimit) <= 0) {
-    errors.push(labels.timeLimitInvalid);
-  }
-  if (questions.length === 0) {
-    errors.push(labels.addAtLeastOneQuestion);
-  }
-
-  questions.forEach((question, index) => {
-    const number = index + 1;
-    if (!question.title.trim()) {
-      errors.push(labels.questionNeedsTitle(number));
-    }
-    if (Number(question.points) <= 0) {
-      errors.push(labels.questionNeedsPoints(number));
-    }
-    if (question.answers.length < 2) {
-      errors.push(labels.questionNeedsAnswers(number));
-    }
-    if (!question.answers.some((answer) => answer.isCorrect)) {
-      errors.push(labels.questionNeedsCorrect(number));
-    }
-    if (question.answers.some((answer) => !answer.text.trim())) {
-      errors.push(labels.questionHasEmptyAnswers(number));
-    }
-  });
-
-  return errors;
-}
-
 function buildUpdatePayload({
   title,
   description,
@@ -1001,27 +844,11 @@ function buildUpdatePayload({
   thumbnailUrl: string;
   timeLimit: string;
 }): QuizMetadataPayload | null {
-  const timeLimitSeconds = Math.round(Number(timeLimit) * 60);
-  if (!title.trim() || timeLimitSeconds <= 0) {
-    return null;
-  }
-
-  return {
-    title: title.trim(),
-    description: description.trim() ? description.trim() : undefined,
-    category_id: Number(categoryId) > 0 ? Number(categoryId) : undefined,
-    image_url: thumbnailUrl.trim() ? thumbnailUrl.trim() : undefined,
-    time_limit_seconds: timeLimitSeconds,
-  };
-}
-
-function buildQuestionPayload(question: EditableQuestion) {
-  return {
-    title: question.title.trim(),
-    value: Number(question.points),
-    answers: question.answers.map((answer) => ({
-      title: answer.text.trim(),
-      is_correct: answer.isCorrect,
-    })),
-  };
+  return buildQuizMetadataPayload({
+    title,
+    description,
+    categoryId,
+    thumbnailUrl,
+    timeLimit,
+  });
 }

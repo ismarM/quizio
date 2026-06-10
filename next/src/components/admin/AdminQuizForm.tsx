@@ -19,6 +19,19 @@ import {
 } from "lucide-react";
 
 import { isImageUrl, uploadImageFile } from "@/lib/uploads/images";
+import {
+  buildQuestionPayload,
+  buildQuizMetadataPayload,
+  createAnswer,
+  createId,
+  createQuestion,
+  createValidationLabels,
+  getValidationErrors,
+  type AdminQuizAnswerDraft,
+  type AdminQuizQuestionDraft,
+  type CreateQuizPayload,
+} from "@/components/admin/admin-quiz-form-shared";
+import { FormField, ImagePreview } from "@/components/admin/admin-quiz-form-ui";
 import { proxyFetchJson } from "@/lib/api/proxy-client";
 import { routes } from "@/lib/navigation/routes";
 import type { CategoryDTO } from "@/lib/types";
@@ -30,6 +43,8 @@ type AdminQuizFormProps = {
 type QuestionAnimation = "insert" | "reorder" | "shuffle";
 type AnswerAnimation = "ai";
 type AiMode = "append" | "replace";
+type DraftAnswer = AdminQuizAnswerDraft;
+type DraftQuestion = AdminQuizQuestionDraft;
 
 type GeneratedQuestionsResponse = {
   questions?: Array<{
@@ -947,26 +962,6 @@ export function AdminQuizForm({ categories }: AdminQuizFormProps) {
   );
 }
 
-function FormField({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="block">
-      <span className="mb-2 block font-display text-2xl leading-none text-[#211F20]">
-        {label}
-        {required ? <span className="text-[#FF3C38]"> *</span> : null}
-      </span>
-      {children}
-    </div>
-  );
-}
-
 function ChecklistItem({ done, text }: { done: boolean; text: string }) {
   return (
     <div className="flex items-center gap-3">
@@ -985,103 +980,6 @@ function ChecklistItem({ done, text }: { done: boolean; text: string }) {
   );
 }
 
-type DraftAnswer = {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-};
-
-type DraftQuestion = {
-  id: string;
-  title: string;
-  points: string;
-  answers: DraftAnswer[];
-};
-
-function createId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function createAnswer(isCorrect: boolean): DraftAnswer {
-  return {
-    id: createId(),
-    text: "",
-    isCorrect,
-  };
-}
-
-function createQuestion(): DraftQuestion {
-  return {
-    id: createId(),
-    title: "",
-    points: "5",
-    answers: [createAnswer(true), createAnswer(false)],
-  };
-}
-
-type CreateQuizPayload = {
-  title: string;
-  description?: string;
-  category_id?: number;
-  image_url?: string;
-  time_limit_seconds: number;
-  questions: Array<{
-    title: string;
-    value: number;
-    answers: Array<{
-      title: string;
-      is_correct: boolean;
-    }>;
-  }>;
-};
-
-function getValidationErrors({
-  labels,
-  title,
-  timeLimit,
-  questions,
-}: {
-  labels: ValidationLabels;
-  title: string;
-  timeLimit: string;
-  questions: DraftQuestion[];
-}) {
-  const errors: string[] = [];
-  if (!title.trim()) {
-    errors.push(labels.titleRequired);
-  }
-  if (Number(timeLimit) <= 0) {
-    errors.push(labels.timeLimitInvalid);
-  }
-  if (questions.length === 0) {
-    errors.push(labels.addAtLeastOneQuestion);
-  }
-
-  questions.forEach((question, index) => {
-    const number = index + 1;
-    if (!question.title.trim()) {
-      errors.push(labels.questionNeedsTitle(number));
-    }
-    if (Number(question.points) <= 0) {
-      errors.push(labels.questionNeedsPoints(number));
-    }
-    if (question.answers.length < 2) {
-      errors.push(labels.questionNeedsAnswers(number));
-    }
-    if (!question.answers.some((answer) => answer.isCorrect)) {
-      errors.push(labels.questionNeedsCorrect(number));
-    }
-    if (question.answers.some((answer) => !answer.text.trim())) {
-      errors.push(labels.questionHasEmptyAnswers(number));
-    }
-  });
-
-  return errors;
-}
-
 function buildCreatePayload({
   title,
   description,
@@ -1097,76 +995,21 @@ function buildCreatePayload({
   timeLimit: string;
   questions: DraftQuestion[];
 }): CreateQuizPayload | null {
-  const timeLimitSeconds = Math.round(Number(timeLimit) * 60);
-  if (!title.trim() || timeLimitSeconds <= 0) {
+  const metadata = buildQuizMetadataPayload({
+    title,
+    description,
+    categoryId,
+    thumbnailUrl,
+    timeLimit,
+  });
+
+  if (!metadata) {
     return null;
   }
 
   return {
-    title: title.trim(),
-    description: description.trim() ? description.trim() : undefined,
-    category_id: Number(categoryId) > 0 ? Number(categoryId) : undefined,
-    image_url: thumbnailUrl.trim() ? thumbnailUrl.trim() : undefined,
-    time_limit_seconds: timeLimitSeconds,
-    questions: questions.map((question) => ({
-      title: question.title.trim(),
-      value: Number(question.points),
-      answers: question.answers.map((answer) => ({
-        title: answer.text.trim(),
-        is_correct: answer.isCorrect,
-      })),
-    })),
+    ...metadata,
+    questions: questions.map(buildQuestionPayload),
   };
 }
 
-type ValidationLabels = {
-  addAtLeastOneQuestion: string;
-  questionHasEmptyAnswers: (number: number) => string;
-  questionNeedsAnswers: (number: number) => string;
-  questionNeedsCorrect: (number: number) => string;
-  questionNeedsPoints: (number: number) => string;
-  questionNeedsTitle: (number: number) => string;
-  timeLimitInvalid: string;
-  titleRequired: string;
-};
-
-function createValidationLabels(t: ReturnType<typeof useTranslations<"admin.form">>): ValidationLabels {
-  return {
-    addAtLeastOneQuestion: t("addAtLeastOneQuestion"),
-    questionHasEmptyAnswers: (number) =>
-      t("questionHasEmptyAnswers", { number }),
-    questionNeedsAnswers: (number) => t("questionNeedsAnswers", { number }),
-    questionNeedsCorrect: (number) => t("questionNeedsCorrect", { number }),
-    questionNeedsPoints: (number) => t("questionNeedsPoints", { number }),
-    questionNeedsTitle: (number) => t("questionNeedsTitle", { number }),
-    timeLimitInvalid: t("timeLimitInvalid"),
-    titleRequired: t("titleRequired"),
-  };
-}
-
-function ImagePreview({
-  emptyLabel,
-  label,
-  value,
-}: {
-  emptyLabel: string;
-  label: string;
-  value: string;
-}) {
-  if (!isImageUrl(value)) {
-    return (
-      <div className="flex min-h-[132px] items-center justify-center border-2 border-[#D7D0C4] bg-[#EBE4D8] p-4 text-center q-mini text-[#211F20]">
-        {emptyLabel}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      aria-label={label}
-      className="min-h-[132px] border-2 border-[#211F20] bg-[#EBE4D8] bg-contain bg-center bg-no-repeat"
-      role="img"
-      style={{ backgroundImage: `url("${value}")` }}
-    />
-  );
-}

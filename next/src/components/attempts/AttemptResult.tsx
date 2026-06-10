@@ -8,6 +8,7 @@ import {
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { isImageUrl } from "@/lib/uploads/images";
+import { formatDurationClock } from "@/lib/formatting/quiz-results";
 import { routes } from "@/lib/navigation/routes";
 import type { AttemptResultResponse } from "@/lib/types";
 
@@ -323,16 +324,10 @@ function buildResultSummary(
         maxScore,
         correctAnswers,
         totalQuestions,
-        timeTaken: formatDuration(timeTakenSeconds),
+        timeTaken: formatDurationClock(timeTakenSeconds),
         submittedAt: formatDate(result.attempt, timeTakenSeconds, locale, t("unknown")),
         answers,
     };
-}
-
-function formatDuration(totalSeconds: number) {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = Math.max(0, totalSeconds % 60);
-    return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 function formatDate(

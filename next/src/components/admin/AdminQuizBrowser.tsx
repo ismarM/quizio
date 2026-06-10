@@ -24,15 +24,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AdminQuizListItem } from "@/components/admin/data/quiz-mappers";
+import {
+  archiveQuiz,
+  publishQuizNow,
+  scheduleQuizRelease,
+  toDatetimeLocalValue,
+  validateScheduledPublish,
+} from "@/components/admin/admin-quiz-actions";
 import { cn } from "@/lib/utils";
-import { proxyFetchJson } from "@/lib/api/proxy-client";
 import { buildUpdatedSearchParams } from "@/lib/navigation/search-params";
 import { routes } from "@/lib/navigation/routes";
-import type { QuizResponse } from "@/lib/types";
-
-type QuizPublishPayload = {
-  publish_date?: string;
-};
 
 type StatusFilter = "all" | AdminQuizListItem["status"];
 
@@ -496,30 +497,25 @@ function AdminQuizActions({
   }
 
   function handleSchedulePublish() {
-    const publishDate = parseDatetimeLocalValue(scheduledAt);
+    const scheduledPublish = validateScheduledPublish(scheduledAt);
 
-    if (!publishDate) {
+    if (scheduledPublish === "missing") {
       setActionError(t("choosePublishTime"));
       return;
     }
 
-    if (publishDate.getTime() <= Date.now()) {
+    if (scheduledPublish === "past") {
       setActionError(t("chooseFutureTime"));
       return;
     }
 
     void runAction("schedule", () =>
-      scheduleQuizRelease(quiz, publishDate.toISOString())
+      scheduleQuizRelease(quiz, scheduledPublish.toISOString())
     );
   }
 
   function handleArchive() {
-    void runAction("archive", () =>
-      proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/archive`, {
-        method: "PATCH",
-        body: { is_archived: true },
-      })
-    );
+    void runAction("archive", () => archiveQuiz(quiz));
   }
 
   return (
@@ -855,47 +851,3 @@ function getPublishMetaText(
     : labels.notScheduled;
 }
 
-async function publishQuizNow(quiz: AdminQuizListItem) {
-  const body: QuizPublishPayload = {
-    publish_date: new Date(Date.now() - 1000).toISOString(),
-  };
-
-  return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
-    method: "PATCH",
-    body,
-  });
-}
-
-async function scheduleQuizRelease(
-  quiz: AdminQuizListItem,
-  publishDate: string
-) {
-  const body: QuizPublishPayload = { publish_date: publishDate };
-
-  return proxyFetchJson<QuizResponse>(`/quizzes/${quiz.id}/publish`, {
-    method: "PATCH",
-    body,
-  });
-}
-
-function parseDatetimeLocalValue(value: string) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date;
-}
-
-function toDatetimeLocalValue(date: Date) {
-  const pad = (value: number) => String(value).padStart(2, "0");
-
-  return [
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
-    `${pad(date.getHours())}:${pad(date.getMinutes())}`,
-  ].join("T");
-}
