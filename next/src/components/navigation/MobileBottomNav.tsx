@@ -20,7 +20,13 @@ type MobileNavItem = {
   icon: LucideIcon;
 };
 
-export async function MobileBottomNav() {
+type MobileBottomNavProps = {
+  showQuizzes?: boolean;
+};
+
+export async function MobileBottomNav({
+  showQuizzes = true,
+}: MobileBottomNavProps = {}) {
   const t = await getTranslations("mobileNav");
   const user = await getSessionUser();
 
@@ -28,11 +34,15 @@ export async function MobileBottomNav() {
   const isAdmin = user?.isAdmin;
 
   const navItems: MobileNavItem[] = [
-    {
-      label: t("quizzes"),
-      href: routes.quizzes,
-      icon: ListChecks,
-    },
+    ...(showQuizzes
+      ? [
+          {
+            label: t("quizzes"),
+            href: routes.quizzes,
+            icon: ListChecks,
+          },
+        ]
+      : []),
     isLoggedIn
       ? {
           label: t("profile"),
@@ -64,7 +74,9 @@ export async function MobileBottomNav() {
           ? "grid-cols-4"
           : itemCount === 3
             ? "grid-cols-3"
-            : "grid-cols-2"
+            : itemCount === 2
+              ? "grid-cols-2"
+              : "grid-cols-1"
       )}
     >
       {navItems.map((item) => {

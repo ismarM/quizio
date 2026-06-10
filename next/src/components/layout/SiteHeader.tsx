@@ -11,7 +11,13 @@ function getInitials(email?: string | null, displayName?: string | null) {
   return source.slice(0, 1).toUpperCase();
 }
 
-export async function SiteHeader() {
+type SiteHeaderProps = {
+  showPublicNavLinks?: boolean;
+};
+
+export async function SiteHeader({
+  showPublicNavLinks = true,
+}: SiteHeaderProps = {}) {
   const t = await getTranslations("nav");
   const user = await getSessionUser();
 
@@ -28,7 +34,7 @@ export async function SiteHeader() {
         >
           Quizio
         </Link>
-        {!isLoggedIn ? (
+        {!isLoggedIn && showPublicNavLinks ? (
           <Link href={routes.quizzes} className="hover:text-[var(--q-red)]">
             {t("exploreQuizzes")}
           </Link>
@@ -36,7 +42,7 @@ export async function SiteHeader() {
       </div>
 
       <nav className="hidden items-center gap-8 text-[15px] leading-6 text-[var(--q-ink)] md:flex">
-        {!isLoggedIn ? (
+        {!isLoggedIn && showPublicNavLinks ? (
           <Link href="/#how-it-works" className="hover:text-[var(--q-red)]">
             {t("howItWorks")}
           </Link>

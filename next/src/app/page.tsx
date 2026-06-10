@@ -19,11 +19,11 @@ export default async function Home() {
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
-      <SiteHeader />
+      <SiteHeader showPublicNavLinks={false} />
       <HeroSection />
       <FeatureCards />
       <SiteFooter />
-      <MobileBottomNav />
+      <MobileBottomNav showQuizzes={false} />
     </main>
   );
 }

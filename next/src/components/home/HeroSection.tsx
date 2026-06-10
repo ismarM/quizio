@@ -32,9 +32,6 @@ export function HeroSection() {
             {t("getStarted")}
           </Link>
 
-          <Link href={routes.quizzes} className="q-button q-button-secondary">
-            {t("exploreQuizzes")}
-          </Link>
         </div>
       </div>
 
