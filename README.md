@@ -1,11 +1,10 @@
 # Quizio
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
 ![Next.js](https://img.shields.io/badge/Next.js-16+-black?logo=next.js)
 ![Go](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?logo=postgresql)
 ![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?logo=firebase)
-![License](https://img.shields.io/badge/license-proprietary-red)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 An interactive web-based quiz platform built with a Next.js BFF, Go REST API, and PostgreSQL backend. Developed in collaboration with [Inova IT d.o.o.](https://www.inovait.si/).
 
