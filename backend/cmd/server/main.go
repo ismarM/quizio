@@ -57,14 +57,33 @@ func main() {
 
 	server := &http.Server{
 		Addr:         cfg.ServerAddress(),
-		Handler:      httpapi.NewRouter(database, cfg.HMACSecret),
+		Handler:      httpapi.NewRouter(database, cfg.HMACSecret, cfg.EnableSwagger),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
 
-	log.Printf("listening on %s", server.Addr)
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
+	certFile := "certs/cert.pem"
+	keyFile := "certs/key.pem"
+
+	_, errCert := os.Stat(certFile)
+	_, errKey := os.Stat(keyFile)
+
+	if errCert == nil && errKey == nil {
+		log.Printf("listening on %s (HTTPS)", server.Addr)
+		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
+	} else {
+		if errCert != nil {
+			log.Printf("Cert file check error: %v", errCert)
+		}
+		if errKey != nil {
+			log.Printf("Key file check error: %v", errKey)
+		}
+		log.Printf("listening on %s (HTTP)", server.Addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
 	}
 }

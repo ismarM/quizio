@@ -18,16 +18,18 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func NewRouter(db *sql.DB, hmacSecret string) http.Handler {
+func NewRouter(db *sql.DB, hmacSecret string, enableSwagger bool) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(IntegrityMiddleware(hmacSecret))
 
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"),
-	))
+	if enableSwagger {
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("/swagger/doc.json"),
+		))
+	}
 
 	deps := shared.Deps{
 		DB:      db,

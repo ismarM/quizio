@@ -155,7 +155,7 @@ This method spins up the database, compiles the services, runs migrations, and s
    ```
 4. Access the applications:
    - **Frontend App**: [http://localhost:3000](http://localhost:3000)
-   - **API Docs (Swagger)**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+   - **API Docs (Swagger)**: [https://localhost:8080/swagger/index.html](https://localhost:8080/swagger/index.html)
 
 ---
 
@@ -173,6 +173,9 @@ Ensure you are in the `backend/` directory:
 cd backend
 # Download dependencies
 go mod download
+
+# Generate local SSL certificates (enables HTTPS automatically)
+go run ./cmd/generate_cert/main.go
 
 # Run migrations
 go run ./cmd/server migrate
@@ -193,7 +196,7 @@ npm run dev
 ```
 #### 4. Access the applications:
    - **Frontend App**: [http://localhost:3000](http://localhost:3000)
-   - **API Docs (Swagger)**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+   - **API Docs (Swagger)**: [https://localhost:8080/swagger/index.html](https://localhost:8080/swagger/index.html)
 
 ---
 

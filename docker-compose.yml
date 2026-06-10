@@ -26,7 +26,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "http://localhost:8080/swagger/doc.json", "--delete-after"]
+      test: ["CMD", "wget", "--no-check-certificate", "https://localhost:8080/swagger/doc.json", "--delete-after"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -37,7 +37,8 @@ services:
     env_file:
       - ./next/.env.local
     environment:
-      - GO_BACKEND_URL=http://backend:8080
+      - GO_BACKEND_URL=https://backend:8080
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     ports:
       - "3000:3000"
     depends_on:

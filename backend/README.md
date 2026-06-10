@@ -15,10 +15,12 @@ Setup:
    docker compose up -d postgres
 2. From the backend directory:
    cd backend
-3. Update .env (defaults match docker-compose.yml).
-4. Run migrations:
+3. Generate local SSL certificates (enables HTTPS automatically):
+   go run ./cmd/generate_cert/main.go
+4. Update .env (defaults match docker-compose.yml).
+5. Run migrations:
    go run ./cmd/server migrate
-5. Start the API:
+6. Start the API:
    go run ./cmd/server
 
 Dev (auto-reload):

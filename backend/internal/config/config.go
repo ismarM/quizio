@@ -11,14 +11,15 @@ import (
 )
 
 type Config struct {
-	ServerPort string
-	DBHost     string
-	DBPort     int
-	DBName     string
-	DBUser     string
-	DBPassword string
-	DBSSLMode  string
-	HMACSecret string
+	ServerPort    string
+	DBHost        string
+	DBPort        int
+	DBName        string
+	DBUser        string
+	DBPassword    string
+	DBSSLMode     string
+	HMACSecret    string
+	EnableSwagger bool
 }
 
 func Load() (Config, error) {
@@ -69,15 +70,21 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	enableSwagger := true
+	if strings.ToLower(strings.TrimSpace(os.Getenv("ENABLE_SWAGGER"))) == "false" {
+		enableSwagger = false
+	}
+
 	return Config{
-		ServerPort: serverPort,
-		DBHost:     dbHost,
-		DBPort:     dbPort,
-		DBName:     dbName,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-		DBSSLMode:  dbSSLMode,
-		HMACSecret: hmacSecret,
+		ServerPort:    serverPort,
+		DBHost:        dbHost,
+		DBPort:        dbPort,
+		DBName:        dbName,
+		DBUser:        dbUser,
+		DBPassword:    dbPassword,
+		DBSSLMode:     dbSSLMode,
+		HMACSecret:    hmacSecret,
+		EnableSwagger: enableSwagger,
 	}, nil
 }
 
