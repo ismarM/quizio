@@ -119,8 +119,6 @@ definitions:
         type: string
       email:
         type: string
-      is_admin:
-        type: boolean
       language:
         type: integer
       profile_picture:

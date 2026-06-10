@@ -139,6 +139,24 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
     highlightQuestions([question.id], "insert");
   }
 
+  function insertQuestionAfter(id: string) {
+    const question = createQuestion();
+
+    setQuestions((current) => {
+      const index = current.findIndex((item) => item.id === id);
+
+      if (index < 0) {
+        return [...current, question];
+      }
+
+      const next = [...current];
+      next.splice(index + 1, 0, question);
+      return next;
+    });
+
+    highlightQuestions([question.id], "insert");
+  }
+
   function updateQuestion(id: string, updates: Partial<EditableQuestion>) {
     setQuestions((current) =>
       current.map((question) =>
@@ -724,6 +742,18 @@ export function AdminQuizEditor({ categories, quiz }: AdminQuizEditorProps) {
                         <span className="pl-1 pt-1">{t("addAnswer")}</span>
                       </button>
                     </div>
+                  </div>
+
+                  <div className="mt-4 flex justify-center border-t border-[#EBE4D8] pt-4">
+                    <button
+                      type="button"
+                      onClick={() => insertQuestionAfter(question.id)}
+                      className="q-button q-button-secondary border-[#006E5A] text-[#006E5A] hover:bg-[#006E5A] hover:text-[#FFFAF2]"
+                      disabled={!isDraftEditable}
+                    >
+                      <FilePlus2 className="h-4 w-4" />
+                      <span className="pl-1 pt-0.5">{t("addQuestion")}</span>
+                    </button>
                   </div>
                 </article>
               ))}

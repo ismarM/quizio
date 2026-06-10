@@ -7,7 +7,6 @@ type CreateUserRequest struct {
 	DisplayName    *string `json:"display_name,omitempty"`
 	Language       int32   `json:"language"`
 	Theme          int32   `json:"theme"`
-	IsAdmin        bool    `json:"is_admin"`
 	ProfilePicture *string `json:"profile_picture,omitempty"`
 }
 

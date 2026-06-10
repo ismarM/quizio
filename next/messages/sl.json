@@ -379,6 +379,11 @@
       "selfRevokeDescription": "To odstrani admin dostop samo tvojemu računu. Po spremembi boš odjavljen.",
       "revokeSelf": "Odstrani moj admin",
       "revoking": "Odstranjujem...",
+      "confirmEyebrow": "Potrdi odstranitev",
+      "confirmTitle": "Odstrani svoj admin dostop?",
+      "confirmBody": "To bo odstranilo admin pravice za {email}. Odjavljen boš in za ponovno dodelitev dostopa boš potreboval drugega admina.",
+      "confirmRevoke": "Da, odstrani dostop",
+      "cancel": "Prekliči",
       "updateFailed": "Posodobitev vloge ni uspela."
     },
     "form": {

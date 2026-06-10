@@ -1860,9 +1860,6 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "is_admin": {
-                    "type": "boolean"
-                },
                 "language": {
                     "type": "integer"
                 },

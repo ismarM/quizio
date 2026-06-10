@@ -379,6 +379,11 @@
       "selfRevokeDescription": "This only removes admin access from your own account. You will be signed out after the change.",
       "revokeSelf": "Revoke my admin",
       "revoking": "Revoking...",
+      "confirmEyebrow": "Confirm revoke",
+      "confirmTitle": "Remove your admin access?",
+      "confirmBody": "This will revoke admin permissions for {email}. You will be signed out and will need another admin to restore access.",
+      "confirmRevoke": "Yes, revoke access",
+      "cancel": "Cancel",
       "updateFailed": "Role update failed."
     },
     "form": {

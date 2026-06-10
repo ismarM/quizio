@@ -46,7 +46,6 @@ async function createUser(email: string, hmacSecret: string) {
   const createUrl = new URL("/api/users", GO_BACKEND_URL);
   const body = JSON.stringify({
     email,
-    is_admin: false,
     language: 0,
     theme: 0,
   });

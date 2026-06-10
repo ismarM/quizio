@@ -31,7 +31,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.queries.CreateUser(r.Context(), sqlc.CreateUserParams{
 		Email:          req.Email,
-		IsAdmin:        req.IsAdmin,
+		IsAdmin:        false,
 		Displayname:    toNullString(req.DisplayName),
 		Language:       req.Language,
 		Theme:          req.Theme,
