@@ -23,6 +23,8 @@ jobs:
       FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GO_BACKEND_URL: ${{ secrets.GO_BACKEND_URL }}
+      HMAC_SECRET: ${{ secrets.HMAC_SECRET }}
 
     defaults:
       run:
@@ -34,7 +36,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.12.0
+          node-version: 20.19.0
           cache: npm
           cache-dependency-path: next/package-lock.json
 
