@@ -2,17 +2,19 @@
 
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { auth } from "@/lib/clients/firebase-client";
 
 type LogoutButtonProps = {
   className?: string;
+  icon?: ReactNode;
   label?: string;
 };
 
 export default function LogoutButton({
   className = "q-button q-button-secondary",
+  icon,
   label = "Sign out",
 }: LogoutButtonProps) {
   const router = useRouter();
@@ -38,6 +40,7 @@ export default function LogoutButton({
       className={className}
       disabled={isLoading}
     >
+      {icon}
       {isLoading ? "Signing out..." : label}
     </button>
   );

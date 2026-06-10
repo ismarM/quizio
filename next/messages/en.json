@@ -111,7 +111,8 @@
     "dashboard": "Dashboard",
     "admin": "Admin",
     "profile": "Profile",
-    "login": "Login"
+    "login": "Login",
+    "signOut": "Sign out"
   },
   "home": {
     "heroHeading1": "Create.",

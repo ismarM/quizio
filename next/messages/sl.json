@@ -111,7 +111,8 @@
     "dashboard": "Nadzorna plošča",
     "admin": "Admin",
     "profile": "Profil",
-    "login": "Prijava"
+    "login": "Prijava",
+    "signOut": "Odjava"
   },
   "home": {
     "heroHeading1": "Ustvari.",

@@ -8,7 +8,6 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { ArrowRight, CheckCircle2, LockKeyhole, Mail } from "lucide-react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
@@ -157,16 +156,9 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
     <main className="q-page min-h-screen">
       <div className="q-container flex min-h-screen flex-col py-6">
         <header className="flex items-center justify-between">
-          <Link
-            href={routes.home}
-            className="font-display text-5xl leading-none text-[#006E5A]"
-          >
+          <span className="font-display text-5xl leading-none text-[#006E5A]">
             Quizio
-          </Link>
-
-          <Link href={routes.home} className="q-button q-button-secondary">
-            {t("backHome")}
-          </Link>
+          </span>
         </header>
 
         <section className="grid flex-1 gap-10 py-12 md:grid-cols-[1fr_0.92fr] md:items-center md:py-16">
