@@ -12,9 +12,6 @@ function getRequiredEnv(key: string) {
   return value;
 }
 
-const GO_BACKEND_URL = getRequiredEnv("GO_BACKEND_URL");
-const HMAC_SECRET = getRequiredEnv("HMAC_SECRET");
-
 export class ServerFetchError extends Error {
   status: number;
 
@@ -47,7 +44,7 @@ function getSignableBody(body: RequestInit["body"]): SignableBody {
 
 export async function serverFetch(path: string, init: RequestInit = {}) {
   const user = await getSessionUser();
-  const url = new URL(path, GO_BACKEND_URL);
+  const url = new URL(path, getRequiredEnv("GO_BACKEND_URL"));
   const headers = new Headers(init.headers);
   const body = init.body;
 
@@ -61,7 +58,7 @@ export async function serverFetch(path: string, init: RequestInit = {}) {
     headers,
     url.pathname + url.search,
     getSignableBody(body),
-    HMAC_SECRET
+    getRequiredEnv("HMAC_SECRET")
   );
 
   return fetch(url, {
