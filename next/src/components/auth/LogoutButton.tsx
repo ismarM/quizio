@@ -1,10 +1,7 @@
 "use client";
 
-import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
-
-import { auth } from "@/lib/clients/firebase-client";
 
 type LogoutButtonProps = {
   className?: string;
@@ -24,6 +21,10 @@ export default function LogoutButton({
     setIsLoading(true);
 
     try {
+      const [{ signOut }, { auth }] = await Promise.all([
+        import("firebase/auth"),
+        import("@/lib/clients/firebase-client"),
+      ]);
       await signOut(auth);
       await fetch("/api/session", { method: "DELETE" });
       router.push("/login");

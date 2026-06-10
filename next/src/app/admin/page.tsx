@@ -104,7 +104,7 @@ export default async function AdminPage() {
 
               <Button
                 asChild
-                className="q-button q-button-primary h-12 rounded-none border-[#FF3C38] bg-[#FF3C38] px-7 text-xl shadow-[4px_4px_0_#211F20] transition duration-200 hover:-translate-y-0.5 hover:bg-[#D92F2B] hover:shadow-[6px_6px_0_#211F20] lg:h-14"
+                className="q-button q-button-primary h-12 rounded-none border-[#C62824] bg-[#C62824] px-7 text-xl shadow-[4px_4px_0_#211F20] transition duration-200 hover:-translate-y-0.5 hover:bg-[#A91F1D] hover:shadow-[6px_6px_0_#211F20] lg:h-14"
               >
                 <Link href={routes.adminQuizNew}>
                   <Plus className="h-5 w-5" />

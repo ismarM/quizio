@@ -318,7 +318,6 @@ function AdminQuizCard({
           openPreview();
         }
       }}
-      aria-label={`${t("preview")} ${quiz.title}`}
       role="link"
       tabIndex={0}
     >

@@ -1,23 +1,10 @@
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import Script from "next/script";
 import { CookieDisclaimer } from "@/components/layout/CookieDisclaimer";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   applicationName: "Quizio",
@@ -58,14 +45,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={cn(
-        "h-full",
-        "antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        "font-sans",
-        inter.variable
-      )}
+      className={cn("h-full", "antialiased", "font-sans")}
     >
       <body className="flex min-h-full flex-col">
         <Script id="quizio-theme-init" strategy="beforeInteractive">

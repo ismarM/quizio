@@ -155,7 +155,7 @@ export default function LoginForm({ reason, next }: LoginFormProps) {
   return (
     <main className="q-page min-h-screen">
       <div className="q-container flex min-h-screen flex-col py-6">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center">
           <span className="font-display text-5xl leading-none text-[#006E5A]">
             Quizio
           </span>

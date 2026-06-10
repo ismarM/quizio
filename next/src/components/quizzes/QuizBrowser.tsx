@@ -425,6 +425,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
       <div className="flex items-center justify-center gap-2 pt-4">
         <button
           type="button"
+          aria-label={t("previousPage")}
           className="q-button q-button-secondary px-3 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={currentPage === 1}
           onClick={() => setPage((value) => Math.max(1, value - 1))}
@@ -454,6 +455,7 @@ function QuizBrowserInner({ quizzes }: QuizBrowserProps) {
 
         <button
           type="button"
+          aria-label={t("nextPage")}
           className="q-button q-button-secondary px-3 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={currentPage === totalPages}
           onClick={() => setPage((value) => Math.min(totalPages, value + 1))}

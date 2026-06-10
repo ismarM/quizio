@@ -168,7 +168,7 @@ function QuizMetaItem({
       ].join(" ")}
     >
       <span className="row-span-2 text-[#006E5A]">{icon}</span>
-      <span className="q-mini text-[#8F8F8F]">{label}</span>
+      <span className="q-mini text-[#5F5B55]">{label}</span>
       <span className="truncate text-[14px] font-semibold leading-5 text-[#211F20]">
         {value}
       </span>

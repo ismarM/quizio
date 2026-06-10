@@ -181,7 +181,9 @@
     "sortLongest": "Najdaljši",
     "sortMostQuestions": "Največ vprašanj",
     "gridView": "Mrežni prikaz",
-    "listView": "Seznam"
+    "listView": "Seznam",
+    "previousPage": "Prejšnja stran",
+    "nextPage": "Naslednja stran"
   },
   "quizDetail": {
     "backToQuizzes": "Nazaj na kvize",

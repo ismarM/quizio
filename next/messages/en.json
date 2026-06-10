@@ -181,7 +181,9 @@
     "sortLongest": "Longest",
     "sortMostQuestions": "Most questions",
     "gridView": "Grid view",
-    "listView": "List view"
+    "listView": "List view",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "quizDetail": {
     "backToQuizzes": "Back to quizzes",
