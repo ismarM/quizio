@@ -1,0 +1,22 @@
+Spletna platforma, kjer lahko hitro ustvariš, objaviš, rešuješ in analiziraš kvize na enem mestu.
+
+Leto izdelave: 2026
+
+Patrik Kocmut
+Omar Ždralović
+Ismar Mujezinović
+
+Domača stran: https://frontend.proudmoss-a17ef286.germanywestcentral.azurecontainerapps.io/
+Vir podatkov: lastna baza podatkov, uporabniško ustvarjeni kvizi in rezultati reševanja
+Koda: https://github.com/ismarM/quizio
+
+Kategorizacija: celovita informacijska rešitev, spletna aplikacija, PWA
+
+Oznake: NextJS, React, Go, PostgreSQL, sqlc, FirebaseAuth, Supabase, REST, HMAC, Docker, GitHub, UporabaAI, PWA, ResponsiveDesign, AdminDashboard, QuizPlatform, PraktikumII
+
+Opis projekta:
+Quizio je moderna spletna platforma za kvize, namenjena enostavnemu ustvarjanju, reševanju in spremljanju znanja. Uporabniki lahko raziskujejo kvize, jih filtrirajo, rešujejo časovno omeje poskuse, preverijo svoje razultate in spremljajo napredek na osebnem dashboardu. Platforma podpira tudi leaderboard, pregled pravilnih in napačnih odgovorov, svetlo/temno temo, izbiro jezika ter osnovn PWA podporo.
+
+Za ustvarjalce kvizov Quizio ponuja administratorski del, kjer je mogoče pripraviti kviz kot osnutek, ga objaviti takoj ali načrtovati objavo za kasneje. Objavljeni kvizi se zaklenejo, zato se vsebina po začetku reševanja ne spreminja nenadzorovano. Administrator lahko spremlja rezultate, pregleda posamezne poskuse uporabnikov in analizira odgovore.
+
+Posebnost platforme je podpora slikovnim odgovorom in uporaba umetne inteligence za generiranje vprašanj, kar močno pohitri pripravo kvizov. Quizio tako ni samo navadna stran z vprašanji, ampak celoten sistem za pripravo, izvedbo in pregled znanja.
