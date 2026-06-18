@@ -14,9 +14,9 @@ type QuizLeaderboardMiniProps = {
 
 export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
   const t = useTranslations("leaderboard");
-  const { entries, isConnected } = useLeaderboard(quizId);
+  const { entries, isConnected, error, hasReceivedInitialPayload } = useLeaderboard(quizId);
   const topEntries = entries.slice(0, 5);
-  const isLoading = entries.length === 0 && isConnected;
+  const isLoading = !hasReceivedInitialPayload && !error;
 
   return (
     <section className="grid gap-5 md:grid-cols-[0.75fr_1.25fr]">
@@ -105,7 +105,7 @@ export function QuizLeaderboardMini({ quizId }: QuizLeaderboardMiniProps) {
                     {getDisplayName(item)}
                   </span>
 
-                  <span className="font-display text-2xl text-[#006E5A]">
+                  <span className="font-display text-2xl text-[#006E5A] tabular-nums">
                     {formatScore(item.achieved_points, item.max_points, t("pts"))}
                   </span>
                 </div>

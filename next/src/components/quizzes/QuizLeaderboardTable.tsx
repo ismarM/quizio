@@ -12,7 +12,8 @@ type QuizLeaderboardTableProps = {
 
 export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
   const t = useTranslations("leaderboard");
-  const { entries, isConnected } = useLeaderboard(quizId);
+  const { entries, isConnected, error, hasReceivedInitialPayload } = useLeaderboard(quizId);
+  const isLoading = !hasReceivedInitialPayload && !error;
 
   return (
     <>
@@ -52,7 +53,24 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
             </tr>
           </thead>
           <tbody>
-            {entries.length === 0 ? (
+            {isLoading ? (
+              [1, 2, 3].map((i) => (
+                <tr className="border-b border-[#D7D0C4] last:border-b-0 animate-pulse" key={i}>
+                  <td className="py-4 pr-4">
+                    <div className="h-10 w-10 bg-[#EBE4D8]" />
+                  </td>
+                  <td className="py-4 pr-4">
+                    <div className="h-6 w-32 bg-[#EBE4D8]" />
+                  </td>
+                  <td className="py-4 pr-4">
+                    <div className="h-8 w-24 bg-[#EBE4D8]" />
+                  </td>
+                  <td className="py-4">
+                    <div className="h-6 w-16 bg-[#EBE4D8]" />
+                  </td>
+                </tr>
+              ))
+            ) : entries.length === 0 ? (
               <tr>
                 <td className="py-12 text-center text-lg opacity-60" colSpan={4}>
                   {t("noCompletedResults")}
@@ -75,7 +93,7 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
                     <td className="py-4 pr-4">
                       <span
                         className={[
-                          "flex h-10 w-10 items-center justify-center font-display text-xl",
+                          "flex h-10 w-10 items-center justify-center font-display text-xl tabular-nums",
                           isFirst
                             ? "bg-[#FF3C38] text-[#FFFAF2]"
                             : "bg-[#EBE4D8] text-[#211F20]",
@@ -88,14 +106,14 @@ export function QuizLeaderboardTable({ quizId }: QuizLeaderboardTableProps) {
                       {getDisplayName(entry)}
                     </td>
                     <td className="py-4 pr-4">
-                      <div className="font-display text-2xl text-[#006E5A]">
+                      <div className="font-display text-2xl text-[#006E5A] tabular-nums">
                         {formatScore(entry.achieved_points, entry.max_points, t("pts"))}
                       </div>
-                      <div className="text-sm opacity-70">
+                      <div className="text-sm opacity-70 tabular-nums">
                         {t("percentCorrect", { percentage: scorePercentage })}
                       </div>
                     </td>
-                    <td className="py-4 font-display text-xl">
+                    <td className="py-4 font-display text-xl tabular-nums">
                       {formatTime(entry.time_taken_seconds)}
                     </td>
                   </tr>

@@ -20,7 +20,7 @@ export default async function QuizzesPage() {
 
   try {
     const [data, sessions] = await Promise.all([
-      serverFetchJson<QuizListResponse>("/api/quizzes?limit=20&offset=0"),
+      serverFetchJson<QuizListResponse>("/api/quizzes?limit=100&offset=0"),
       serverFetchJson<OpenSessionsResponse>("/api/users/me/open-sessions"),
     ]);
     const openQuizIds = new Set(

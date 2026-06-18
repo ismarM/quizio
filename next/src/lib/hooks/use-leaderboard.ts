@@ -8,6 +8,17 @@ export function useLeaderboard(quizId: number) {
   const [entries, setEntries] = useState<LeaderboardEntryDTO[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasReceivedInitialPayload, setHasReceivedInitialPayload] = useState(false);
+
+  // Reset state during render if quizId changes to avoid useEffect state cascades
+  const [prevQuizId, setPrevQuizId] = useState(quizId);
+  if (quizId !== prevQuizId) {
+    setPrevQuizId(quizId);
+    setEntries([]);
+    setIsConnected(false);
+    setError(null);
+    setHasReceivedInitialPayload(false);
+  }
 
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const backoffRef = useRef(1000);
@@ -36,6 +47,7 @@ export function useLeaderboard(quizId: number) {
         try {
           const data: LeaderboardResponse = JSON.parse(event.data);
           setEntries(data.entries);
+          setHasReceivedInitialPayload(true);
         } catch (err) {
           console.error("Failed to parse leaderboard data", err);
         }
@@ -68,5 +80,5 @@ export function useLeaderboard(quizId: number) {
     };
   }, [quizId]);
 
-  return { entries, isConnected, error };
+  return { entries, isConnected, error, hasReceivedInitialPayload };
 }

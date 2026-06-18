@@ -19,7 +19,8 @@ type AttemptPlayerProps = {
   quizTitle: string;
   questions: QuestionDTO[];
   responses: AttemptQuestionDTO[];
-  initialTimeLeftSeconds: number;
+  startTime: string;
+  timeLimitSeconds: number;
 };
 
 export function AttemptPlayer({
@@ -27,7 +28,8 @@ export function AttemptPlayer({
   quizTitle,
   questions,
   responses,
-  initialTimeLeftSeconds,
+  startTime,
+  timeLimitSeconds,
 }: AttemptPlayerProps) {
   const t = useTranslations("attempt");
   const router = useRouter();
@@ -47,8 +49,8 @@ export function AttemptPlayer({
     });
     return initial;
   });
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState(
-    initialTimeLeftSeconds
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(() =>
+    getSecondsRemaining(startTime, timeLimitSeconds)
   );
   const isFinishingRef = useRef(false);
 
@@ -72,22 +74,22 @@ export function AttemptPlayer({
   }, [quizId, router]);
 
   useEffect(() => {
-    if (initialTimeLeftSeconds <= 0) {
+    if (timeLimitSeconds <= 0) {
       return undefined;
     }
 
     const timer = window.setInterval(() => {
-      setTimeLeftSeconds((current) => Math.max(0, current - 1));
+      setTimeLeftSeconds(getSecondsRemaining(startTime, timeLimitSeconds));
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [initialTimeLeftSeconds]);
+  }, [startTime, timeLimitSeconds]);
 
   useEffect(() => {
-    if (timeLeftSeconds === 0) {
+    if (timeLimitSeconds > 0 && timeLeftSeconds === 0) {
       void finishAttempt();
     }
-  }, [finishAttempt, timeLeftSeconds]);
+  }, [finishAttempt, timeLeftSeconds, timeLimitSeconds]);
 
   const currentQuestion = questions[currentIndex];
   const selectedOptionId = currentQuestion
@@ -357,4 +359,16 @@ function formatTimeLeft(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = Math.max(0, totalSeconds % 60);
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getSecondsRemaining(startTime: string, timeLimitSeconds: number): number {
+  if (timeLimitSeconds <= 0) {
+    return 0;
+  }
+  const startDate = new Date(startTime);
+  if (Number.isNaN(startDate.getTime())) {
+    return timeLimitSeconds;
+  }
+  const elapsedSeconds = Math.floor((Date.now() - startDate.getTime()) / 1000);
+  return Math.max(0, timeLimitSeconds - elapsedSeconds);
 }

@@ -25,25 +25,35 @@ export const dynamic = "force-dynamic";
 
 export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   const { id } = await params;
-  let quiz;
+  const quizId = Number(id);
 
-  try {
-    const data = await serverFetchJson<QuizResponse>(`/api/quizzes/${id}/info`);
-    quiz = mapQuizDtoToListItem(data.quiz);
-  } catch (error) {
-    if (error instanceof ServerFetchError && error.status === 404) {
-      notFound();
-    }
-    throw error;
+  if (isNaN(quizId) || quizId <= 0) {
+    notFound();
   }
 
-  const user = await getSessionUser();
-  const resultSummary = user
-    ? await loadQuizResultSummary(quiz.id)
-    : undefined;
-  const hasOpenAttempt = user && !resultSummary
-    ? await loadHasOpenAttempt(quiz.id)
-    : false;
+  const [user, data] = await Promise.all([
+    getSessionUser(),
+    serverFetchJson<QuizResponse>(`/api/quizzes/${id}/info`).catch((error) => {
+      if (error instanceof ServerFetchError && error.status === 404) {
+        notFound();
+      }
+      throw error;
+    }),
+  ]);
+
+  const quiz = mapQuizDtoToListItem(data.quiz);
+
+  let resultSummary;
+  let hasOpenAttempt = false;
+
+  if (user) {
+    const [summary, openAttempt] = await Promise.all([
+      loadQuizResultSummary(quiz.id),
+      loadHasOpenAttempt(quiz.id),
+    ]);
+    resultSummary = summary;
+    hasOpenAttempt = !summary && openAttempt;
+  }
 
   return (
     <main className="q-page min-h-screen pb-20 md:pb-0">
