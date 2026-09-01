@@ -6,7 +6,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?logo=firebase)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-An interactive web-based quiz platform built with a Next.js BFF, Go REST API, and PostgreSQL backend. Developed in collaboration with [Inova IT d.o.o.](https://www.inovait.si/). Link to our website: (https://frontend.proudmoss-a17ef286.germanywestcentral.azurecontainerapps.io)
+An interactive web-based quiz platform built with a Next.js BFF, Go REST API, and PostgreSQL backend. Developed in collaboration with [Inova IT d.o.o.](https://www.inovait.si/). Link to our website: ([https://frontend.proudmoss-a17ef286.germanywestcentral.azurecontainerapps.io](https://frontend.bluebeach-a3a45168.germanywestcentral.azurecontainerapps.io/))
 
 ---
 
