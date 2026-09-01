@@ -68,9 +68,13 @@ func IntegrityMiddleware(secret string) func(http.Handler) http.Handler {
 				requestPath = r.URL.Path
 			}
 
+			identityHeaderOrder := []string{"X-User-Id", "X-User-Email", "X-User-IsAdmin"}
 			mac := hmac.New(sha256.New, []byte(trimmedSecret))
 			_, _ = mac.Write([]byte(requestPath))
 			_, _ = mac.Write([]byte(timestampValue))
+			for _, headerName := range identityHeaderOrder {
+				_, _ = mac.Write([]byte(r.Header.Get(headerName)))
+			}
 			_, _ = mac.Write(bodyBytes)
 			expected := mac.Sum(nil)
 

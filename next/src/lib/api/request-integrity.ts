@@ -2,6 +2,7 @@ import { createHmac } from "crypto";
 
 const hmacTimestampHeader = "X-Timestamp";
 const hmacSignatureHeader = "X-Signature";
+const identityHeaderOrder = ["X-User-Id", "X-User-Email", "X-User-IsAdmin"] as const;
 
 export type SignableBody =
   | ArrayBuffer
@@ -35,9 +36,17 @@ export function applyHmacHeaders(
 ) {
   const timestamp = Date.now().toString();
   const bodyBuffer = normalizeBody(body);
+  const identityParts = identityHeaderOrder.map((headerName) =>
+    Buffer.from(headers.get(headerName) ?? "")
+  );
   const signature = createHmac("sha256", secret)
     .update(
-      Buffer.concat([Buffer.from(requestPath), Buffer.from(timestamp), bodyBuffer])
+      Buffer.concat([
+        Buffer.from(requestPath),
+        Buffer.from(timestamp),
+        ...identityParts,
+        bodyBuffer,
+      ])
     )
     .digest("hex");
 
