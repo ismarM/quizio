@@ -38,6 +38,7 @@ Pregled stanja testiranje in zagotavljanja kakovosti v projektu:
 
 
 Dodatno:
+
 Dodatne ugotovitve glede dokumentacije:
 - V README.md je zahtevana verzija Node.js 22+, medtem ko CI uporablja verzijo 20.19.0
 - Manjkajo navodila za preverjanje, ali je bila namestitev uspešna in ali vse storitve pravilno delujejo
@@ -48,12 +49,7 @@ Dodatne ugotovitve glede dokumentacije:
 - V Docker Compose je nastavljena spremenljivka `NODE_TLS_REJECT_UNAUTHORIZED=0`, ki izklopi preverjanje TLS certifikatov
 
 Dodatne ugotovitve glede standardov kodiranja:
-- Manjkajo GoDoc komentarji pri nekaterih izvoženih funkcijah
-- Ponavljajo se hardcoded vrednosti HTTP glav in sporočil napak
-- Nekatere datoteke uporabljajo PascalCase, druge snake_case
 - Ni jasno določenega maksimalnega obsega oziroma kompleksnosti posameznih funkcij
-- Za Go uporabljamo `go vet` in `staticcheck`, za frontend pa ESLint in TypeScript
-- Potrebna bi bila bolj dosledna uporaba poimenovanih konstant
 
 Dodatno popravljena datoteka:
 - `IntegrityMiddleware.go` → `integrity_middleware.go`
@@ -64,8 +60,6 @@ Dodatno popravljena datoteka:
 
 Dodatne ugotovitve glede testiranja:
 - Manjka avtomatsko preverjanje pokritosti kode s testi
-- Ni avtomatiziranih E2E testov za celoten potek od prijave do reševanja kviza
-- Ni avtomatiziranih integracijskih testov med Next.js, Go backendom in PostgreSQL
 - Smiselno bi bilo dodati testiranje robnih primerov, predvsem pri avtentikaciji, časovnih omejitvah in preverjanju HMAC podpisov
 - Google Lighthouse, več iteracij
 
