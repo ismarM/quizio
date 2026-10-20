@@ -1,0 +1,25 @@
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/empty_quiz_has_zero_totals
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unanswered_quiz_awards_zero_but_keeps_maximum
+    scoring_test.go:108: ScoreAttempt() maximum = 0, want 4
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_and_incorrect_answers_score_only_the_correct_one
+    scoring_test.go:108: ScoreAttempt() maximum = 0, want 4
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/all_correct_answers_include_fractional_points
+    scoring_test.go:108: ScoreAttempt() maximum = 0, want 4
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_answer_earns_no_points
+    scoring_test.go:108: ScoreAttempt() maximum = 0, want 4
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_answer_attached_to_another_question_earns_no_points
+    scoring_test.go:108: ScoreAttempt() maximum = 0, want 4
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_question_with_a_known_answer_earns_no_points
+    scoring_test.go:108: ScoreAttempt() maximum = 0, want 4
+--- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/empty_quiz_has_zero_totals (0.00s)
+    --- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unanswered_quiz_awards_zero_but_keeps_maximum (0.00s)
+    --- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_and_incorrect_answers_score_only_the_correct_one (0.00s)
+    --- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/all_correct_answers_include_fractional_points (0.00s)
+    --- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_answer_earns_no_points (0.00s)
+    --- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_answer_attached_to_another_question_earns_no_points (0.00s)
+    --- FAIL: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_question_with_a_known_answer_earns_no_points (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/ZK_NALOGE/ZK-naloga2/ismar	0.004s
+FAIL

@@ -1,0 +1,66 @@
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/valid_signature_forwards_request_and_restores_body
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/blank_server_secret_returns_internal_server_error
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_timestamp_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_signature_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_numeric_timestamp_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_older_than_allowed_skew_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_too_far_in_the_future_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_hexadecimal_signature_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/incorrect_signature_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/unreadable_request_body_returns_bad_request
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/body_changed_after_signing_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/query_changed_after_signing_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/identity_changed_after_signing_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/localhost_request_bypasses_integrity_headers
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/swagger_request_bypasses_integrity_headers
+--- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/valid_signature_forwards_request_and_restores_body (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/blank_server_secret_returns_internal_server_error (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_timestamp_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_signature_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_numeric_timestamp_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_older_than_allowed_skew_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_too_far_in_the_future_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_hexadecimal_signature_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/incorrect_signature_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/unreadable_request_body_returns_bad_request (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/body_changed_after_signing_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/query_changed_after_signing_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/identity_changed_after_signing_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/localhost_request_bypasses_integrity_headers (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/swagger_request_bypasses_integrity_headers (0.00s)
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/draft_quiz_is_unlocked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/invalid_null_date_stays_unlocked_even_if_time_contains_a_value
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/future_scheduled_quiz_is_unlocked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_exactly_now_is_locked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_in_the_past_is_locked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_draft_is_locked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_future_quiz_remains_locked
+--- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/draft_quiz_is_unlocked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/invalid_null_date_stays_unlocked_even_if_time_contains_a_value (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/future_scheduled_quiz_is_unlocked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_exactly_now_is_locked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_in_the_past_is_locked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_draft_is_locked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_future_quiz_remains_locked (0.00s)
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/empty_quiz_has_zero_totals
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unanswered_quiz_awards_zero_but_keeps_maximum
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_and_incorrect_answers_score_only_the_correct_one
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/all_correct_answers_include_fractional_points
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_answer_earns_no_points
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_answer_attached_to_another_question_earns_no_points
+=== RUN   TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_question_with_a_known_answer_earns_no_points
+--- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/empty_quiz_has_zero_totals (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unanswered_quiz_awards_zero_but_keeps_maximum (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_and_incorrect_answers_score_only_the_correct_one (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/all_correct_answers_include_fractional_points (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_answer_earns_no_points (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/correct_answer_attached_to_another_question_earns_no_points (0.00s)
+    --- PASS: TestScoreAttempt_VariedResponses_ReturnsExpectedTotals/unknown_question_with_a_known_answer_earns_no_points (0.00s)
+PASS
+ok  	github.com/ismarM/quizio/ZK_NALOGE/ZK-naloga2/ismar	0.006s

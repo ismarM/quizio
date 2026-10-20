@@ -1,0 +1,20 @@
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/draft_quiz_is_unlocked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/invalid_null_date_stays_unlocked_even_if_time_contains_a_value
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/future_scheduled_quiz_is_unlocked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_exactly_now_is_locked
+    publish_lock_test.go:74: IsQuizPublishLocked() = false, want true
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_in_the_past_is_locked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_draft_is_locked
+=== RUN   TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_future_quiz_remains_locked
+--- FAIL: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/draft_quiz_is_unlocked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/invalid_null_date_stays_unlocked_even_if_time_contains_a_value (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/future_scheduled_quiz_is_unlocked (0.00s)
+    --- FAIL: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_exactly_now_is_locked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/quiz_published_in_the_past_is_locked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_draft_is_locked (0.00s)
+    --- PASS: TestIsQuizPublishLocked_PublicationStates_ReturnExpectedLockState/archived_future_quiz_remains_locked (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/ZK_NALOGE/ZK-naloga2/ismar	0.005s
+FAIL

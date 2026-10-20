@@ -1,0 +1,38 @@
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/valid_signature_forwards_request_and_restores_body
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/blank_server_secret_returns_internal_server_error
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_timestamp_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_signature_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_numeric_timestamp_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_older_than_allowed_skew_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_too_far_in_the_future_is_unauthorized
+    integrity_middleware_test.go:212: status = 204, want 401
+    integrity_middleware_test.go:215: next called = true, want false
+    integrity_middleware_test.go:223: decode error response: unexpected end of JSON input
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_hexadecimal_signature_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/incorrect_signature_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/unreadable_request_body_returns_bad_request
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/body_changed_after_signing_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/query_changed_after_signing_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/identity_changed_after_signing_is_unauthorized
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/localhost_request_bypasses_integrity_headers
+=== RUN   TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/swagger_request_bypasses_integrity_headers
+--- FAIL: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/valid_signature_forwards_request_and_restores_body (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/blank_server_secret_returns_internal_server_error (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_timestamp_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/missing_signature_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_numeric_timestamp_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_older_than_allowed_skew_is_unauthorized (0.00s)
+    --- FAIL: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/timestamp_too_far_in_the_future_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/non_hexadecimal_signature_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/incorrect_signature_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/unreadable_request_body_returns_bad_request (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/body_changed_after_signing_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/query_changed_after_signing_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/identity_changed_after_signing_is_unauthorized (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/localhost_request_bypasses_integrity_headers (0.00s)
+    --- PASS: TestIntegrityMiddleware_RequestValidation_ReturnsExpectedStatus/swagger_request_bypasses_integrity_headers (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/ZK_NALOGE/ZK-naloga2/ismar	0.005s
+FAIL
