@@ -1,0 +1,8 @@
+﻿=== RUN   TestUpdateAttemptStatus
+=== RUN   TestUpdateAttemptStatus/rejects_finished_attempt
+    update_attempt_status_test.go:254: status = 400, want 409; body = {"error":"invalid_payload","message":"question does not belong to quiz"}
+--- FAIL: TestUpdateAttemptStatus (0.00s)
+    --- FAIL: TestUpdateAttemptStatus/rejects_finished_attempt (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.782s
+FAIL

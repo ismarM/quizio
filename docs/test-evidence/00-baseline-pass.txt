@@ -1,0 +1,82 @@
+﻿=== RUN   TestDecodeJSON
+=== RUN   TestDecodeJSON/decodes_valid_object
+=== RUN   TestDecodeJSON/accepts_missing_optional_field
+=== RUN   TestDecodeJSON/rejects_unknown_fields
+=== RUN   TestDecodeJSON/rejects_invalid_syntax
+=== RUN   TestDecodeJSON/rejects_empty_body
+=== RUN   TestDecodeJSON/rejects_second_JSON_object
+=== RUN   TestDecodeJSON/rejects_wrong_data_type
+=== RUN   TestDecodeJSON/accepts_surrounding_whitespace
+--- PASS: TestDecodeJSON (0.00s)
+    --- PASS: TestDecodeJSON/decodes_valid_object (0.00s)
+    --- PASS: TestDecodeJSON/accepts_missing_optional_field (0.00s)
+    --- PASS: TestDecodeJSON/rejects_unknown_fields (0.00s)
+    --- PASS: TestDecodeJSON/rejects_invalid_syntax (0.00s)
+    --- PASS: TestDecodeJSON/rejects_empty_body (0.00s)
+    --- PASS: TestDecodeJSON/rejects_second_JSON_object (0.00s)
+    --- PASS: TestDecodeJSON/rejects_wrong_data_type (0.00s)
+    --- PASS: TestDecodeJSON/accepts_surrounding_whitespace (0.00s)
+=== RUN   TestNormalizeLimit
+=== RUN   TestNormalizeLimit/minimum_int32_uses_default
+=== RUN   TestNormalizeLimit/negative_ten_uses_default
+=== RUN   TestNormalizeLimit/negative_one_uses_default
+=== RUN   TestNormalizeLimit/zero_uses_default
+=== RUN   TestNormalizeLimit/one_is_unchanged
+=== RUN   TestNormalizeLimit/nineteen_is_unchanged
+=== RUN   TestNormalizeLimit/twenty_is_unchanged
+=== RUN   TestNormalizeLimit/fifty_is_unchanged
+=== RUN   TestNormalizeLimit/ninety_nine_is_unchanged
+=== RUN   TestNormalizeLimit/one_hundred_is_unchanged
+=== RUN   TestNormalizeLimit/one_hundred_one_is_capped
+=== RUN   TestNormalizeLimit/five_hundred_is_capped
+=== RUN   TestNormalizeLimit/maximum_int32_is_capped
+--- PASS: TestNormalizeLimit (0.00s)
+    --- PASS: TestNormalizeLimit/minimum_int32_uses_default (0.00s)
+    --- PASS: TestNormalizeLimit/negative_ten_uses_default (0.00s)
+    --- PASS: TestNormalizeLimit/negative_one_uses_default (0.00s)
+    --- PASS: TestNormalizeLimit/zero_uses_default (0.00s)
+    --- PASS: TestNormalizeLimit/one_is_unchanged (0.00s)
+    --- PASS: TestNormalizeLimit/nineteen_is_unchanged (0.00s)
+    --- PASS: TestNormalizeLimit/twenty_is_unchanged (0.00s)
+    --- PASS: TestNormalizeLimit/fifty_is_unchanged (0.00s)
+    --- PASS: TestNormalizeLimit/ninety_nine_is_unchanged (0.00s)
+    --- PASS: TestNormalizeLimit/one_hundred_is_unchanged (0.00s)
+    --- PASS: TestNormalizeLimit/one_hundred_one_is_capped (0.00s)
+    --- PASS: TestNormalizeLimit/five_hundred_is_capped (0.00s)
+    --- PASS: TestNormalizeLimit/maximum_int32_is_capped (0.00s)
+=== RUN   TestUpdateAttemptStatus
+=== RUN   TestUpdateAttemptStatus/accepts_valid_active_attempt_and_answer
+=== RUN   TestUpdateAttemptStatus/rejects_missing_quiz_id
+=== RUN   TestUpdateAttemptStatus/rejects_invalid_quiz_id
+=== RUN   TestUpdateAttemptStatus/rejects_unauthenticated_user
+=== RUN   TestUpdateAttemptStatus/rejects_invalid_JSON
+=== RUN   TestUpdateAttemptStatus/returns_not_found_for_missing_attempt
+=== RUN   TestUpdateAttemptStatus/rejects_finished_attempt
+=== RUN   TestUpdateAttemptStatus/rejects_expired_attempt
+=== RUN   TestUpdateAttemptStatus/rejects_inactive_attempt
+=== RUN   TestUpdateAttemptStatus/rejects_invalid_question_id
+=== RUN   TestUpdateAttemptStatus/rejects_invalid_answer_id
+=== RUN   TestUpdateAttemptStatus/rejects_question_from_another_quiz
+=== RUN   TestUpdateAttemptStatus/rejects_answer_from_another_question
+=== RUN   TestUpdateAttemptStatus/handles_attempt_database_error
+=== RUN   TestUpdateAttemptStatus/handles_answer_lookup_database_error
+=== RUN   TestUpdateAttemptStatus/handles_answer_save_database_error
+--- PASS: TestUpdateAttemptStatus (0.03s)
+    --- PASS: TestUpdateAttemptStatus/accepts_valid_active_attempt_and_answer (0.02s)
+    --- PASS: TestUpdateAttemptStatus/rejects_missing_quiz_id (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_invalid_quiz_id (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_unauthenticated_user (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_invalid_JSON (0.00s)
+    --- PASS: TestUpdateAttemptStatus/returns_not_found_for_missing_attempt (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_finished_attempt (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_expired_attempt (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_inactive_attempt (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_invalid_question_id (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_invalid_answer_id (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_question_from_another_quiz (0.00s)
+    --- PASS: TestUpdateAttemptStatus/rejects_answer_from_another_question (0.00s)
+    --- PASS: TestUpdateAttemptStatus/handles_attempt_database_error (0.00s)
+    --- PASS: TestUpdateAttemptStatus/handles_answer_lookup_database_error (0.00s)
+    --- PASS: TestUpdateAttemptStatus/handles_answer_save_database_error (0.00s)
+PASS
+ok  	github.com/ismarM/quizio/private/tests/shared	0.782s

@@ -1,0 +1,8 @@
+﻿=== RUN   TestDecodeJSON
+=== RUN   TestDecodeJSON/rejects_second_JSON_object
+    decode_json_test.go:47: DecodeJSON() error = nil, want error
+--- FAIL: TestDecodeJSON (0.00s)
+    --- FAIL: TestDecodeJSON/rejects_second_JSON_object (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.753s
+FAIL

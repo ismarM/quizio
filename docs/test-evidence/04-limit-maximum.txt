@@ -1,0 +1,14 @@
+﻿=== RUN   TestNormalizeLimit
+=== RUN   TestNormalizeLimit/one_hundred_one_is_capped
+    normalize_limit_test.go:37: NormalizeLimit(101) = 200, want 100
+=== RUN   TestNormalizeLimit/five_hundred_is_capped
+    normalize_limit_test.go:37: NormalizeLimit(500) = 200, want 100
+=== RUN   TestNormalizeLimit/maximum_int32_is_capped
+    normalize_limit_test.go:37: NormalizeLimit(2147483647) = 200, want 100
+--- FAIL: TestNormalizeLimit (0.00s)
+    --- FAIL: TestNormalizeLimit/one_hundred_one_is_capped (0.00s)
+    --- FAIL: TestNormalizeLimit/five_hundred_is_capped (0.00s)
+    --- FAIL: TestNormalizeLimit/maximum_int32_is_capped (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.744s
+FAIL

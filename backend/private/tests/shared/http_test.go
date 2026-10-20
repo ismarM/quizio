@@ -5,64 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/ismarM/quizio/internal/httpapi/shared"
 )
-
-func TestNormalizeLimit(t *testing.T) {
-	tests := []struct {
-		name  string
-		limit int32
-		want  int32
-	}{
-		{name: "default for zero", limit: 0, want: shared.DefaultLimit},
-		{name: "default for negative", limit: -1, want: shared.DefaultLimit},
-		{name: "keeps valid", limit: 50, want: 50},
-		{name: "caps max", limit: shared.MaxLimit + 1, want: shared.MaxLimit},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := shared.NormalizeLimit(tt.limit); got != tt.want {
-				t.Fatalf("NormalizeLimit(%d) = %d, want %d", tt.limit, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestDecodeJSONRejectsUnknownAndTrailingFields(t *testing.T) {
-	type payload struct {
-		Name string `json:"name"`
-	}
-
-	tests := []struct {
-		name string
-		body string
-		ok   bool
-	}{
-		{name: "valid payload", body: `{"name":"quiz"}`, ok: true},
-		{name: "unknown field", body: `{"name":"quiz","extra":true}`, ok: false},
-		{name: "trailing payload", body: `{"name":"quiz"}{"name":"again"}`, ok: false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tt.body))
-			var got payload
-			err := shared.DecodeJSON(req, &got)
-
-			if tt.ok && err != nil {
-				t.Fatalf("DecodeJSON() unexpected error: %v", err)
-			}
-			if !tt.ok && err == nil {
-				t.Fatalf("DecodeJSON() error = nil, want error")
-			}
-		})
-	}
-}
 
 func TestParseIDParam(t *testing.T) {
 	tests := []struct {

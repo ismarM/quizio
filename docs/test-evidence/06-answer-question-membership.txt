@@ -1,0 +1,8 @@
+﻿=== RUN   TestUpdateAttemptStatus
+=== RUN   TestUpdateAttemptStatus/rejects_answer_from_another_question
+    update_attempt_status_test.go:254: status = 500, want 400; body = {"error":"update_attempt_failed","message":"failed to update attempt"}
+--- FAIL: TestUpdateAttemptStatus (0.00s)
+    --- FAIL: TestUpdateAttemptStatus/rejects_answer_from_another_question (0.00s)
+FAIL
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.760s
+FAIL
