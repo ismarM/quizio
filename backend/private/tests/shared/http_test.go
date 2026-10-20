@@ -3,6 +3,7 @@ package shared_test
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,14 +14,18 @@ import (
 
 func TestParseIDParam(t *testing.T) {
 	tests := []struct {
-		name string
-		id   string
-		want int32
-		ok   bool
+		name    string
+		id      string
+		want    int32
+		wantErr bool
 	}{
-		{name: "positive id", id: "12", want: 12, ok: true},
-		{name: "zero invalid", id: "0", ok: false},
-		{name: "text invalid", id: "abc", ok: false},
+		{name: "positive id", id: "12", want: 12},
+		{name: "maximum int32", id: "2147483647", want: math.MaxInt32},
+		{name: "missing id", wantErr: true},
+		{name: "negative id", id: "-1", wantErr: true},
+		{name: "zero invalid", id: "0", wantErr: true},
+		{name: "text invalid", id: "abc", wantErr: true},
+		{name: "int32 overflow", id: "2147483648", wantErr: true},
 	}
 
 	for _, tt := range tests {
@@ -31,14 +36,17 @@ func TestParseIDParam(t *testing.T) {
 			req = req.WithContext(contextWithRoute(req.Context(), rctx))
 
 			got, err := shared.ParseIDParam(req, "id")
-			if tt.ok && err != nil {
-				t.Fatalf("ParseIDParam() unexpected error: %v", err)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("ParseIDParam(%q) error = nil, want error", tt.id)
+				}
+				return
 			}
-			if !tt.ok && err == nil {
-				t.Fatalf("ParseIDParam() error = nil, want error")
+			if err != nil {
+				t.Fatalf("ParseIDParam(%q) unexpected error: %v", tt.id, err)
 			}
 			if got != tt.want {
-				t.Fatalf("ParseIDParam() = %d, want %d", got, tt.want)
+				t.Fatalf("ParseIDParam(%q) = %d, want %d", tt.id, got, tt.want)
 			}
 		})
 	}

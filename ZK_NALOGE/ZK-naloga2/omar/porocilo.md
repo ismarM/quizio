@@ -69,3 +69,22 @@ Backend korak v `.github/workflows/ci.yml` požene teste z
 pokritosti se izpiše v log, datoteka `backend/coverage.out` pa se naloži kot
 artefakt `backend-coverage` tudi ob neuspehu naslednjega koraka.
 
+## Pregled drugih testov
+
+Pregledani so bili tudi obstoječi testi za avtentikacijski kontekst, HTTP
+pomožne funkcije, pretvorbe `NULL` vrednosti, preslikavo kviza, točkovanje,
+lestvico in zaklep objave kviza.
+
+Izboljšan je bil obstoječi `TestParseIDParam` v
+`backend/private/tests/shared/http_test.go`. Prej je preverjal samo običajen
+pozitiven ID, ničlo in besedilo. Zdaj tabelarično preverja sedem primerov:
+običajen pozitiven ID, največji `int32`, manjkajoč ID, negativen ID, ničlo,
+besedilo in prekoračitev `int32` (`2147483648`).
+
+Novi robni primer je odkril napako v enoti `ParseIDParam`: uporaba
+`strconv.Atoi` je na 64-bitnem sistemu sprejela število, večje od `int32`, nato
+pa ga je pretvorba v `int32` prevesila v negativno vrednost. Enota zdaj uporablja
+`strconv.ParseInt(value, 10, 32)`, zato je obseg preverjen pred pretvorbo. Test
+faila, če je ID manjkajoč, neštevilski, manjši ali enak nič oziroma izven obsega
+`int32`, ali če veljaven ID ne vrne pričakovane vrednosti.
+

@@ -51,7 +51,7 @@ func DecodeJSON(r *http.Request, dst any) error {
 // ParseIDParam reads a positive int32 path parameter.
 func ParseIDParam(r *http.Request, name string) (int32, error) {
 	value := chi.URLParam(r, name)
-	id, err := strconv.Atoi(value)
+	id, err := strconv.ParseInt(value, 10, 32)
 	if err != nil || id <= 0 {
 		return 0, errors.New("invalid id")
 	}
