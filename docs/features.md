@@ -52,7 +52,7 @@ This document is the authoritative reference for the functional features and non
 - Submit the quiz manually at any point before the timer runs out
 
 #### Personal
-- View a history of past quiz attempts, scores, and time taken
+- View a history of past quiz attempts and scores
 - Select the theme and language
 - Set a username to hide their email
 

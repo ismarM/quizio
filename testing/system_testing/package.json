@@ -1,0 +1,15 @@
+{
+  "name": "quizio-system-testing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "k6 load / system tests for Quizio",
+  "scripts": {
+    "purge": "node seed/run-purge.mjs",
+    "seed": "node seed/run-seed.mjs",
+    "pretest:load": "npm run purge && npm run seed",
+    "test:load": "set -a; . ../.env; set +a; k6 run --include-system-env-vars load/quiz-listing.js; status=$?; npm run purge; exit $status"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

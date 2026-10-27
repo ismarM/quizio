@@ -1,0 +1,9 @@
+{
+  "name": "quizio",
+  "private": true,
+  "description": "Root scripts for running the Quizio test suites (requires the docker compose stack to be running).",
+  "scripts": {
+    "functional_tests": "cd testing/functional_testing && npm install --no-audit --no-fund && npx playwright install chromium && npx playwright test",
+    "system_tests": "cd testing/system_testing && npm install --no-audit --no-fund && npm run test:load"
+  }
+}
