@@ -4,5 +4,5 @@
 --- FAIL: TestNormalizeLimit (0.00s)
     --- FAIL: TestNormalizeLimit/fifty_is_unchanged (0.00s)
 FAIL
-FAIL	github.com/ismarM/quizio/private/tests/shared	0.745s
+FAIL	github.com/ismarM/quizio/private/tests/shared	1.135s
 FAIL

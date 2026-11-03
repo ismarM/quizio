@@ -5,6 +5,7 @@
 package shared_test
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -178,7 +179,7 @@ func TestUpdateAttemptStatus(t *testing.T) {
 			if tt.quizID != "" {
 				routeContext.URLParams.Add("quizId", tt.quizID)
 			}
-			ctx := contextWithRoute(req.Context(), routeContext)
+			ctx := context.WithValue(req.Context(), chi.RouteCtxKey, routeContext)
 			if tt.authenticated {
 				ctx = shared.WithUser(ctx, shared.UserClaims{ID: 5})
 			}

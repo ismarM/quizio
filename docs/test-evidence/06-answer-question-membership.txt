@@ -4,5 +4,5 @@
 --- FAIL: TestUpdateAttemptStatus (0.00s)
     --- FAIL: TestUpdateAttemptStatus/rejects_answer_from_another_question (0.00s)
 FAIL
-FAIL	github.com/ismarM/quizio/private/tests/shared	0.760s
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.718s
 FAIL

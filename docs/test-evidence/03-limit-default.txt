@@ -13,5 +13,5 @@
     --- FAIL: TestNormalizeLimit/negative_one_uses_default (0.00s)
     --- FAIL: TestNormalizeLimit/zero_uses_default (0.00s)
 FAIL
-FAIL	github.com/ismarM/quizio/private/tests/shared	0.765s
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.964s
 FAIL

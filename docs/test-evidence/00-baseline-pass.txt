@@ -61,8 +61,8 @@
 === RUN   TestUpdateAttemptStatus/handles_attempt_database_error
 === RUN   TestUpdateAttemptStatus/handles_answer_lookup_database_error
 === RUN   TestUpdateAttemptStatus/handles_answer_save_database_error
---- PASS: TestUpdateAttemptStatus (0.03s)
-    --- PASS: TestUpdateAttemptStatus/accepts_valid_active_attempt_and_answer (0.02s)
+--- PASS: TestUpdateAttemptStatus (0.00s)
+    --- PASS: TestUpdateAttemptStatus/accepts_valid_active_attempt_and_answer (0.00s)
     --- PASS: TestUpdateAttemptStatus/rejects_missing_quiz_id (0.00s)
     --- PASS: TestUpdateAttemptStatus/rejects_invalid_quiz_id (0.00s)
     --- PASS: TestUpdateAttemptStatus/rejects_unauthenticated_user (0.00s)
@@ -79,4 +79,4 @@
     --- PASS: TestUpdateAttemptStatus/handles_answer_lookup_database_error (0.00s)
     --- PASS: TestUpdateAttemptStatus/handles_answer_save_database_error (0.00s)
 PASS
-ok  	github.com/ismarM/quizio/private/tests/shared	0.782s
+ok  	github.com/ismarM/quizio/private/tests/shared	0.932s

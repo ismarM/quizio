@@ -10,5 +10,5 @@
     --- FAIL: TestNormalizeLimit/five_hundred_is_capped (0.00s)
     --- FAIL: TestNormalizeLimit/maximum_int32_is_capped (0.00s)
 FAIL
-FAIL	github.com/ismarM/quizio/private/tests/shared	0.744s
+FAIL	github.com/ismarM/quizio/private/tests/shared	0.734s
 FAIL
