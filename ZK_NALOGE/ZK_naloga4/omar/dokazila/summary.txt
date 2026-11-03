@@ -1,0 +1,17 @@
+OMR-ST-01 – povzetek vzdržljivostnega testa
+Rezultat: PASS
+Začetek: 2026-11-03T11:04:24.651Z
+Konec: 2026-11-03T11:10:46.390Z
+Git commit: b97fa2acbc06d8948162614cfb55848d1cdba15e
+Cilj: http://localhost:3000/api/proxy/categories
+Preflight: PASS (HTTP 200)
+
+Faza A: PASS; 1168 odzivov; 9.662 req/s; avg 457.18 ms; p50 418.48 ms; p95 705.55 ms; p99 1018.43 ms; napake 0.000 %; 401=0, 403=0, 429=0, 5xx=0, omrežne=0, timeouti=0, neveljavna telesa=0
+Faza B: PASS; 1189 odzivov; 9.826 req/s; avg 424.55 ms; p50 414.83 ms; p95 487.23 ms; p99 737.09 ms; napake 0.000 %; 401=0, 403=0, 429=0, 5xx=0, omrežne=0, timeouti=0, neveljavna telesa=0
+Faza C: PASS; 1100 odzivov; 9.091 req/s; avg 507.57 ms; p50 445.94 ms; p95 781.24 ms; p99 1391.49 ms; napake 0.000 %; 401=0, 403=0, 429=0, 5xx=0, omrežne=0, timeouti=0, neveljavna telesa=0
+
+Razmerje p95(C)/p95(A): 1.107 (zahteva ≤ 1.5; PASS)
+Končna kontrola: PASS (HTTP 200)
+Vzorci docker stats: 78 vrstic; napake vzorčenja: 0
+
+Piškotek seje in glave Cookie niso zapisani v dokazila.

@@ -1,0 +1,12 @@
+{
+  "name": "quizio-omar-soak-test",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:soak": "node soak-test.mjs"
+  },
+  "dependencies": {
+    "autocannon": "8.0.0"
+  }
+}
