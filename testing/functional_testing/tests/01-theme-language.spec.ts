@@ -126,8 +126,7 @@ test.describe("TC-01 theme and language", () => {
 
       expect(request.postDataJSON()).toEqual({ language: 1, theme: 1 });
       await expect(html(page)).toHaveAttribute("lang", "sl");
-      // The success message keeps the language it was created in, so accept either.
-      await expect(page.getByText(/Profile updated\.|Profil posodobljen\./)).toBeVisible();
+      await expect(page.getByText("Profil posodobljen.")).toBeVisible();
       await expect(page.getByText("Tema", { exact: true })).toBeVisible();
       await expect(page.getByText("Jezik", { exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Shrani profil" })).toBeVisible();
