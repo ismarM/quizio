@@ -112,7 +112,6 @@ jobs:
       - name: Create env files
         run: |
           cp backend/.env.example backend/.env
-          sed -i "s|^HMAC_SECRET=.*|HMAC_SECRET=${{ secrets.HMAC_SECRET }}|" backend/.env
           cat > next/.env.local <<'EOF'
           NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
@@ -122,11 +121,11 @@ jobs:
           NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
           FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}
-          FIREBASE_PRIVATE_KEY="${{ secrets.FIREBASE_PRIVATE_KEY }}"
+          FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}
           SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          HMAC_SECRET=${{ secrets.HMAC_SECRET }}
           EOF
+          grep '^HMAC_SECRET=' backend/.env >> next/.env.local
 
       - name: Start the application
         run: |
