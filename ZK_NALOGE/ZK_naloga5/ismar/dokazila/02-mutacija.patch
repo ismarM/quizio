@@ -1,0 +1,11 @@
+--- a/next/src/components/attempts/AttemptResult.tsx
++++ b/next/src/components/attempts/AttemptResult.tsx
+@@ -301,7 +301,7 @@
+         const points = isCorrect ? question.value : 0;
+ 
+         if (isCorrect) {
+-            totalScore += question.value;
++            totalScore += 1;
+             correctAnswers += 1;
+         }
+ 

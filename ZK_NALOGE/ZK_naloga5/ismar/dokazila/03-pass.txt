@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:305334) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ismar/scenarios.spec.ts:9:5 › ISM-FT-01 – objava osnutka in dostop uporabnika (32.2s)
+  ✓  2 ismar/scenarios.spec.ts:29:5 › ISM-FT-02 – ročna oddaja in rezultat 2/5 (32.8s)
+  ✓  3 ismar/scenarios.spec.ts:76:5 › ISM-FT-03 – nadaljevanje po zaprtju zavihka (56.7s)
+
+  3 passed (2.0m)

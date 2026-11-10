@@ -1,0 +1,51 @@
+
+Running 1 test using 1 worker
+
+(node:304455) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ismar/scenarios.spec.ts:29:5 › ISM-FT-02 – ročna oddaja in rezultat 2/5 (52.4s)
+
+
+  1) ismar/scenarios.spec.ts:29:5 › ISM-FT-02 – ročna oddaja in rezultat 2/5 ───────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('2/5', { exact: true })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('2/5', { exact: true }) with timeout 15000ms
+      - waiting for getByText('2/5', { exact: true })
+
+
+      53 |     await expect(page).toHaveURL(`/attempts/${quiz.id}/result`);
+      54 |     await expect(page.getByRole("heading", { name: "Quiz completed.", exact: true })).toBeVisible();
+    > 55 |     await expect(page.getByText("2/5", { exact: true })).toBeVisible();
+         |                                                          ^
+      56 |     await expect(page.getByText("40%", { exact: true })).toBeVisible();
+      57 |     await expect(page.getByText("1/2", { exact: true })).toBeVisible();
+      58 |     for (const [question, selected, correct, points] of [
+        at /home/ismarm/.t3/worktrees/quizio/t3-38619d96/testing/functional_testing/ismar/scenarios.spec.ts:55:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ismar/test-results/scenarios-ISM-FT-02-–-ročna-oddaja-in-rezultat-2-5/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ismar/test-results/scenarios-ISM-FT-02-–-ročna-oddaja-in-rezultat-2-5/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ismar/test-results/scenarios-ISM-FT-02-–-ročna-oddaja-in-rezultat-2-5/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ismar/test-results/scenarios-ISM-FT-02-–-ročna-oddaja-in-rezultat-2-5/trace.zip
+    Usage:
+
+        npx playwright show-trace ismar/test-results/scenarios-ISM-FT-02-–-ročna-oddaja-in-rezultat-2-5/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    ismar/scenarios.spec.ts:29:5 › ISM-FT-02 – ročna oddaja in rezultat 2/5 ────────────────────────
