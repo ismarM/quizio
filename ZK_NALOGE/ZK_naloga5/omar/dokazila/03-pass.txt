@@ -1,0 +1,11 @@
+OMR Naloga 5 – končni tek po obnovi pravilne kode
+Datum: 16. 11. 2026, začetek 15:05:26 CET
+Ukaz: npx.cmd playwright test --config omar/playwright.config.ts
+
+PASS  OMR-FT-01 – navadni uporabnik ne more objaviti kviza       30,12 s
+PASS  OMR-FT-02 – poskus se samodejno zaključi po izteku časa    93,10 s
+PASS  OMR-FT-03 – lestvica se prek SSE posodobi brez osvežitve   37,40 s
+
+3 passed, 0 failed, 0 skipped, 0 flaky
+Skupno trajanje: 162,12 s
+Izhodna koda: 0

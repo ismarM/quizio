@@ -1,0 +1,14 @@
+OMR Naloga 5 – pričakovani FAIL z namensko napako
+Datum: 16. 11. 2026, začetek 15:02:08 CET
+Izveden test: OMR-FT-02 – poskus se samodejno zaključi po izteku časa
+
+FAIL: expect(page).toHaveURL(expected)
+Pričakovano: http://localhost:3000/attempts/16/result
+Dejansko:     http://localhost:3000/attempts/16
+Čas preverjanja: 75.000 ms
+
+1 failed
+Skupno trajanje: 108,42 s
+Izhodna koda: 1
+
+Razlog: pogoj timeLeftSeconds < 0 se ne more izpolniti, ker je čas omejen najmanj na 0.

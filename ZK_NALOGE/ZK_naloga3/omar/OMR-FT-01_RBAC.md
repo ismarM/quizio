@@ -38,3 +38,4 @@ Podlaga: `next/src/app/admin/page.tsx`, `next/src/app/api/proxy/[...path]/route.
 
 Vsa pričakovanja so izpolnjena. Navadni uporabnik ni spremenil stanja, administrator pa je isti kviz uspešno objavil. **Status: PASS.**
 
+**razčlenit

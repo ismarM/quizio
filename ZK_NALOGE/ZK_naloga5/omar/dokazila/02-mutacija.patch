@@ -1,0 +1,8 @@
+diff --git a/next/src/components/attempts/AttemptPlayer.tsx b/next/src/components/attempts/AttemptPlayer.tsx
+--- a/next/src/components/attempts/AttemptPlayer.tsx
++++ b/next/src/components/attempts/AttemptPlayer.tsx
+@@
+-    if (timeLimitSeconds > 0 && timeLeftSeconds === 0) {
++    if (timeLimitSeconds > 0 && timeLeftSeconds < 0) {
+       void finishAttempt();
+     }
