@@ -6,14 +6,12 @@ import (
 	"github.com/ismarM/quizio/internal/db/sqlc"
 )
 
-// IsQuizPublishLockedFaulty is an intentionally faulty copy of
-// IsQuizPublishLocked for ZK-naloga2.
+// IsQuizPublishLockedFaulty is the ZK-naloga2 copy of IsQuizPublishLocked,
+// restored to the working version.
 func IsQuizPublishLockedFaulty(state sqlc.GetQuizStateRow, now time.Time) bool {
-	// Fault 1: archived quizzes are incorrectly considered unlocked.
 	if state.IsArchived {
-		return false
+		return true
 	}
 
-	// Fault 2: future publication dates are incorrectly considered locked.
-	return state.PublishDate.Valid && state.PublishDate.Time.After(now)
+	return state.PublishDate.Valid && !state.PublishDate.Time.After(now)
 }
