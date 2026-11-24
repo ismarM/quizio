@@ -1,0 +1,16 @@
+﻿"ID";"URL";"Ime";"Opis";"Stanje";"Tip";"Kriticnost";"Verzija";"Brskalnik";"OS";"Test";"Postopek";"Trenutno_stanje";"Zadolzeni";"Reporter";"Created";"Updated";"Priority";"Labels"
+"KAN-5";"https://pako25.atlassian.net/browse/KAN-5";"ISM-FT-03: Neuspešno shranjen odgovor ostane označen in se po ponovnem odprtju izgubi";"Pri kontroliranem HTTP 500 ob shranjevanju odgovora UI označi odgovor 4 in izpiše Answered 1 of 2 questions, čeprav API vrne prazen seznam responses. Uporabnik ne vidi opozorila ali možnosti ponovitve. Po ponovnem nalaganju izbira izgine.
+Pričakovano: jasno opozorilo o neuspelem shranjevanju; neuspešno shranjene izbire ne sme predstavljati kot varno shranjene. Omogočena naj bo ponovitev.
+Dejansko: izbrana možnost pred reloadom 1, po reloadu 0; responses=[]. Kviz 25, poskus 12.
+Dokazila v repozitoriju: ZK_NALOGE/ZK_naloga6/ismar/dokazila/save.json in save.png. Kontrolirana omrežna napaka prek Playwright route.fulfill; aplikacijska koda ni spremenjena. Osnovni scenarij razširjen na neuspešno shranjevanje pred zaprtjem zavihka.";"Novo";"Napaka";"Visoka";"d1f40f152a2f7b08822a7fa61ca9e2b1d9d10ad6";"Chromium 156.0.8078.4 (Playwright, headless)";"Linux";"ISM-FT-03 / N6-save";"1. Prijavi se z namenskim uporabnikom in začni objavljen kviz z dvema vprašanjema in omejitvijo 5 minut.
+2. Prestrezaj PATCH /api/proxy/quizzes/{id}/attempts in vrni HTTP 500.
+3. Izberi odgovor 4. Opazuj označbo in števec; preveri GET attempts (responses=[]).
+4. Zapri/ponovno odpri stran oziroma jo ponovno naloži. Izbira 4 ni več označena.";"Novo – potrjeno 24. 11. 2026; še ni odpravljeno.";"Ismar";"Ismar";"2026-11-24T23:11:27.352+0100";"2026-11-24T23:11:27.911+0100";"High";"ISM-FT-03, ismar, naloga6"
+"KAN-6";"https://pako25.atlassian.net/browse/KAN-6";"ISM-FT-02: Neuspešna ročna oddaja vrne uporabnika na prvo vprašanje brez opozorila";"Pri kontroliranem HTTP 500 na POST attempts/finish aplikacija vseeno navigira na rezultat. Strežniška stran zazna nedokončan poskus in uporabnika vrne na reševanje, na prvo neodgovorjeno vprašanje. Na strani ni vidnega obvestila, da oddaja ni uspela; časovnik teče naprej.
+Pričakovano: po neuspešni oddaji ostane jasno opozorilo in možnost ponovitve; uporabnik razume, da kviz še ni oddan.
+Dejansko: vrnitev na Question 1 / 2, brez obvestila, time_taken_seconds manjka (poskus je aktiven). Preverjeno na kvizu 29, poskus 16.
+Dokazila: ZK_NALOGE/ZK_naloga6/ismar/dokazila/finish.json in finish.png. Uporabljena kontrolirana simulacija HTTP 500 s Playwright; aplikacijska koda nespremenjena. To je razširitev ISM-FT-02 na napako pri oddaji, ne trditev, da običajna oddaja odpove.";"Novo";"Pomanjkljivost";"Srednja";"d1f40f152a2f7b08822a7fa61ca9e2b1d9d10ad6";"Chromium 156.0.8078.4 (Playwright, headless)";"Linux";"ISM-FT-02 / N6-finish";"1. Začni objavljen kviz z dvema vprašanjema in časovno omejitvijo 5 minut.
+2. Klikni Next, da prideš do drugega vprašanja in gumba Submit.
+3. Prestrezaj POST /api/proxy/quizzes/{id}/attempts/finish in vrni HTTP 500.
+4. Klikni Submit. Opazuj vrnitev na prvo vprašanje brez vidnega opozorila.
+5. GET attempts potrdi še aktiven poskus (brez time_taken_seconds).";"Novo – potrjeno 24. 11. 2026; še ni odpravljeno.";"Ismar";"Ismar";"2026-11-24T23:13:32.998+0100";"2026-11-24T23:13:33.447+0100";"Medium";"ISM-FT-02, ismar, naloga6"
