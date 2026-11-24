@@ -1,0 +1,17 @@
+{
+  "mode": "save",
+  "quizId": 30,
+  "url": "http://localhost:3001/attempts/30",
+  "browser": "156.0.8078.4",
+  "body": "Quizio\nI\nSign out\n\nQuestion 1 / 2\n\nN3-Ismar-N6-save-aebb077e-5432-485f-a7af-131f8a3c6beb\n4:58\nSingle choice\n2 points\nKoliko je 2 + 2?\n4\n5\nPrevious\nNext\n\nAttempt progress\n\nAnswered 1 of 2 questions.\n\n1\n2\n\nTimer keeps running.\n\nClosing the browser does not pause the quiz. Submit before the time runs out.",
+  "attempt": {
+    "id": 17,
+    "start_time": "2026-11-24T22:13:59.86584Z",
+    "quiz_id": 30,
+    "user_id": 2,
+    "user_name": "ismar.n5.user"
+  },
+  "responses": [],
+  "selectedBeforeReload": 1,
+  "selectedAfterReload": 0
+}

@@ -2,3 +2,6 @@
 playwright-report/
 test-results/
 runs/
+
+ismar/
+error-results/
