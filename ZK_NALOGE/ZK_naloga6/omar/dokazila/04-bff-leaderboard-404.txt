@@ -1,0 +1,21 @@
+Redigirano dokazilo – OMR-FT-03
+
+Predpogoji:
+- administrator je prijavljen;
+- namenski kviz N6-Omar je objavljen;
+- dva uporabnika sta zaključila kviz z 2/5;
+- SSE povezava je bila prekinjena z restartom lokalnega backenda in se je obnovila;
+- UI in baza vsebujeta natanko dve vrstici v pravilnem vrstnem redu.
+
+Zahteva:
+GET /api/proxy/quizzes/{id}/leaderboard
+
+Dejanski odgovor:
+HTTP 404
+
+Pričakovani odgovor:
+HTTP 200 z dvema vnosoma, saj backend registrira
+GET /api/quizzes/{quizId}/leaderboard in zahtevo pošilja administrator.
+
+Ponovljivost: 4/4 veljavnih izvedb (Chromium in Firefox).
+V dokazilu ni ID-ja seje, piškotkov ali žetonov.

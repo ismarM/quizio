@@ -1,0 +1,23 @@
+Naloga 6 – skupni končni tek dodatnih testov
+Datum: 24. 11. 2026
+Playwright: 1.64.1
+Chromium: 156.0.8078.4
+Firefox: 157.0
+
+Chromium:
+- OMR-FT-01 RBAC/baza: PASS (48,4 s)
+- OMR-FT-01 odjava/Back: PASS (8,3 s)
+- OMR-FT-02 obnovitev/offline/dva zavihka: PASS (1,5 min)
+- OMR-FT-02 mejna in sočasna oddaja: PASS (1,5 min)
+- OMR-FT-03 SSE/reconnect/vrstni red: FAIL (54,1 s; BFF GET 404)
+
+Firefox:
+- OMR-FT-01 RBAC/baza: PASS (34,9 s)
+- OMR-FT-01 odjava/Back: PASS (10,3 s)
+- OMR-FT-02 obnovitev/offline/dva zavihka: PASS (1,7 min)
+- OMR-FT-02 mejna in sočasna oddaja: FAIL (2,3 min; brez navigacije)
+- OMR-FT-03 prvi tek: neveljaven zaradi prehodne Firebase prijave;
+  veljavna ponovitev je ponovno pokazala BFF GET 404.
+
+Veljavni končni izid dodatnega kompleta: 7 PASS, 3 FAIL.
+Gesla, žetoni, sejni piškotki in Playwright trace datoteke niso vključeni.

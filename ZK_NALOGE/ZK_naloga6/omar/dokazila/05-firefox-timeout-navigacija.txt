@@ -1,0 +1,14 @@
+Redigirano dokazilo – OMR-FT-02, Firefox 157.0
+
+Kviz: lasten kviz s predpono N6-Omar, časovna omejitev 60 sekund.
+Ob prikazu 0:00 so bili skoraj sočasno poslani:
+- avtomatski POST /api/proxy/quizzes/{id}/attempts/finish iz strani: HTTP 200;
+- prvi ročni POST istega endpointa: HTTP 200;
+- drugi ročni POST istega endpointa: HTTP 200.
+
+Strežniško stanje je bilo uspešno zaključeno in je ostalo konsistentno.
+Kljub temu je Firefox ostal na /attempts/{id}; v 20 sekundah ni prešel na
+/attempts/{id}/result. V Chromiumu je enak test prešel na rezultat.
+
+Ponovljivost: 2/2 Firefox izvedb.
+V dokazilu ni ID-ja seje, piškotkov ali žetonov.

@@ -1,0 +1,15 @@
+Naloga 6 – ponovni zagon obstoječih Omarjevih testov
+Datum: 24. 11. 2026
+Ukaz: npx playwright test --config omar/playwright.config.ts
+Brskalnik: Chromium 156.0.8078.4
+
+OMR-FT-01  PASS  28,8 s
+OMR-FT-02  PASS  1,5 min
+OMR-FT-03  PASS  41,3 s
+
+Skupaj: 3 passed (2,7 min)
+
+Opomba: prvi poskus v omejenem procesu je vrnil Firebase
+auth/network-request-failed. Ponovitev z dovoljenim dostopom do razvojnega
+Firebase je uspela; prvi poskus je klasificiran kot težava testnega okolja.
+Gesla, žetoni in sejni piškotki niso vključeni.
